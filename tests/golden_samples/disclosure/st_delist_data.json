@@ -1,0 +1,45 @@
+{
+  "columns": [
+    "symbol",
+    "name",
+    "st_type",
+    "risk_level",
+    "announcement_date"
+  ],
+  "dtypes": {
+    "symbol": "str",
+    "name": "str",
+    "st_type": "str",
+    "risk_level": "str",
+    "announcement_date": "str"
+  },
+  "row_count": 5,
+  "sample_data": [
+    {
+      "symbol": "600001",
+      "name": "*ST华谊",
+      "st_type": "*ST",
+      "risk_level": "high",
+      "announcement_date": "2024-01-15"
+    },
+    {
+      "symbol": "600002",
+      "name": "ST海润",
+      "st_type": "ST",
+      "risk_level": "medium",
+      "announcement_date": "2024-02-20"
+    },
+    {
+      "symbol": "600003",
+      "name": "退市大控",
+      "st_type": "normal",
+      "risk_level": "critical",
+      "announcement_date": "2024-03-10"
+    }
+  ],
+  "metadata": {
+    "description": "ST/delist risk data schema",
+    "source": "eastmoney",
+    "interface": "get_st_delist_data"
+  }
+}

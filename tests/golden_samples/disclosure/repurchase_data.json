@@ -1,0 +1,50 @@
+{
+  "columns": [
+    "symbol",
+    "announcement_date",
+    "progress",
+    "amount",
+    "quantity",
+    "price_range"
+  ],
+  "dtypes": {
+    "symbol": "str",
+    "announcement_date": "str",
+    "progress": "str",
+    "amount": "float64",
+    "quantity": "object",
+    "price_range": "str"
+  },
+  "row_count": 3,
+  "sample_data": [
+    {
+      "symbol": "600000",
+      "announcement_date": "2024-01-15",
+      "progress": "进行中",
+      "amount": 50000000.0,
+      "quantity": 1000000.0,
+      "price_range": "10-15元"
+    },
+    {
+      "symbol": "000001",
+      "announcement_date": "2024-01-10",
+      "progress": "已完成",
+      "amount": 100000000.0,
+      "quantity": 2000000.0,
+      "price_range": "20-25元"
+    },
+    {
+      "symbol": "600036",
+      "announcement_date": "2024-01-05",
+      "progress": "董事会预案",
+      "amount": 60000000.0,
+      "quantity": null,
+      "price_range": "30-35元"
+    }
+  ],
+  "metadata": {
+    "description": "Repurchase data schema",
+    "source": "eastmoney",
+    "interface": "get_repurchase_data"
+  }
+}

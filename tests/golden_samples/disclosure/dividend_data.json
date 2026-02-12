@@ -1,0 +1,55 @@
+{
+  "columns": [
+    "symbol",
+    "fiscal_year",
+    "dividend_per_share",
+    "record_date",
+    "ex_dividend_date",
+    "payment_date",
+    "dividend_ratio"
+  ],
+  "dtypes": {
+    "symbol": "str",
+    "fiscal_year": "str",
+    "dividend_per_share": "float64",
+    "record_date": "str",
+    "ex_dividend_date": "str",
+    "payment_date": "str",
+    "dividend_ratio": "object"
+  },
+  "row_count": 3,
+  "sample_data": [
+    {
+      "symbol": "600000",
+      "fiscal_year": "2023年报",
+      "dividend_per_share": 0.15,
+      "record_date": "2024-06-20",
+      "ex_dividend_date": "2024-06-21",
+      "payment_date": "2024-06-22",
+      "dividend_ratio": null
+    },
+    {
+      "symbol": "600000",
+      "fiscal_year": "2022年报",
+      "dividend_per_share": 0.1,
+      "record_date": "2023-06-15",
+      "ex_dividend_date": "2023-06-16",
+      "payment_date": "2023-06-17",
+      "dividend_ratio": null
+    },
+    {
+      "symbol": "600000",
+      "fiscal_year": "2021年报",
+      "dividend_per_share": 0.08,
+      "record_date": "2022-06-10",
+      "ex_dividend_date": "2022-06-11",
+      "payment_date": "2022-06-12",
+      "dividend_ratio": null
+    }
+  ],
+  "metadata": {
+    "description": "Dividend data schema",
+    "source": "eastmoney",
+    "interface": "get_dividend_data"
+  }
+}
