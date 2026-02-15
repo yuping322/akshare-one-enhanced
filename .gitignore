@@ -3,3 +3,6 @@
 __pycache__
 .kiro
 */__pycache__/*
+*.pyc
+__pycache__/
+.coverage
