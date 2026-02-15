@@ -61,8 +61,8 @@ class EastmoneyBlockDealProvider(BlockDealProvider):
             if symbol:
                 raw_df = ak.stock_dzjy_mrmx(symbol=symbol)
             else:
-                # Get market-wide data by date range
-                raw_df = ak.stock_dzjy_sctj(start_date=start_date, end_date=end_date)
+                # Get market-wide data - akshare的stock_dzjy_sctj不接受参数
+                raw_df = ak.stock_dzjy_sctj()
             
             if raw_df.empty:
                 return self.create_empty_dataframe([

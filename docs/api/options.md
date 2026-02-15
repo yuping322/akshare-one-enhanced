@@ -39,6 +39,12 @@ def get_options_chain(
 | `open_interest` | int | 持仓量 |
 | `implied_volatility` | float | 隐含波动率 |
 
+### 异常
+
+- `InvalidParameterError` - 参数无效（如标的代码格式错误）
+- `NoDataError` - 无可用数据
+- `DataSourceUnavailableError` - 数据源不可用
+
 ### 使用示例
 
 ```python
@@ -92,6 +98,12 @@ def get_options_realtime(
 | `open_interest` | int | 持仓量 |
 | `iv` | float | 隐含波动率 |
 
+### 异常
+
+- `InvalidParameterError` - 参数无效（如期权代码格式错误、参数冲突）
+- `NoDataError` - 无可用数据
+- `DataSourceUnavailableError` - 数据源不可用
+
 ### 使用示例
 
 ```python
@@ -131,6 +143,11 @@ def get_options_expirations(
 ### 返回值
 
 返回 `list[str]`，包含格式为 "YYYY-MM-DD" 的日期字符串列表。
+
+### 异常
+
+- `InvalidParameterError` - 参数无效（如标的代码格式错误）
+- `DataSourceUnavailableError` - 数据源不可用
 
 ### 使用示例
 
@@ -184,6 +201,12 @@ def get_options_hist(
 | `volume` | int | 成交量 |
 | `open_interest` | int | 持仓量 |
 | `settlement` | float | 结算价 |
+
+### 异常
+
+- `InvalidParameterError` - 参数无效（如期权代码格式错误、日期格式错误）
+- `NoDataError` - 指定时间范围内无数据
+- `DataSourceUnavailableError` - 数据源不可用
 
 ### 使用示例
 

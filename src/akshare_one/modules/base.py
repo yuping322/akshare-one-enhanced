@@ -13,6 +13,15 @@ import re
 import pandas as pd
 import numpy as np
 
+from .field_naming import (
+    FieldStandardizer,
+    FieldMapper,
+    FieldAliasManager,
+    NamingRules,
+    FieldType
+)
+from .field_naming.unit_converter import UnitConverter
+
 
 class BaseProvider(ABC):
     """
@@ -31,8 +40,40 @@ class BaseProvider(ABC):
         
         Args:
             **kwargs: Provider-specific configuration parameters
+                     - enable_deprecation_warnings: Enable/disable deprecation warnings (default: True)
         """
         self.kwargs = kwargs
+        
+        # Initialize standardization components
+        self.field_standardizer = FieldStandardizer(NamingRules())
+        self.field_mapper = FieldMapper(self._get_mapping_config_path())
+        self.unit_converter = UnitConverter()
+        self.alias_manager = FieldAliasManager(
+            self._get_alias_config(),
+            enable_warnings=kwargs.get('enable_deprecation_warnings', True)
+        )
+    
+    def _get_mapping_config_path(self) -> Optional[str]:
+        """
+        Get the path to the field mapping configuration.
+        
+        Subclasses can override this to provide custom mapping configurations.
+        
+        Returns:
+            Path to mapping config directory, or None to use default
+        """
+        return None
+    
+    def _get_alias_config(self) -> Dict[str, str]:
+        """
+        Get the field alias configuration.
+        
+        Subclasses can override this to provide custom alias configurations.
+        
+        Returns:
+            Dictionary mapping old field names to new field names
+        """
+        return {}
     
     @property
     def metadata(self) -> Dict[str, Any]:
@@ -301,6 +342,115 @@ class BaseProvider(ABC):
             return num_value
         except (ValueError, TypeError):
             return default
+    
+    # Field Naming Standardization Methods
+    
+    def standardize_field_names(
+        self, 
+        df: pd.DataFrame, 
+        field_types: Dict[str, FieldType]
+    ) -> pd.DataFrame:
+        """
+        Standardize DataFrame field names according to naming conventions.
+        
+        Args:
+            df: Original DataFrame
+            field_types: Mapping of field names to their types
+        
+        Returns:
+            DataFrame with standardized field names
+        """
+        return self.field_standardizer.standardize_dataframe(df, field_types)
+    
+    def map_source_fields(
+        self, 
+        df: pd.DataFrame, 
+        source: str
+    ) -> pd.DataFrame:
+        """
+        Map source data fields to standard fields.
+        
+        Args:
+            df: Original DataFrame with source field names
+            source: Data source name (e.g., 'eastmoney')
+        
+        Returns:
+            DataFrame with mapped field names
+        """
+        # Get module name from class module path
+        module_name = self.__class__.__module__.split('.')[-2]
+        return self.field_mapper.map_fields(df, source, module_name)
+    
+    def convert_amount_units(
+        self, 
+        df: pd.DataFrame, 
+        amount_fields: Dict[str, str]
+    ) -> pd.DataFrame:
+        """
+        Convert amount field units to yuan (元).
+        
+        Args:
+            df: DataFrame with amount fields
+            amount_fields: Mapping of field names to their source units
+                          e.g., {'balance': 'yi_yuan', 'amount': 'wan_yuan'}
+        
+        Returns:
+            DataFrame with converted amount units (all in yuan)
+        """
+        return self.unit_converter.convert_dataframe_amounts(df, amount_fields)
+    
+    def add_field_aliases(
+        self, 
+        df: pd.DataFrame, 
+        include_legacy: bool = True
+    ) -> pd.DataFrame:
+        """
+        Add field aliases for backward compatibility.
+        
+        Args:
+            df: Standardized DataFrame
+            include_legacy: Whether to include legacy field names as aliases
+        
+        Returns:
+            DataFrame with alias fields added
+        """
+        if include_legacy:
+            return self.alias_manager.add_aliases_to_dataframe(df)
+        return df
+    
+    def standardize_date_field(
+        self, 
+        series: pd.Series, 
+        format: str = '%Y-%m-%d'
+    ) -> pd.Series:
+        """
+        Standardize date field format.
+        
+        Args:
+            series: Date data series
+            format: Target date format (default: YYYY-MM-DD)
+        
+        Returns:
+            Formatted date series
+        """
+        return pd.to_datetime(series).dt.strftime(format)
+    
+    def standardize_timestamp_field(
+        self, 
+        series: pd.Series, 
+        timezone: str = 'Asia/Shanghai'
+    ) -> pd.Series:
+        """
+        Standardize timestamp field with timezone awareness.
+        
+        Args:
+            series: Timestamp data series
+            timezone: Timezone to localize to (default: Asia/Shanghai)
+        
+        Returns:
+            Timezone-aware timestamp series
+        """
+        return pd.to_datetime(series).dt.tz_localize(timezone)
     
     # Abstract Methods (to be implemented by subclasses)
     

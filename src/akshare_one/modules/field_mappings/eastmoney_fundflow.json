@@ -1,0 +1,114 @@
+{
+  "source": "eastmoney",
+  "module": "fundflow",
+  "version": "1.0",
+  "last_updated": "2024-01-15",
+  "mappings": [
+    {
+      "source_field": "日期",
+      "standard_field": "date",
+      "field_type": "date",
+      "description": "交易日期"
+    },
+    {
+      "source_field": "收盘价",
+      "standard_field": "close",
+      "field_type": "other",
+      "description": "收盘价"
+    },
+    {
+      "source_field": "涨跌幅",
+      "standard_field": "pct_change",
+      "field_type": "rate",
+      "description": "涨跌幅"
+    },
+    {
+      "source_field": "主力净流入-净额",
+      "standard_field": "main_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "主力资金净流入金额"
+    },
+    {
+      "source_field": "主力净流入-净占比",
+      "standard_field": "main_net_inflow_rate",
+      "field_type": "rate",
+      "description": "主力资金净流入占比"
+    },
+    {
+      "source_field": "超大单净流入-净额",
+      "standard_field": "super_large_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "超大单净流入金额"
+    },
+    {
+      "source_field": "大单净流入-净额",
+      "standard_field": "large_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "大单净流入金额"
+    },
+    {
+      "source_field": "中单净流入-净额",
+      "standard_field": "medium_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "中单净流入金额"
+    },
+    {
+      "source_field": "小单净流入-净额",
+      "standard_field": "small_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "小单净流入金额"
+    },
+    {
+      "source_field": "板块代码",
+      "standard_field": "sector_code",
+      "field_type": "code",
+      "description": "板块代码"
+    },
+    {
+      "source_field": "板块名称",
+      "standard_field": "sector_name",
+      "field_type": "name",
+      "description": "板块名称"
+    },
+    {
+      "source_field": "领涨股",
+      "standard_field": "leading_stock",
+      "field_type": "name",
+      "description": "领涨股名称"
+    },
+    {
+      "source_field": "领涨股涨跌幅",
+      "standard_field": "leading_stock_pct",
+      "field_type": "rate",
+      "description": "领涨股涨跌幅"
+    },
+    {
+      "source_field": "代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "名称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票名称"
+    },
+    {
+      "source_field": "公司数量",
+      "standard_field": "constituent_count",
+      "field_type": "count",
+      "description": "成分股数量"
+    }
+  ]
+}

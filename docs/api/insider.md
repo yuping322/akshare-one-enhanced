@@ -37,6 +37,12 @@ def get_inner_trade_data(
 | `transaction_value` | float | 交易金额 (变动股数*成交均价) |
 | `shares_owned_before_transaction` | int | 变动前持股数 |
 
+## 异常
+
+- `InvalidParameterError` - 参数无效（如股票代码格式错误）
+- `NoDataError` - 无可用数据
+- `DataSourceUnavailableError` - 数据源不可用
+
 ## 使用示例
 
 ```python

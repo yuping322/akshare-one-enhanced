@@ -1,0 +1,5 @@
+.hypothesis
+*.pyc
+__pycache__
+.kiro
+*/__pycache__/*

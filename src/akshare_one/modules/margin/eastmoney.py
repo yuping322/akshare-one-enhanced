@@ -84,11 +84,23 @@ class EastmoneyMarginProvider(MarginProvider):
                 market = 'sse' if symbol.startswith('6') else 'szse'
                 
                 if market == 'sse':
-                    # akshare function: stock_margin_detail_sse(symbol: str = "600000")
-                    raw_df = ak.stock_margin_detail_sse(symbol=symbol)
+                    # akshare function: stock_margin_detail_sse(date: str = '20230922')
+                    # 使用最近的交易日期
+                    from datetime import datetime
+                    trade_date = datetime.now().strftime('%Y%m%d')
+                    raw_df = ak.stock_margin_detail_sse(date=trade_date)
+                    # 过滤指定股票
+                    if not raw_df.empty and '标的证券代码' in raw_df.columns:
+                        raw_df = raw_df[raw_df['标的证券代码'] == symbol]
                 else:
-                    # akshare function: stock_margin_detail_szse(symbol: str = "000001")
-                    raw_df = ak.stock_margin_detail_szse(symbol=symbol)
+                    # akshare function: stock_margin_detail_szse(date: str = "20230922")
+                    # 使用最近的交易日期
+                    from datetime import datetime
+                    trade_date = datetime.now().strftime('%Y%m%d')
+                    raw_df = ak.stock_margin_detail_szse(date=trade_date)
+                    # 过滤指定股票
+                    if not raw_df.empty and '标的证券代码' in raw_df.columns:
+                        raw_df = raw_df[raw_df['标的证券代码'] == symbol]
                 
                 if raw_df.empty:
                     return self.create_empty_dataframe([
@@ -210,7 +222,10 @@ class EastmoneyMarginProvider(MarginProvider):
             
             if market in ['sh', 'all']:
                 # Get Shanghai market data
-                raw_df_sh = ak.stock_margin_sse(date=start_date.replace('-', ''))
+                # 使用最近的交易日期而不是start_date
+                from datetime import datetime
+                trade_date = datetime.now().strftime('%Y%m%d')
+                raw_df_sh = ak.stock_margin_sse(date=trade_date)
                 
                 if not raw_df_sh.empty:
                     # Standardize Shanghai data

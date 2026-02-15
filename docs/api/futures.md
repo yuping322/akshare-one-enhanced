@@ -50,6 +50,12 @@ def get_futures_hist_data(
 | `open_interest` | int | 持仓量 |
 | `settlement` | float | 结算价 |
 
+### 异常
+
+- `InvalidParameterError` - 参数无效（如期货代码格式错误、时间间隔参数不合法）
+- `NoDataError` - 指定时间范围内无数据
+- `DataSourceUnavailableError` - 数据源不可用
+
 ### 使用示例
 
 ```python
@@ -111,6 +117,12 @@ def get_futures_realtime_data(
 | `prev_settlement` | float | 昨结算 |
 | `settlement` | float | 最新结算价 |
 
+### 异常
+
+- `InvalidParameterError` - 参数无效（如期货代码格式错误）
+- `NoDataError` - 无可用数据
+- `DataSourceUnavailableError` - 数据源不可用
+
 ### 使用示例
 
 ```python
@@ -159,6 +171,11 @@ def get_futures_main_contracts(
 | `name` | str | 期货名称 |
 | `contract` | str | 主力合约代码 |
 | `exchange` | str | 交易所 |
+
+### 异常
+
+- `DataSourceUnavailableError` - 数据源不可用
+- `NoDataError` - 无可用数据
 
 ### 使用示例
 

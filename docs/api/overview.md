@@ -105,8 +105,19 @@ from akshare_one.indicators import (
 )
 ```
 
+### 市场数据扩展模块
+提供12个专业市场数据模块，包括资金流、公告信披、北向资金、宏观数据等。
+
+```python
+from akshare_one.modules.fundflow import get_stock_fund_flow
+from akshare_one.modules.disclosure import get_disclosure_news
+from akshare_one.modules.northbound import get_northbound_flow
+# ... 更多模块
+```
+
 ## 🚀 快速导航
 
+### 核心数据接口
 - **[历史数据](historical.md)** - 获取股票历史行情数据
 - **[实时数据](realtime.md)** - 获取股票实时行情数据  
 - **[基础信息](basic-info.md)** - 获取股票基础信息
@@ -116,6 +127,20 @@ from akshare_one.indicators import (
 - **[期权数据](options.md)** - 获取期权行情数据
 - **[内部交易](insider.md)** - 获取内部交易数据
 - **[技术指标](indicators.md)** - 技术分析指标
+
+### 扩展数据接口
+- **[资金流](fundflow.md)** - 个股资金流、板块资金流、主力资金排名
+- **[公告信披](disclosure.md)** - 公告数据、分红派息、股票回购、ST/退市风险
+- **[北向资金](northbound.md)** - 北向资金流向、持股明细、排名
+- **[宏观数据](macro.md)** - LPR利率、PMI指数、CPI/PPI、M2货币供应、Shibor利率
+- **[大宗交易](blockdeal.md)** - 大宗交易明细和统计
+- **[龙虎榜](lhb.md)** - 龙虎榜数据、统计、营业部活跃度
+- **[涨停池](limitup.md)** - 涨停池、跌停池、涨停统计
+- **[融资融券](margin.md)** - 融资融券数据和统计
+- **[股权质押](pledge.md)** - 股权质押数据和比例排名
+- **[限售解禁](restricted.md)** - 限售解禁数据和日历
+- **[商誉](goodwill.md)** - 商誉数据和减值统计
+- **[ESG评级](esg.md)** - ESG评级和排名
 
 ## 💡 使用建议
 

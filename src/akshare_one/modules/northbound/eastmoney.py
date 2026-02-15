@@ -80,28 +80,32 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         standardized = pd.DataFrame()
         
         # Map fields based on akshare output
-        # Typical columns: 日期, 沪股通(亿元), 深股通(亿元), 北向资金(亿元), etc.
+        # New columns: 日期, 当日成交净买额, 买入成交额, 卖出成交额, 当日余额, etc.
         standardized['date'] = pd.to_datetime(df['日期']).dt.strftime('%Y-%m-%d')
+        standardized['market'] = market
         
-        if market == 'sh':
-            standardized['market'] = 'sh'
-            standardized['net_buy'] = df['沪股通(亿元)'].astype(float)
+        # Use 当日成交净买额 (daily net buy amount) as net_buy
+        # Convert from 亿元 to 亿元 (already in correct unit)
+        if '当日成交净买额' in df.columns:
+            standardized['net_buy'] = df['当日成交净买额'].astype(float)
+        else:
+            standardized['net_buy'] = None
+        
+        # Buy and sell amounts
+        if '买入成交额' in df.columns:
+            standardized['buy_amount'] = df['买入成交额'].astype(float)
+        else:
             standardized['buy_amount'] = None
+            
+        if '卖出成交额' in df.columns:
+            standardized['sell_amount'] = df['卖出成交额'].astype(float)
+        else:
             standardized['sell_amount'] = None
-            standardized['balance'] = None
-        elif market == 'sz':
-            standardized['market'] = 'sz'
-            standardized['net_buy'] = df['深股通(亿元)'].astype(float)
-            standardized['buy_amount'] = None
-            standardized['sell_amount'] = None
-            standardized['balance'] = None
-        else:  # 'all'
-            standardized['market'] = 'all'
-            standardized['net_buy'] = df['北向资金(亿元)'].astype(float) if '北向资金(亿元)' in df.columns else (
-                df['沪股通(亿元)'].astype(float) + df['深股通(亿元)'].astype(float)
-            )
-            standardized['buy_amount'] = None
-            standardized['sell_amount'] = None
+        
+        # Balance
+        if '当日余额' in df.columns:
+            standardized['balance'] = df['当日余额'].astype(float)
+        else:
             standardized['balance'] = None
         
         # Filter by date range
@@ -249,14 +253,15 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
             raise ValueError(f"top_n must be positive, got {top_n}")
         
         try:
-            # Fetch ranking data using akshare
-            # stock_hsgt_board_rank_em returns northbound holdings ranking
-            if market == 'sh':
-                raw_df = ak.stock_hsgt_board_rank_em(symbol="北向", indicator="沪股通")
-            elif market == 'sz':
-                raw_df = ak.stock_hsgt_board_rank_em(symbol="北向", indicator="深股通")
-            else:  # 'all'
-                raw_df = ak.stock_hsgt_board_rank_em(symbol="北向", indicator="北向")
+            # Fetch stock statistics data using akshare
+            # stock_hsgt_stock_statistics_em returns northbound holdings for individual stocks
+            # Convert date format from YYYY-MM-DD to YYYYMMDD
+            date_str = date.replace('-', '')
+            raw_df = ak.stock_hsgt_stock_statistics_em(
+                symbol="北向持股",
+                start_date=date_str,
+                end_date=date_str
+            )
             
             if raw_df.empty:
                 return self.create_empty_dataframe([
@@ -264,58 +269,65 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
                 ])
             
             # Standardize and limit to top_n
-            return self._standardize_ranking_data(raw_df, top_n)
+            return self._standardize_ranking_data(raw_df, market, top_n)
             
         except Exception as e:
             raise RuntimeError(f"Failed to fetch northbound top stocks: {e}") from e
     
-    def _standardize_ranking_data(self, df: pd.DataFrame, top_n: int) -> pd.DataFrame:
+    def _standardize_ranking_data(self, df: pd.DataFrame, market: str, top_n: int) -> pd.DataFrame:
         """Standardize northbound ranking data."""
         standardized = pd.DataFrame()
+        
+        # Filter by market if needed (based on stock code prefix)
+        if market == 'sh':
+            # Shanghai stocks start with 6
+            df = df[df['股票代码'].astype(str).str.startswith('6')]
+        elif market == 'sz':
+            # Shenzhen stocks start with 0 or 3
+            df = df[df['股票代码'].astype(str).str.match(r'^[03]')]
+        # else 'all' - no filtering needed
+        
+        # Sort by holdings value (持股市值) in descending order
+        if '持股市值' in df.columns:
+            df = df.sort_values('持股市值', ascending=False)
         
         # Add ranking
         standardized['rank'] = range(1, len(df) + 1)
         
-        # Map fields
-        if '代码' in df.columns:
-            standardized['symbol'] = df['代码'].astype(str).str.zfill(6)
-        elif '股票代码' in df.columns:
+        # Map fields - new column names from stock_hsgt_stock_statistics_em
+        if '股票代码' in df.columns:
             standardized['symbol'] = df['股票代码'].astype(str).str.zfill(6)
         else:
             standardized['symbol'] = None
         
-        if '名称' in df.columns:
-            standardized['name'] = df['名称'].astype(str)
-        elif '股票名称' in df.columns:
-            standardized['name'] = df['股票名称'].astype(str)
+        if '股票简称' in df.columns:
+            standardized['name'] = df['股票简称'].astype(str)
         else:
             standardized['name'] = None
         
-        # Net buy amount
-        if '今日持股' in df.columns:
-            standardized['net_buy'] = df['今日持股'].astype(float)
-        elif '今日净买入' in df.columns:
-            standardized['net_buy'] = df['今日净买入'].astype(float)
+        # Net buy amount - use 持股市值变化-1日 (1-day holdings value change)
+        if '持股市值变化-1日' in df.columns:
+            # Convert from yuan to yi yuan (亿元)
+            standardized['net_buy'] = df['持股市值变化-1日'].astype(float) / 100000000
         else:
             standardized['net_buy'] = None
         
         # Holdings shares
         if '持股数量' in df.columns:
             standardized['holdings_shares'] = df['持股数量'].astype(float)
-        elif '持股数量(股)' in df.columns:
-            standardized['holdings_shares'] = df['持股数量(股)'].astype(float)
         else:
             standardized['holdings_shares'] = None
         
         # Holdings ratio
-        if '持股占比' in df.columns:
-            standardized['holdings_ratio'] = df['持股占比'].astype(float)
-        elif '持股占比(%)' in df.columns:
-            standardized['holdings_ratio'] = df['持股占比(%)'].astype(float)
+        if '持股数量占发行股百分比' in df.columns:
+            standardized['holdings_ratio'] = df['持股数量占发行股百分比'].astype(float)
         else:
             standardized['holdings_ratio'] = None
         
         # Limit to top_n
         result = standardized.head(top_n).reset_index(drop=True)
+        
+        # Re-rank after filtering
+        result['rank'] = range(1, len(result) + 1)
         
         return self.ensure_json_compatible(result)

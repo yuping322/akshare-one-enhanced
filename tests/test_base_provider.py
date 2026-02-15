@@ -342,3 +342,184 @@ class TestEdgeCases:
         assert result['value'][0] == 1e10
         assert result['value'][1] == 1e20
         # Note: 1e100 might be converted to inf depending on float precision
+
+
+
+class TestFieldNamingStandardization:
+    """Test field naming standardization methods"""
+    
+    def test_standardize_field_names(self):
+        """Test field name standardization"""
+        from akshare_one.modules.field_naming import FieldType
+        
+        provider = TestProvider()
+        df = pd.DataFrame({
+            'date': ['2024-01-01', '2024-01-02'],
+            'symbol': ['600000', '000001'],
+            'main_net_inflow': [1000000, 2000000]
+        })
+        
+        field_types = {
+            'date': FieldType.DATE,
+            'symbol': FieldType.SYMBOL,
+            'main_net_inflow': FieldType.NET_FLOW
+        }
+        
+        result = provider.standardize_field_names(df, field_types)
+        
+        # Should validate and return the DataFrame
+        assert list(result.columns) == ['date', 'symbol', 'main_net_inflow']
+    
+    def test_map_source_fields(self):
+        """Test source field mapping"""
+        provider = TestProvider()
+        df = pd.DataFrame({
+            '日期': ['2024-01-01', '2024-01-02'],
+            '股票代码': ['600000', '000001']
+        })
+        
+        # Note: This will return unchanged if no mapping config exists
+        result = provider.map_source_fields(df, 'eastmoney')
+        
+        # Should return a DataFrame (may be unchanged without config)
+        assert isinstance(result, pd.DataFrame)
+    
+    def test_convert_amount_units(self):
+        """Test amount unit conversion"""
+        provider = TestProvider()
+        df = pd.DataFrame({
+            'balance': [1.5, 2.0, 3.5],  # In yi_yuan (亿元)
+            'amount': [100, 200, 300]     # In wan_yuan (万元)
+        })
+        
+        amount_fields = {
+            'balance': 'yi_yuan',
+            'amount': 'wan_yuan'
+        }
+        
+        result = provider.convert_amount_units(df, amount_fields)
+        
+        # Check conversions
+        assert result['balance'][0] == 150000000  # 1.5亿 = 150000000元
+        assert result['amount'][0] == 1000000     # 100万 = 1000000元
+    
+    def test_add_field_aliases(self):
+        """Test adding field aliases"""
+        # Create provider with alias config
+        provider = TestProvider()
+        provider.alias_manager.add_alias('old_field', 'new_field')
+        
+        df = pd.DataFrame({
+            'new_field': [1, 2, 3]
+        })
+        
+        result = provider.add_field_aliases(df, include_legacy=True)
+        
+        # Should have both new and old field names
+        assert 'new_field' in result.columns
+        assert 'old_field' in result.columns
+        assert result['old_field'].equals(result['new_field'])
+    
+    def test_add_field_aliases_disabled(self):
+        """Test adding field aliases when disabled"""
+        provider = TestProvider()
+        df = pd.DataFrame({
+            'new_field': [1, 2, 3]
+        })
+        
+        result = provider.add_field_aliases(df, include_legacy=False)
+        
+        # Should only have new field name
+        assert 'new_field' in result.columns
+        assert len(result.columns) == 1
+    
+    def test_standardize_date_field(self):
+        """Test date field standardization"""
+        provider = TestProvider()
+        # Use dates that are already parseable
+        series = pd.Series(['2024-01-01', '2024-01-02', '2024-01-03'])
+        
+        result = provider.standardize_date_field(series)
+        
+        # All should be in YYYY-MM-DD format
+        assert result[0] == '2024-01-01'
+        assert result[1] == '2024-01-02'
+        assert result[2] == '2024-01-03'
+    
+    def test_standardize_timestamp_field(self):
+        """Test timestamp field standardization"""
+        provider = TestProvider()
+        series = pd.Series(['2024-01-01 10:30:00', '2024-01-02 15:45:00'])
+        
+        result = provider.standardize_timestamp_field(series)
+        
+        # Should be timezone-aware
+        assert result.dt.tz is not None
+        assert str(result.dt.tz) == 'Asia/Shanghai'
+    
+    def test_get_mapping_config_path_default(self):
+        """Test default mapping config path"""
+        provider = TestProvider()
+        path = provider._get_mapping_config_path()
+        
+        # Default should be None
+        assert path is None
+    
+    def test_get_alias_config_default(self):
+        """Test default alias config"""
+        provider = TestProvider()
+        config = provider._get_alias_config()
+        
+        # Default should be empty dict
+        assert config == {}
+
+
+class TestFieldNamingIntegration:
+    """Test integration of field naming components"""
+    
+    def test_complete_standardization_workflow(self):
+        """Test complete field standardization workflow"""
+        from akshare_one.modules.field_naming import FieldType
+        
+        provider = TestProvider()
+        
+        # Start with raw data
+        df = pd.DataFrame({
+            'date': ['2024-01-01', '2024-01-02'],
+            'symbol': ['600000', '000001'],
+            'total_balance': [1.5, 2.0],  # In yi_yuan
+        })
+        
+        # 1. Convert units
+        df = provider.convert_amount_units(df, {'total_balance': 'yi_yuan'})
+        
+        # 2. Standardize field names
+        field_types = {
+            'date': FieldType.DATE,
+            'symbol': FieldType.SYMBOL,
+            'total_balance': FieldType.BALANCE
+        }
+        df = provider.standardize_field_names(df, field_types)
+        
+        # 3. Add aliases
+        df = provider.add_field_aliases(df, include_legacy=False)
+        
+        # Verify results
+        assert df['total_balance'][0] == 150000000
+        assert list(df.columns) == ['date', 'symbol', 'total_balance']
+    
+    def test_standardization_with_date_formatting(self):
+        """Test standardization with date formatting"""
+        provider = TestProvider()
+        
+        df = pd.DataFrame({
+            'date': ['2024-01-01', '2024-01-02'],
+            'value': [100, 200]
+        })
+        
+        # Standardize date field
+        df['date'] = provider.standardize_date_field(pd.Series(df['date']))
+        
+        # Verify date format
+        assert df['date'][0] == '2024-01-01'
+        assert df['date'][1] == '2024-01-02'

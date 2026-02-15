@@ -135,10 +135,31 @@ class OfficialMacroProvider(MacroProvider):
             
             # Standardize the data
             standardized = pd.DataFrame()
-            standardized['date'] = pd.to_datetime(raw_df['日期']).dt.strftime('%Y-%m-%d')
-            standardized['pmi_value'] = raw_df['制造业-指数' if pmi_type == 'manufacturing' else '非制造业-指数' if pmi_type == 'non_manufacturing' else '指数'].astype(float)
-            # YoY and MoM are typically not provided in raw data, set to None
-            standardized['yoy'] = None
+            
+            # Parse Chinese date format (e.g., "2026年01月份" -> "2026-01-01")
+            def parse_chinese_date(date_str):
+                """Parse Chinese date format like '2026年01月份' to 'YYYY-MM-DD'"""
+                import re
+                match = re.match(r'(\d{4})年(\d{2})月份?', str(date_str))
+                if match:
+                    year, month = match.groups()
+                    return f"{year}-{month}-01"
+                return date_str
+            
+            standardized['date'] = raw_df['月份'].apply(parse_chinese_date)
+            
+            # Select the appropriate column based on PMI type
+            if pmi_type == 'manufacturing':
+                standardized['pmi_value'] = raw_df['制造业-指数'].astype(float)
+                standardized['yoy'] = raw_df.get('制造业-同比增长', None)
+            elif pmi_type == 'non_manufacturing':
+                standardized['pmi_value'] = raw_df['非制造业-指数'].astype(float)
+                standardized['yoy'] = raw_df.get('非制造业-同比增长', None)
+            else:  # caixin
+                standardized['pmi_value'] = raw_df['指数'].astype(float)
+                standardized['yoy'] = None
+            
+            # MoM is typically not provided in raw data, set to None
             standardized['mom'] = None
             
             # Filter by date range
@@ -268,7 +289,7 @@ class OfficialMacroProvider(MacroProvider):
         Returns:
             pd.DataFrame: Standardized M2 supply data with columns:
                 - date: Date (YYYY-MM-DD)
-                - m2_balance: M2 balance (billion yuan)
+                - m2_balance: M2 balance (billion yuan) - Not available, set to None
                 - yoy_growth_rate: Year-over-year growth rate (%)
         """
         self.validate_date_range(start_date, end_date)
@@ -285,10 +306,16 @@ class OfficialMacroProvider(MacroProvider):
                 ])
             
             # Standardize the data
+            # Note: The akshare API returns columns: '商品', '日期', '今值', '预测值', '前值'
+            # '今值' is the current year-over-year growth rate
+            # M2 balance data is not available from this API
             standardized = pd.DataFrame()
-            standardized['date'] = pd.to_datetime(raw_df['月份']).dt.strftime('%Y-%m-%d')
-            standardized['m2_balance'] = raw_df['M2数量(亿元)'].astype(float)
-            standardized['yoy_growth_rate'] = raw_df['M2同比增长'].astype(float)
+            standardized['date'] = pd.to_datetime(raw_df['日期']).dt.strftime('%Y-%m-%d')
+            standardized['m2_balance'] = None  # Not available from this API
+            standardized['yoy_growth_rate'] = pd.to_numeric(raw_df['今值'], errors='coerce')
+            
+            # Filter out rows with None/NaN yoy_growth_rate
+            standardized = standardized.dropna(subset=['yoy_growth_rate']).reset_index(drop=True)
             
             # Filter by date range
             mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
@@ -339,16 +366,31 @@ class OfficialMacroProvider(MacroProvider):
                 ])
             
             # Standardize the data
+            # Note: akshare column names changed from '隔夜', '1周' to 'O/N-定价', '1W-定价'
             standardized = pd.DataFrame()
             standardized['date'] = pd.to_datetime(raw_df['日期']).dt.strftime('%Y-%m-%d')
-            standardized['overnight'] = raw_df['隔夜'].astype(float)
-            standardized['week_1'] = raw_df['1周'].astype(float)
-            standardized['week_2'] = raw_df['2周'].astype(float)
-            standardized['month_1'] = raw_df['1月'].astype(float)
-            standardized['month_3'] = raw_df['3月'].astype(float)
-            standardized['month_6'] = raw_df['6月'].astype(float)
-            standardized['month_9'] = raw_df['9月'].astype(float)
-            standardized['year_1'] = raw_df['1年'].astype(float)
+            
+            # Try new format first, fall back to old format
+            if 'O/N-定价' in raw_df.columns:
+                # New format (as of 2025)
+                standardized['overnight'] = raw_df['O/N-定价'].astype(float)
+                standardized['week_1'] = raw_df['1W-定价'].astype(float)
+                standardized['week_2'] = raw_df['2W-定价'].astype(float)
+                standardized['month_1'] = raw_df['1M-定价'].astype(float)
+                standardized['month_3'] = raw_df['3M-定价'].astype(float)
+                standardized['month_6'] = raw_df['6M-定价'].astype(float)
+                standardized['month_9'] = raw_df['9M-定价'].astype(float)
+                standardized['year_1'] = raw_df['1Y-定价'].astype(float)
+            else:
+                # Old format (before 2025)
+                standardized['overnight'] = raw_df['隔夜'].astype(float)
+                standardized['week_1'] = raw_df['1周'].astype(float)
+                standardized['week_2'] = raw_df['2周'].astype(float)
+                standardized['month_1'] = raw_df['1月'].astype(float)
+                standardized['month_3'] = raw_df['3月'].astype(float)
+                standardized['month_6'] = raw_df['6月'].astype(float)
+                standardized['month_9'] = raw_df['9月'].astype(float)
+                standardized['year_1'] = raw_df['1年'].astype(float)
             
             # Filter by date range
             mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)

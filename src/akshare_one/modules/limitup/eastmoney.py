@@ -87,14 +87,34 @@ class EastmoneyLimitUpDownProvider(LimitUpDownProvider):
             standardized['symbol'] = raw_df['代码'].astype(str).str.zfill(6)
             standardized['name'] = raw_df['名称'].astype(str)
             standardized['close_price'] = raw_df['最新价'].astype(float)
-            standardized['limit_up_time'] = raw_df['涨停时间'].astype(str)
-            standardized['open_count'] = raw_df['打开次数'].astype(int)
+            
+            # Handle limit_up_time - may have different column names
+            if '涨停时间' in raw_df.columns:
+                standardized['limit_up_time'] = raw_df['涨停时间'].astype(str)
+            elif '首次封板时间' in raw_df.columns:
+                standardized['limit_up_time'] = raw_df['首次封板时间'].astype(str)
+            elif '最后封板时间' in raw_df.columns:
+                standardized['limit_up_time'] = raw_df['最后封板时间'].astype(str)
+            else:
+                standardized['limit_up_time'] = ''
+            
+            # Handle open_count - may have different column names
+            if '打开次数' in raw_df.columns:
+                standardized['open_count'] = raw_df['打开次数'].astype(int)
+            elif '炸板次数' in raw_df.columns:
+                standardized['open_count'] = raw_df['炸板次数'].astype(int)
+            else:
+                standardized['open_count'] = 0
             
             # Handle seal_amount - may have different column names
             if '封单金额' in raw_df.columns:
                 standardized['seal_amount'] = raw_df['封单金额'].astype(float)
             elif '封单额' in raw_df.columns:
                 standardized['seal_amount'] = raw_df['封单额'].astype(float)
+            elif '封板资金' in raw_df.columns:
+                standardized['seal_amount'] = raw_df['封板资金'].astype(float)
+            elif '封单资金' in raw_df.columns:
+                standardized['seal_amount'] = raw_df['封单资金'].astype(float)
             else:
                 standardized['seal_amount'] = None
             
@@ -166,8 +186,23 @@ class EastmoneyLimitUpDownProvider(LimitUpDownProvider):
             standardized['symbol'] = raw_df['代码'].astype(str).str.zfill(6)
             standardized['name'] = raw_df['名称'].astype(str)
             standardized['close_price'] = raw_df['最新价'].astype(float)
-            standardized['limit_down_time'] = raw_df['跌停时间'].astype(str)
-            standardized['open_count'] = raw_df['打开次数'].astype(int)
+            
+            # Handle limit_down_time - may have different column names
+            if '跌停时间' in raw_df.columns:
+                standardized['limit_down_time'] = raw_df['跌停时间'].astype(str)
+            elif '最后封板时间' in raw_df.columns:
+                standardized['limit_down_time'] = raw_df['最后封板时间'].astype(str)
+            else:
+                standardized['limit_down_time'] = ''
+            
+            # Handle open_count - may have different column names
+            if '打开次数' in raw_df.columns:
+                standardized['open_count'] = raw_df['打开次数'].astype(int)
+            elif '开板次数' in raw_df.columns:
+                standardized['open_count'] = raw_df['开板次数'].astype(int)
+            else:
+                standardized['open_count'] = 0
+            
             standardized['turnover_rate'] = raw_df['换手率'].astype(float)
             
             # Ensure JSON compatibility
@@ -223,8 +258,13 @@ class EastmoneyLimitUpDownProvider(LimitUpDownProvider):
                     limit_up_count = len(limit_up_df) if not limit_up_df.empty else 0
                     
                     # Calculate broken rate (stocks that opened after limit up)
-                    if not limit_up_df.empty and '打开次数' in limit_up_df.columns:
-                        broken_count = (limit_up_df['打开次数'] > 0).sum()
+                    if not limit_up_df.empty:
+                        if '打开次数' in limit_up_df.columns:
+                            broken_count = (limit_up_df['打开次数'] > 0).sum()
+                        elif '炸板次数' in limit_up_df.columns:
+                            broken_count = (limit_up_df['炸板次数'] > 0).sum()
+                        else:
+                            broken_count = 0
                         broken_rate = (broken_count / limit_up_count * 100) if limit_up_count > 0 else 0.0
                     else:
                         broken_rate = 0.0
