@@ -7,7 +7,14 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from akshare_one.mcp import mcp, run_server
+# Skip all MCP tests if fastmcp is not installed
+try:
+    from akshare_one.mcp import mcp, run_server
+    MCP_AVAILABLE = True
+except ImportError:
+    MCP_AVAILABLE = False
+
+pytestmark = pytest.mark.skipif(not MCP_AVAILABLE, reason="fastmcp not installed")
 
 
 class TestMCPInitialization:

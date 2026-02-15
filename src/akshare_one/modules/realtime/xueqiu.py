@@ -30,8 +30,17 @@ class XueQiuRealtime(RealtimeDataProvider):
             - high: 最高
             - low: 最低
             - prev_close: 昨收
+        
+        Raises:
+            RuntimeError: When the upstream API returns unexpected format
         """
-        raw_df = ak.stock_individual_spot_xq(symbol=convert_xieqiu_symbol(self.symbol))
+        try:
+            raw_df = ak.stock_individual_spot_xq(symbol=convert_xieqiu_symbol(self.symbol))
+        except KeyError as e:
+            raise RuntimeError(
+                f"Xueqiu API returned unexpected response format. "
+                f"The API may have changed or be temporarily unavailable. Error: {e}"
+            ) from e
 
         # Convert to dictionary for easier lookup
         data_map = dict(zip(raw_df["item"], raw_df["value"], strict=True))
