@@ -209,6 +209,7 @@ class TestErrorHandling:
         #     provider.get_data(symbol='600000', start_date='2024-01-01', end_date='2024-01-31')
         pass
     
+    @pytest.mark.skip(reason="Template test - replace with actual implementation")
     @patch('akshare.AKSHARE_FUNCTION')  # TODO: Replace with actual akshare function
     def test_upstream_field_change(self, mock_akshare):
         """Test handling of upstream field changes."""
