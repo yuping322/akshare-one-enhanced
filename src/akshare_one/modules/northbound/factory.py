@@ -9,6 +9,7 @@ from typing import Dict, Type
 
 from .base import NorthboundProvider
 from .eastmoney import EastmoneyNorthboundProvider
+from .sina import SinaNorthboundProvider
 
 
 class NorthboundFactory:
@@ -22,6 +23,7 @@ class NorthboundFactory:
     # Registry of available providers
     _providers: Dict[str, Type[NorthboundProvider]] = {
         'eastmoney': EastmoneyNorthboundProvider,
+        'sina': SinaNorthboundProvider,
     }
     
     @classmethod

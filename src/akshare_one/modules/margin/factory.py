@@ -9,6 +9,7 @@ from typing import Dict, Type
 
 from .base import MarginProvider
 from .eastmoney import EastmoneyMarginProvider
+from .sina import SinaMarginProvider
 
 
 class MarginFactory:
@@ -22,6 +23,7 @@ class MarginFactory:
     # Registry of available providers
     _providers: Dict[str, Type[MarginProvider]] = {
         'eastmoney': EastmoneyMarginProvider,
+        'sina': SinaMarginProvider,
     }
     
     @classmethod

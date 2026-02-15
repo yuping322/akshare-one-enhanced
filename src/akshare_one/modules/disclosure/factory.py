@@ -9,6 +9,7 @@ from typing import Literal
 
 from .base import DisclosureProvider
 from .eastmoney import EastmoneyDisclosureProvider
+from .sina import SinaDisclosureProvider
 
 
 class DisclosureFactory:
@@ -21,13 +22,13 @@ class DisclosureFactory:
     
     @staticmethod
     def get_provider(
-        source: Literal["eastmoney"] = "eastmoney"
+        source: str = "eastmoney"
     ) -> DisclosureProvider:
         """
         Get a disclosure data provider instance.
         
         Args:
-            source: Data source name ('eastmoney')
+            source: Data source name ('eastmoney', 'sina')
         
         Returns:
             DisclosureProvider: Provider instance for the specified source
@@ -41,6 +42,7 @@ class DisclosureFactory:
         """
         providers = {
             'eastmoney': EastmoneyDisclosureProvider,
+            'sina': SinaDisclosureProvider,
         }
         
         if source not in providers:
@@ -55,8 +57,8 @@ class DisclosureFactory:
     def get_available_sources() -> list[str]:
         """
         Get list of available data sources.
-        
+    
         Returns:
             list[str]: List of available source names
         """
-        return ['eastmoney']
+        return ['eastmoney', 'sina']

@@ -9,6 +9,7 @@ from typing import Dict, Type
 
 from .base import LimitUpDownProvider
 from .eastmoney import EastmoneyLimitUpDownProvider
+from .sina import SinaLimitUpDownProvider
 
 
 class LimitUpDownFactory:
@@ -22,6 +23,7 @@ class LimitUpDownFactory:
     # Registry of available providers
     _providers: Dict[str, Type[LimitUpDownProvider]] = {
         'eastmoney': EastmoneyLimitUpDownProvider,
+        'sina': SinaLimitUpDownProvider,
     }
     
     @classmethod

@@ -9,6 +9,7 @@ from typing import Dict, Type
 
 from .base import BlockDealProvider
 from .eastmoney import EastmoneyBlockDealProvider
+from .sina import SinaBlockDealProvider
 
 
 class BlockDealFactory:
@@ -22,6 +23,7 @@ class BlockDealFactory:
     # Registry of available providers
     _providers: Dict[str, Type[BlockDealProvider]] = {
         'eastmoney': EastmoneyBlockDealProvider,
+        'sina': SinaBlockDealProvider,
     }
     
     @classmethod
@@ -48,3 +50,13 @@ class BlockDealFactory:
         
         provider_class = cls._providers[source]
         return provider_class(**kwargs)
+    
+    @classmethod
+    def list_sources(cls) -> list:
+        """
+        List all available data sources.
+        
+        Returns:
+            list: List of available source names
+        """
+        return list(cls._providers.keys())

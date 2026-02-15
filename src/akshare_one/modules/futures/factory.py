@@ -2,6 +2,7 @@ from typing import Any
 
 from .base import HistoricalFuturesDataProvider, RealtimeFuturesDataProvider
 from .sina import SinaFuturesHistorical, SinaFuturesRealtime
+from .eastmoney import EastmoneyFuturesHistoricalProvider, EastmoneyFuturesRealtimeProvider
 
 
 class FuturesDataFactory:
@@ -9,10 +10,12 @@ class FuturesDataFactory:
 
     _historical_providers: dict[str, type[HistoricalFuturesDataProvider]] = {
         "sina": SinaFuturesHistorical,
+        "eastmoney": EastmoneyFuturesHistoricalProvider,
     }
 
     _realtime_providers: dict[str, type[RealtimeFuturesDataProvider]] = {
         "sina": SinaFuturesRealtime,
+        "eastmoney": EastmoneyFuturesRealtimeProvider,
     }
 
     @classmethod

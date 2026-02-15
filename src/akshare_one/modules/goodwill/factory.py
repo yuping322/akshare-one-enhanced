@@ -9,6 +9,7 @@ from typing import Dict, Type
 
 from .base import GoodwillProvider
 from .eastmoney import EastmoneyGoodwillProvider
+from .sina import SinaGoodwillProvider
 
 
 class GoodwillFactory:
@@ -22,6 +23,7 @@ class GoodwillFactory:
     # Registry of available providers
     _providers: Dict[str, Type[GoodwillProvider]] = {
         'eastmoney': EastmoneyGoodwillProvider,
+        'sina': SinaGoodwillProvider,
     }
     
     @classmethod

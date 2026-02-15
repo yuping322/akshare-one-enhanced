@@ -9,6 +9,7 @@ from typing import Dict, Type
 
 from .base import DragonTigerProvider
 from .eastmoney import EastmoneyDragonTigerProvider
+from .sina import SinaLHBProvider
 
 
 class DragonTigerFactory:
@@ -22,6 +23,7 @@ class DragonTigerFactory:
     # Registry of available providers
     _providers: Dict[str, Type[DragonTigerProvider]] = {
         'eastmoney': EastmoneyDragonTigerProvider,
+        'sina': SinaLHBProvider,
     }
     
     @classmethod

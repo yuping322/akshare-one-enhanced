@@ -9,6 +9,7 @@ from typing import Dict, Type
 
 from .base import FundFlowProvider
 from .eastmoney import EastmoneyFundFlowProvider
+from .sina import SinaFundFlowProvider
 
 
 class FundFlowFactory:
@@ -22,6 +23,7 @@ class FundFlowFactory:
     # Registry of available providers
     _providers: Dict[str, Type[FundFlowProvider]] = {
         'eastmoney': EastmoneyFundFlowProvider,
+        'sina': SinaFundFlowProvider,
     }
     
     @classmethod

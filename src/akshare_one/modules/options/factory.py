@@ -2,6 +2,7 @@ from typing import Any
 
 from .base import OptionsDataProvider
 from .sina import SinaOptionsProvider
+from .eastmoney import EastmoneyOptionsProvider
 
 
 class OptionsDataFactory:
@@ -9,6 +10,7 @@ class OptionsDataFactory:
 
     _providers: dict[str, type[OptionsDataProvider]] = {
         "sina": SinaOptionsProvider,
+        "eastmoney": EastmoneyOptionsProvider,
     }
 
     @classmethod

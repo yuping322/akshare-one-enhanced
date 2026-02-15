@@ -9,6 +9,7 @@ from typing import Dict, Type
 
 from .base import ESGProvider
 from .eastmoney import EastmoneyESGProvider
+from .sina import SinaESGProvider
 
 
 class ESGFactory:
@@ -22,6 +23,7 @@ class ESGFactory:
     # Registry of available providers
     _providers: Dict[str, Type[ESGProvider]] = {
         'eastmoney': EastmoneyESGProvider,
+        'sina': SinaESGProvider,
     }
     
     @classmethod

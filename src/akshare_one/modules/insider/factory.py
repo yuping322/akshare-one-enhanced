@@ -1,5 +1,6 @@
 from .base import InsiderDataProvider
 from .xueqiu import XueQiuInsider
+from .eastmoney import EastmoneyInsiderProvider
 
 
 class InsiderDataFactory:
@@ -9,6 +10,7 @@ class InsiderDataFactory:
 
     _providers = {
         "xueqiu": XueQiuInsider,
+        "eastmoney": EastmoneyInsiderProvider,
     }
 
     @classmethod

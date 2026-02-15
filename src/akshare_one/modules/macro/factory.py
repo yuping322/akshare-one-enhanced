@@ -9,6 +9,7 @@ from typing import Dict, Type
 
 from .base import MacroProvider
 from .official import OfficialMacroProvider
+from .sina import SinaMacroProvider
 
 
 class MacroFactory:
@@ -22,6 +23,7 @@ class MacroFactory:
     # Registry of available providers
     _providers: Dict[str, Type[MacroProvider]] = {
         'official': OfficialMacroProvider,
+        'sina': SinaMacroProvider,
     }
     
     @classmethod
