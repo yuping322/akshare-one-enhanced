@@ -42,19 +42,22 @@ class TestEastmoneyBlockDealProvider:
         assert provider.get_source_name() == 'eastmoney'
         assert provider.get_update_frequency() == 'daily'
     
-    @patch('akshare.stock_dzjy_mrmx')
+    @patch('akshare.stock_dzjy_mrtj')
     def test_get_block_deal_single_stock(self, mock_dzjy, provider):
         """Test getting block deal data for single stock."""
         mock_data = pd.DataFrame({
+            '序号': [1, 2],
             '交易日期': ['2024-01-15', '2024-01-16'],
             '证券代码': ['600000', '600000'],
             '证券简称': ['浦发银行', '浦发银行'],
+            '涨跌幅': [1.0, 1.5],
+            '收盘价': [10.45, 10.55],
             '成交价': [10.50, 10.60],
-            '成交量': [1000000, 1500000],
-            '成交额': [10500000, 15900000],
-            '买方营业部': ['机构专用', '机构专用'],
-            '卖方营业部': ['某营业部', '某营业部'],
-            '收盘价': [10.45, 10.55]
+            '折溢率': [0.48, 0.47],
+            '成交笔数': [5, 6],
+            '成交总量': [100.0, 150.0],
+            '成交总额': [1050.0, 1590.0],
+            '成交总额/流通市值': [0.1, 0.15]
         })
         mock_dzjy.return_value = mock_data
         
@@ -65,18 +68,22 @@ class TestEastmoneyBlockDealProvider:
         assert 'symbol' in result.columns
         assert 'premium_rate' in result.columns
     
-    @patch('akshare.stock_dzjy_sctj')
+    @patch('akshare.stock_dzjy_mrtj')
     def test_get_block_deal_all_stocks(self, mock_dzjy, provider):
         """Test getting block deal data for all stocks."""
         mock_data = pd.DataFrame({
+            '序号': [1],
             '交易日期': ['2024-01-15'],
             '证券代码': ['600000'],
             '证券简称': ['浦发银行'],
+            '涨跌幅': [1.0],
+            '收盘价': [10.45],
             '成交价': [10.50],
-            '成交量': [1000000],
-            '成交额': [10500000],
-            '买方营业部': ['机构专用'],
-            '卖方营业部': ['某营业部']
+            '折溢率': [0.48],
+            '成交笔数': [5],
+            '成交总量': [100.0],
+            '成交总额': [1050.0],
+            '成交总额/流通市值': [0.1]
         })
         mock_dzjy.return_value = mock_data
         
@@ -85,19 +92,22 @@ class TestEastmoneyBlockDealProvider:
         assert not result.empty
         assert 'symbol' in result.columns
     
-    @patch('akshare.stock_dzjy_sctj')
+    @patch('akshare.stock_dzjy_mrtj')
     def test_get_block_deal_summary_by_stock(self, mock_dzjy, provider):
         """Test getting block deal summary grouped by stock."""
         mock_data = pd.DataFrame({
+            '序号': [1, 2, 3],
             '交易日期': ['2024-01-15', '2024-01-16', '2024-01-15'],
             '证券代码': ['600000', '600000', '600036'],
             '证券简称': ['浦发银行', '浦发银行', '招商银行'],
+            '涨跌幅': [1.0, 1.5, 2.0],
+            '收盘价': [10.45, 10.55, 35.00],
             '成交价': [10.50, 10.60, 35.20],
-            '成交量': [1000000, 1500000, 500000],
-            '成交额': [10500000, 15900000, 17600000],
-            '买方营业部': ['机构专用', '机构专用', '机构专用'],
-            '卖方营业部': ['某营业部', '某营业部', '某营业部'],
-            '收盘价': [10.45, 10.55, 35.00]
+            '折溢率': [0.48, 0.47, 0.57],
+            '成交笔数': [5, 6, 3],
+            '成交总量': [100.0, 150.0, 50.0],
+            '成交总额': [1050.0, 1590.0, 1760.0],
+            '成交总额/流通市值': [0.1, 0.15, 0.05]
         })
         mock_dzjy.return_value = mock_data
         
@@ -117,18 +127,22 @@ class TestEastmoneyBlockDealProvider:
 class TestBlockDealPublicAPI:
     """Test public API functions."""
     
-    @patch('akshare.stock_dzjy_mrmx')
+    @patch('akshare.stock_dzjy_mrtj')
     def test_get_block_deal_api(self, mock_dzjy):
         """Test get_block_deal public API."""
         mock_data = pd.DataFrame({
+            '序号': [1],
             '交易日期': ['2024-01-15'],
             '证券代码': ['600000'],
             '证券简称': ['浦发银行'],
+            '涨跌幅': [1.0],
+            '收盘价': [10.45],
             '成交价': [10.50],
-            '成交量': [1000000],
-            '成交额': [10500000],
-            '买方营业部': ['机构专用'],
-            '卖方营业部': ['某营业部']
+            '折溢率': [0.48],
+            '成交笔数': [5],
+            '成交总量': [100.0],
+            '成交总额': [1050.0],
+            '成交总额/流通市值': [0.1]
         })
         mock_dzjy.return_value = mock_data
         

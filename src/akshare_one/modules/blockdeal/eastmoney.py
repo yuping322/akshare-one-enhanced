@@ -57,12 +57,14 @@ class EastmoneyBlockDealProvider(BlockDealProvider):
         try:
             import akshare as ak
             
-            # Call akshare function
-            if symbol:
-                raw_df = ak.stock_dzjy_mrmx(symbol=symbol)
-            else:
-                # Get market-wide data - akshare的stock_dzjy_sctj不接受参数
-                raw_df = ak.stock_dzjy_sctj()
+            # Convert date format from YYYY-MM-DD to YYYYMMDD for akshare
+            ak_start_date = start_date.replace('-', '')
+            ak_end_date = end_date.replace('-', '')
+            
+            # Call akshare function - stock_dzjy_mrtj returns daily statistics
+            # Note: The API changed - stock_dzjy_mrmx now takes 'A股', 'B股', '基金', '债券' as symbol
+            # We use stock_dzjy_mrtj which returns daily statistics with stock codes
+            raw_df = ak.stock_dzjy_mrtj(start_date=ak_start_date, end_date=ak_end_date)
             
             if raw_df.empty:
                 return self.create_empty_dataframe([
@@ -75,22 +77,23 @@ class EastmoneyBlockDealProvider(BlockDealProvider):
             standardized['date'] = pd.to_datetime(raw_df['交易日期']).dt.strftime('%Y-%m-%d')
             standardized['symbol'] = raw_df['证券代码'].astype(str).str.zfill(6)
             standardized['name'] = raw_df['证券简称'].astype(str)
-            standardized['price'] = raw_df['成交价'].astype(float)
-            standardized['volume'] = raw_df['成交量'].astype(float)
-            standardized['amount'] = raw_df['成交额'].astype(float)
-            standardized['buyer_branch'] = raw_df['买方营业部'].astype(str)
-            standardized['seller_branch'] = raw_df['卖方营业部'].astype(str)
+            standardized['price'] = pd.to_numeric(raw_df['成交价'], errors='coerce')
+            standardized['volume'] = pd.to_numeric(raw_df['成交总量'], errors='coerce')
+            standardized['amount'] = pd.to_numeric(raw_df['成交总额'], errors='coerce')
+            standardized['buyer_branch'] = None  # Not available in mrtj
+            standardized['seller_branch'] = None  # Not available in mrtj
             
-            # Calculate premium rate if close price is available
-            if '收盘价' in raw_df.columns:
-                close_price = raw_df['收盘价'].astype(float)
-                standardized['premium_rate'] = ((standardized['price'] - close_price) / close_price * 100)
+            # Calculate premium rate from 折溢率 column (already in percentage)
+            if '折溢率' in raw_df.columns:
+                standardized['premium_rate'] = pd.to_numeric(raw_df['折溢率'], errors='coerce')
             else:
                 standardized['premium_rate'] = None
             
-            # Filter by date range
-            mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
-            result = standardized[mask].reset_index(drop=True)
+            # Filter by symbol if provided
+            if symbol:
+                standardized = standardized[standardized['symbol'] == symbol]
+            
+            result = standardized.reset_index(drop=True)
             
             # Ensure JSON compatibility
             return self.ensure_json_compatible(result)

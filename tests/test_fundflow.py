@@ -433,11 +433,10 @@ class TestPublicAPI:
     def test_get_sector_fund_flow(self, mock_akshare):
         """Test get_sector_fund_flow public function."""
         mock_data = pd.DataFrame({
-            '板块名称': ['银行'],
-            '涨跌幅': [1.5],
-            '主力净流入-净额': [1000000],
-            '领涨股': ['600000'],
-            '领涨股涨跌幅': [2.5],
+            '名称': ['银行'],
+            '今日涨跌幅': [1.5],
+            '今日主力净流入-净额': [1000000],
+            '今日主力净流入最大股': ['600000'],
         })
         mock_akshare.return_value = mock_data
         
@@ -450,8 +449,8 @@ class TestPublicAPI:
         mock_data = pd.DataFrame({
             '代码': ['600000'],
             '名称': ['浦发银行'],
-            '主力净流入-净额': [1000000],
-            '涨跌幅': [1.5],
+            '今日主力净流入-净额': [1000000],
+            '今日涨跌幅': [1.5],
         })
         mock_akshare.return_value = mock_data
         

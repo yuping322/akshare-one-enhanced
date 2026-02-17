@@ -1,0 +1,60 @@
+{
+  "columns": [
+    "date",
+    "sector_code",
+    "sector_name",
+    "sector_type",
+    "main_net_inflow",
+    "pct_change",
+    "leading_stock",
+    "leading_stock_pct"
+  ],
+  "dtypes": {
+    "date": "object",
+    "sector_code": "object",
+    "sector_name": "object",
+    "sector_type": "object",
+    "main_net_inflow": "float64",
+    "pct_change": "float64",
+    "leading_stock": "object",
+    "leading_stock_pct": "float64"
+  },
+  "row_count": 498,
+  "sample_data": [
+    {
+      "date": NaN,
+      "sector_code": "0",
+      "sector_name": "电子",
+      "sector_type": "industry",
+      "main_net_inflow": 2487623680.0,
+      "pct_change": -0.13,
+      "leading_stock": "深科技",
+      "leading_stock_pct": 0.0
+    },
+    {
+      "date": NaN,
+      "sector_code": "1",
+      "sector_name": "数字芯片设计",
+      "sector_type": "industry",
+      "main_net_inflow": 1923111424.0,
+      "pct_change": -0.15,
+      "leading_stock": "兆易创新",
+      "leading_stock_pct": 0.0
+    },
+    {
+      "date": NaN,
+      "sector_code": "2",
+      "sector_name": "半导体",
+      "sector_type": "industry",
+      "main_net_inflow": 1651760896.0,
+      "pct_change": 0.12,
+      "leading_stock": "兆易创新",
+      "leading_stock_pct": 0.0
+    }
+  ],
+  "metadata": {
+    "description": "Sector fund flow data schema",
+    "sector_type": "industry",
+    "created_at": "2026-02-17"
+  }
+}
