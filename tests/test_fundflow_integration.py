@@ -97,7 +97,7 @@ class TestCompleteFlowIndustry:
             if not fund_flow.empty:
                 validator.validate_required_columns(
                     fund_flow,
-                    ['date', 'symbol', 'close', 'main_net_inflow']
+                    ['date', 'symbol', 'close_price', 'fundflow_main_net_inflow']
                 )
                 
                 # Verify symbol matches
@@ -218,7 +218,7 @@ class TestCompleteFlowConcept:
             if not fund_flow.empty:
                 validator.validate_required_columns(
                     fund_flow,
-                    ['date', 'symbol', 'close', 'main_net_inflow']
+                    ['date', 'symbol', 'close_price', 'fundflow_main_net_inflow']
                 )
                 
                 # Verify symbol matches
@@ -308,12 +308,12 @@ class TestRealDataFetching:
                 # Validate required columns
                 validator.validate_required_columns(
                     df,
-                    ['date', 'symbol', 'close', 'pct_change', 'main_net_inflow']
+                    ['date', 'symbol', 'close_price', 'pct_change', 'fundflow_main_net_inflow']
                 )
                 
                 # Validate data quality
                 # 1. Closing price should be positive
-                validator.validate_numeric_range(df, 'close', min_value=0.01)
+                validator.validate_numeric_range(df, 'close_price', min_value=0.01)
                 
                 # 2. Price change should be reasonable (-20% to +20%)
                 validator.validate_numeric_range(df, 'pct_change', min_value=-20, max_value=20)
@@ -328,7 +328,7 @@ class TestRealDataFetching:
                 print(f"\n✓ Stock {symbol} fund flow data quality validated:")
                 print(f"  - Records: {len(df)}")
                 print(f"  - Date range: {df['date'].min()} to {df['date'].max()}")
-                print(f"  - Price range: {df['close'].min():.2f} to {df['close'].max():.2f}")
+                print(f"  - Price range: {df['close_price'].min():.2f} to {df['close_price'].max():.2f}")
     
     @pytest.mark.integration
     @skip_if_no_network()
@@ -485,12 +485,12 @@ class TestCrossValidation:
             # Check if main_net_inflow approximately equals sum of components
             # (allowing for rounding errors)
             for idx, row in df.iterrows():
-                if pd.notna(row['main_net_inflow']) and \
-                   pd.notna(row['super_large_net_inflow']) and \
-                   pd.notna(row['large_net_inflow']):
+                if pd.notna(row['fundflow_main_net_inflow']) and \
+                   pd.notna(row['fundflow_super_large_net_inflow']) and \
+                   pd.notna(row['fundflow_large_net_inflow']):
                     
-                    calculated_main = row['super_large_net_inflow'] + row['large_net_inflow']
-                    reported_main = row['main_net_inflow']
+                    calculated_main = row['fundflow_super_large_net_inflow'] + row['fundflow_large_net_inflow']
+                    reported_main = row['fundflow_main_net_inflow']
                     
                     # Allow 1% tolerance for rounding
                     if abs(reported_main) > 1000:  # Only check if value is significant
@@ -537,10 +537,10 @@ class TestRealAPIErrorHandling:
         
         # Should still have correct columns
         expected_columns = [
-            'date', 'symbol', 'close', 'pct_change',
-            'main_net_inflow', 'main_net_inflow_rate',
-            'super_large_net_inflow', 'large_net_inflow',
-            'medium_net_inflow', 'small_net_inflow'
+            'date', 'symbol', 'close_price', 'pct_change',
+            'fundflow_main_net_inflow', 'fundflow_main_net_inflow_rate',
+            'fundflow_super_large_net_inflow', 'fundflow_large_net_inflow',
+            'fundflow_medium_net_inflow', 'fundflow_small_net_inflow'
         ]
         assert list(df.columns) == expected_columns
     

@@ -1,0 +1,34 @@
+{
+  "columns": [
+    "sector_code",
+    "sector_name",
+    "constituent_count"
+  ],
+  "dtypes": {
+    "sector_code": "object",
+    "sector_name": "object",
+    "constituent_count": "int64"
+  },
+  "row_count": 498,
+  "sample_data": [
+    {
+      "sector_code": "BK1295",
+      "sector_name": "其他数字媒体",
+      "constituent_count": 0
+    },
+    {
+      "sector_code": "BK1513",
+      "sector_name": "海洋捕捞",
+      "constituent_count": 0
+    },
+    {
+      "sector_code": "BK1383",
+      "sector_name": "航海装备Ⅲ",
+      "constituent_count": 0
+    }
+  ],
+  "metadata": {
+    "description": "Industry list schema",
+    "created_at": "2026-02-17"
+  }
+}

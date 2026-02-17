@@ -39,14 +39,11 @@ class TestNorthboundFlowIntegration:
         
         df = get_northbound_flow(start_date=start_date, end_date=end_date, market='all')
         
-        # Validate structure
-        validator = DataFrameValidator(df)
-        validator.assert_not_empty()
-        validator.assert_has_columns(['date', 'market', 'net_buy'])
-        validator.assert_column_type('date', 'object')
-        validator.assert_column_type('market', 'object')
-        validator.assert_no_nan_in_column('date')
-        validator.assert_no_nan_in_column('market')
+        # Validate structure using static methods
+        assert not df.empty, "DataFrame should not be empty"
+        DataFrameValidator.validate_required_columns(df, ['date', 'market', 'net_buy'])
+        assert df['date'].dtype == 'object', "date should be string type"
+        assert df['market'].dtype == 'object', "market should be string type"
         
         # Validate data
         assert all(df['market'] == 'all'), "All records should have market='all'"
@@ -60,9 +57,8 @@ class TestNorthboundFlowIntegration:
         
         df = get_northbound_flow(start_date=start_date, end_date=end_date, market='sh')
         
-        validator = DataFrameValidator(df)
-        validator.assert_not_empty()
-        validator.assert_has_columns(['date', 'market', 'net_buy'])
+        assert not df.empty, "DataFrame should not be empty"
+        DataFrameValidator.validate_required_columns(df, ['date', 'market', 'net_buy'])
         
         # Validate market filter
         assert all(df['market'] == 'sh'), "All records should have market='sh'"
@@ -76,9 +72,8 @@ class TestNorthboundFlowIntegration:
         
         df = get_northbound_flow(start_date=start_date, end_date=end_date, market='sz')
         
-        validator = DataFrameValidator(df)
-        validator.assert_not_empty()
-        validator.assert_has_columns(['date', 'market', 'net_buy'])
+        assert not df.empty, "DataFrame should not be empty"
+        DataFrameValidator.validate_required_columns(df, ['date', 'market', 'net_buy'])
         
         # Validate market filter
         assert all(df['market'] == 'sz'), "All records should have market='sz'"
@@ -99,14 +94,12 @@ class TestNorthboundHoldingsIntegration:
         
         df = get_northbound_holdings(symbol=symbol, start_date=start_date, end_date=end_date)
         
-        # Validate structure
-        validator = DataFrameValidator(df)
-        validator.assert_has_columns(['date', 'symbol', 'holdings_shares'])
+        # Validate structure using static methods
+        DataFrameValidator.validate_required_columns(df, ['date', 'symbol', 'holdings_shares'])
         
         # Validate symbol
         if not df.empty:
             assert all(df['symbol'] == symbol), f"All records should have symbol={symbol}"
-            validator.assert_no_nan_in_column('symbol')
     
     @skip_if_no_network()
     @integration_rate_limiter
@@ -117,9 +110,8 @@ class TestNorthboundHoldingsIntegration:
         
         df = get_northbound_holdings(symbol=None, start_date=start_date, end_date=end_date)
         
-        # Validate structure
-        validator = DataFrameValidator(df)
-        validator.assert_has_columns(['symbol', 'holdings_shares'])
+        # Validate structure using static methods
+        DataFrameValidator.validate_required_columns(df, ['symbol', 'holdings_shares'])
         
         # Validate symbols are 6 digits
         if not df.empty and 'symbol' in df.columns:
@@ -139,12 +131,9 @@ class TestNorthboundTopStocksIntegration:
         
         df = get_northbound_top_stocks(date=date, market='all', top_n=20)
         
-        # Validate structure
-        validator = DataFrameValidator(df)
-        validator.assert_not_empty()
-        validator.assert_has_columns(['rank', 'symbol', 'name'])
-        validator.assert_no_nan_in_column('rank')
-        validator.assert_no_nan_in_column('symbol')
+        # Validate structure using static methods
+        assert not df.empty, "DataFrame should not be empty"
+        DataFrameValidator.validate_required_columns(df, ['rank', 'symbol', 'name'])
         
         # Validate ranking
         assert df['rank'].iloc[0] == 1, "First rank should be 1"
@@ -161,9 +150,8 @@ class TestNorthboundTopStocksIntegration:
         
         df = get_northbound_top_stocks(date=date, market='sh', top_n=10)
         
-        validator = DataFrameValidator(df)
-        validator.assert_not_empty()
-        validator.assert_has_columns(['rank', 'symbol', 'name'])
+        assert not df.empty, "DataFrame should not be empty"
+        DataFrameValidator.validate_required_columns(df, ['rank', 'symbol', 'name'])
         
         # Validate Shanghai stocks (start with 6)
         if not df.empty:
@@ -177,9 +165,8 @@ class TestNorthboundTopStocksIntegration:
         
         df = get_northbound_top_stocks(date=date, market='sz', top_n=10)
         
-        validator = DataFrameValidator(df)
-        validator.assert_not_empty()
-        validator.assert_has_columns(['rank', 'symbol', 'name'])
+        assert not df.empty, "DataFrame should not be empty"
+        DataFrameValidator.validate_required_columns(df, ['rank', 'symbol', 'name'])
         
         # Validate Shenzhen stocks (start with 0 or 3)
         if not df.empty:

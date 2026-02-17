@@ -15,17 +15,9 @@ import pandas as pd
 
 from ..cache import cache
 from .base import OptionsDataProvider
+from mappings.mapping_utils import get_option_underlying_patterns
 
 
-# Mapping from underlying symbol to name patterns
-UNDERLYING_PATTERNS = {
-    "510300": ["300ETF", "沪深300ETF"],
-    "510050": ["50ETF", "上证50ETF"],
-    "510500": ["500ETF", "中证500ETF"],
-    "000300": ["沪深300"],
-    "000016": ["上证50"],
-    "000905": ["中证500"],
-}
 
 
 class SinaOptionsProvider(OptionsDataProvider):
@@ -77,7 +69,7 @@ class SinaOptionsProvider(OptionsDataProvider):
                 )
 
             # Filter by underlying symbol
-            patterns = UNDERLYING_PATTERNS.get(self.underlying_symbol, [self.underlying_symbol])
+            patterns = get_option_underlying_patterns(self.underlying_symbol)
             pattern_regex = "|".join(patterns)
             df = raw_df[raw_df['名称'].str.contains(pattern_regex, na=False, regex=True)].copy()
 
@@ -146,7 +138,7 @@ class SinaOptionsProvider(OptionsDataProvider):
 
             if not symbol:
                 # Get all options for the underlying
-                patterns = UNDERLYING_PATTERNS.get(self.underlying_symbol, [self.underlying_symbol])
+                patterns = get_option_underlying_patterns(self.underlying_symbol)
                 pattern_regex = "|".join(patterns)
                 df = raw_df[raw_df['名称'].str.contains(pattern_regex, na=False, regex=True)].copy()
             else:
@@ -207,7 +199,7 @@ class SinaOptionsProvider(OptionsDataProvider):
             raw_df = ak.option_current_em()
 
             # Filter by underlying symbol
-            patterns = UNDERLYING_PATTERNS.get(underlying_symbol, [underlying_symbol])
+            patterns = get_option_underlying_patterns(underlying_symbol)
             pattern_regex = "|".join(patterns)
             df = raw_df[raw_df['名称'].str.contains(pattern_regex, na=False, regex=True)].copy()
 

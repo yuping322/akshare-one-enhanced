@@ -5,11 +5,15 @@ import pytest
 
 from akshare_one import get_inner_trade_data
 
+# Use symbols that are more likely to have insider trade data
+# 601318 (中国平安) is known to have regular insider trades
+INSIDER_TEST_SYMBOL = "601318"
+
 
 class TestInnerTradeData:
     def test_basic_inner_trade(self):
         """测试基本内部交易数据获取功能"""
-        df = get_inner_trade_data(symbol="600405")
+        df = get_inner_trade_data(symbol=INSIDER_TEST_SYMBOL)
         # Check that columns are correct even if data is empty
         required_columns = {
             "symbol",
@@ -27,13 +31,13 @@ class TestInnerTradeData:
         assert required_columns.issubset(df.columns)
         # Note: Data may be empty if no recent insider trades for this symbol
         if df.empty:
-            pytest.skip("No insider trade data available for symbol 600405")
+            pytest.skip(f"No insider trade data available for symbol {INSIDER_TEST_SYMBOL}")
 
     def test_transaction_date_range(self):
         """测试交易日期范围"""
-        df = get_inner_trade_data(symbol="600405")
+        df = get_inner_trade_data(symbol=INSIDER_TEST_SYMBOL)
         if df.empty:
-            pytest.skip("No insider trade data available for symbol 600405")
+            pytest.skip(f"No insider trade data available for symbol {INSIDER_TEST_SYMBOL}")
         
         now = pd.Timestamp.now(tz="UTC")
         earliest_reasonable = pd.Timestamp("1970-01-01", tz="UTC")
@@ -45,9 +49,9 @@ class TestInnerTradeData:
 
     def test_transaction_value_calculation(self):
         """测试交易金额计算正确性"""
-        df = get_inner_trade_data(symbol="600405")
+        df = get_inner_trade_data(symbol=INSIDER_TEST_SYMBOL)
         if df.empty:
-            pytest.skip("No insider trade data available for symbol 600405")
+            pytest.skip(f"No insider trade data available for symbol {INSIDER_TEST_SYMBOL}")
         sample = df.iloc[0]
         calculated_value = sample["transaction_shares"] * sample["transaction_price_per_share"]
         assert abs(sample["transaction_value"] - calculated_value) < 0.01

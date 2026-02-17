@@ -182,9 +182,9 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
             
             # Call appropriate akshare function based on sector type
             if sector_type == 'industry':
-                raw_df = ak.stock_sector_fund_flow_rank(indicator="行业资金流")
+                raw_df = ak.stock_sector_fund_flow_rank(indicator="今日", sector_type="行业资金流")
             else:  # concept
-                raw_df = ak.stock_sector_fund_flow_rank(indicator="概念资金流")
+                raw_df = ak.stock_sector_fund_flow_rank(indicator="今日", sector_type="概念资金流")
             
             if raw_df.empty:
                 return self.create_empty_dataframe([
@@ -197,13 +197,14 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
             # Note: akshare sector fund flow doesn't have date column, use today's date
             from datetime import datetime
             standardized['date'] = datetime.now().strftime('%Y-%m-%d')
-            standardized['sector_code'] = raw_df.get('板块代码', raw_df.index).astype(str)
-            standardized['sector_name'] = raw_df['板块名称'].astype(str)
+            standardized['sector_code'] = raw_df.index.astype(str)  # No sector code column, use index
+            standardized['sector_name'] = raw_df['名称'].astype(str)
             standardized['sector_type'] = sector_type
-            standardized['main_net_inflow'] = pd.to_numeric(raw_df['主力净流入-净额'], errors='coerce')
-            standardized['pct_change'] = pd.to_numeric(raw_df['涨跌幅'], errors='coerce')
-            standardized['leading_stock'] = raw_df.get('领涨股', pd.Series([''] * len(raw_df))).astype(str)
-            standardized['leading_stock_pct'] = pd.to_numeric(raw_df.get('领涨股涨跌幅', pd.Series([0.0] * len(raw_df))), errors='coerce')
+            # API returns '今日主力净流入-净额' instead of '主力净流入-净额'
+            standardized['main_net_inflow'] = pd.to_numeric(raw_df['今日主力净流入-净额'], errors='coerce')
+            standardized['pct_change'] = pd.to_numeric(raw_df['今日涨跌幅'], errors='coerce')
+            standardized['leading_stock'] = raw_df.get('今日主力净流入最大股', pd.Series([''] * len(raw_df))).astype(str)
+            standardized['leading_stock_pct'] = 0.0  # Not provided in new API
             
             # Ensure JSON compatibility
             return self.ensure_json_compatible(standardized)
@@ -259,8 +260,9 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
             standardized['rank'] = range(1, len(raw_df) + 1)
             standardized['symbol'] = raw_df['代码'].astype(str).str.zfill(6)
             standardized['name'] = raw_df['名称'].astype(str)
-            standardized['main_net_inflow'] = raw_df['主力净流入-净额'].astype(float)
-            standardized['pct_change'] = raw_df['涨跌幅'].astype(float)
+            # API returns '今日主力净流入-净额' instead of '主力净流入-净额'
+            standardized['main_net_inflow'] = pd.to_numeric(raw_df['今日主力净流入-净额'], errors='coerce')
+            standardized['pct_change'] = pd.to_numeric(raw_df['今日涨跌幅'], errors='coerce')
             
             # Ensure JSON compatibility
             return self.ensure_json_compatible(standardized)
