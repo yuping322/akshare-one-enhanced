@@ -2,7 +2,7 @@
   "source": "eastmoney",
   "module": "northbound",
   "version": "1.0",
-  "last_updated": "2024-01-15",
+  "last_updated": "2024-01-01",
   "mappings": [
     {
       "source_field": "日期",
@@ -18,41 +18,35 @@
     },
     {
       "source_field": "当日成交净买额",
-      "standard_field": "net_buy",
+      "standard_field": "northbound_net_buy",
       "field_type": "net_flow",
       "source_unit": "yi_yuan",
       "target_unit": "yuan",
-      "description": "当日成交净买额（需要从亿元转换为元）"
+      "description": "当日成交净买额（亿元转元）"
     },
     {
       "source_field": "买入成交额",
-      "standard_field": "buy_amount",
+      "standard_field": "northbound_buy_amount",
       "field_type": "amount",
       "source_unit": "yi_yuan",
       "target_unit": "yuan",
-      "description": "买入成交额（需要从亿元转换为元）"
+      "description": "买入成交额（亿元转元）"
     },
     {
       "source_field": "卖出成交额",
-      "standard_field": "sell_amount",
+      "standard_field": "northbound_sell_amount",
       "field_type": "amount",
       "source_unit": "yi_yuan",
       "target_unit": "yuan",
-      "description": "卖出成交额（需要从亿元转换为元）"
+      "description": "卖出成交额（亿元转元）"
     },
     {
       "source_field": "当日余额",
-      "standard_field": "balance",
+      "standard_field": "northbound_balance",
       "field_type": "balance",
       "source_unit": "yi_yuan",
       "target_unit": "yuan",
-      "description": "当日余额（需要从亿元转换为元）"
-    },
-    {
-      "source_field": "代码",
-      "standard_field": "symbol",
-      "field_type": "symbol",
-      "description": "股票代码"
+      "description": "当日余额（亿元转元）"
     },
     {
       "source_field": "股票代码",
@@ -73,64 +67,18 @@
       "description": "持股数量（股）"
     },
     {
-      "source_field": "持股数量(股)",
-      "standard_field": "holdings_shares",
-      "field_type": "shares",
-      "description": "持股数量（股）"
-    },
-    {
       "source_field": "持股市值",
       "standard_field": "holdings_value",
       "field_type": "value",
       "source_unit": "yuan",
       "target_unit": "yuan",
-      "description": "持股市值"
-    },
-    {
-      "source_field": "持股市值(元)",
-      "standard_field": "holdings_value",
-      "field_type": "value",
-      "source_unit": "yuan",
-      "target_unit": "yuan",
-      "description": "持股市值"
-    },
-    {
-      "source_field": "持股占比",
-      "standard_field": "holdings_ratio",
-      "field_type": "ratio",
-      "description": "持股占比"
-    },
-    {
-      "source_field": "持股占比(%)",
-      "standard_field": "holdings_ratio",
-      "field_type": "ratio",
-      "description": "持股占比"
+      "description": "持股市值（元）"
     },
     {
       "source_field": "持股数量占发行股百分比",
       "standard_field": "holdings_ratio",
       "field_type": "ratio",
       "description": "持股数量占发行股百分比"
-    },
-    {
-      "source_field": "持股变化",
-      "standard_field": "holdings_change",
-      "field_type": "shares",
-      "description": "持股变化（股）"
-    },
-    {
-      "source_field": "持股数量增减",
-      "standard_field": "holdings_change",
-      "field_type": "shares",
-      "description": "持股数量增减（股）"
-    },
-    {
-      "source_field": "持股市值变化-1日",
-      "standard_field": "holdings_value_change_1d",
-      "field_type": "value",
-      "source_unit": "yuan",
-      "target_unit": "yuan",
-      "description": "持股市值变化-1日"
     }
   ]
 }

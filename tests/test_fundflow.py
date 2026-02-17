@@ -162,10 +162,10 @@ class TestDataStandardization:
         result = provider.get_stock_fund_flow('600000', '2024-01-01', '2024-01-31')
         
         expected_columns = [
-            'date', 'symbol', 'close', 'pct_change',
-            'main_net_inflow', 'main_net_inflow_rate',
-            'super_large_net_inflow', 'large_net_inflow',
-            'medium_net_inflow', 'small_net_inflow'
+            'date', 'symbol', 'close_price', 'pct_change',
+            'fundflow_main_net_inflow', 'fundflow_main_net_inflow_rate',
+            'fundflow_super_large_net_inflow', 'fundflow_large_net_inflow',
+            'fundflow_medium_net_inflow', 'fundflow_small_net_inflow'
         ]
         assert list(result.columns) == expected_columns
     
@@ -311,10 +311,10 @@ class TestEmptyResults:
         assert result.empty
         
         expected_columns = [
-            'date', 'symbol', 'close', 'pct_change',
-            'main_net_inflow', 'main_net_inflow_rate',
-            'super_large_net_inflow', 'large_net_inflow',
-            'medium_net_inflow', 'small_net_inflow'
+            'date', 'symbol', 'close_price', 'pct_change',
+            'fundflow_main_net_inflow', 'fundflow_main_net_inflow_rate',
+            'fundflow_super_large_net_inflow', 'fundflow_large_net_inflow',
+            'fundflow_medium_net_inflow', 'fundflow_small_net_inflow'
         ]
         assert list(result.columns) == expected_columns
     

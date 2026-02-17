@@ -290,12 +290,20 @@ class TestProviderWorkflow:
             'date': pd.to_datetime(['2024-01-01', '2024-01-02', '2024-01-03'])
         })
         
+        # Default standardize_data just returns the DataFrame unchanged
         result = provider.standardize_data(df)
         
-        # Should apply JSON compatibility
-        assert result['value'][1] is None
-        assert result['value'][2] is None
-        assert isinstance(result['date'][0], str)
+        # The default implementation does not apply JSON compatibility
+        # That is done by ensure_json_compatible which is called in get_data
+        # Just verify the DataFrame is returned
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 3
+        
+        # Test ensure_json_compatible separately for JSON compatibility
+        json_result = provider.ensure_json_compatible(df.copy())
+        assert json_result['value'][1] is None
+        assert json_result['value'][2] is None
+        assert isinstance(json_result['date'][0], str)
 
 
 class TestEdgeCases:

@@ -8,6 +8,7 @@ It wraps akshare functions and standardizes the output format.
 import pandas as pd
 
 from .base import FundFlowProvider
+from ..field_naming import FieldType
 
 
 class EastmoneyFundFlowProvider(FundFlowProvider):
@@ -41,10 +42,10 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
         end_date: str
     ) -> pd.DataFrame:
         """
-        Get individual stock fund flow data from Eastmoney.
+        Get individual stock fund flow data from Eastmoney with full standardization.
         
-        This method wraps akshare.stock_individual_fund_flow() and standardizes
-        the output format.
+        This method uses the enhanced standardization framework to ensure
+        consistent field naming and data formatting.
         
         Args:
             symbol: Stock symbol (6-digit code)
@@ -52,24 +53,10 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
             end_date: End date (YYYY-MM-DD)
         
         Returns:
-            pd.DataFrame: Standardized fund flow data with columns:
-                - date: Date (YYYY-MM-DD)
-                - symbol: Stock symbol
-                - close: Closing price
-                - pct_change: Price change percentage
-                - main_net_inflow: Main fund net inflow
-                - main_net_inflow_rate: Main fund net inflow rate
-                - super_large_net_inflow: Super large order net inflow
-                - large_net_inflow: Large order net inflow
-                - medium_net_inflow: Medium order net inflow
-                - small_net_inflow: Small order net inflow
+            pd.DataFrame: Fully standardized fund flow data with validated field names
         
         Raises:
             ValueError: If parameters are invalid
-        
-        Example:
-            >>> provider = EastmoneyFundFlowProvider()
-            >>> df = provider.get_stock_fund_flow('600000', '2024-01-01', '2024-01-31')
         """
         # Validate parameters
         self.validate_symbol(symbol)
@@ -85,35 +72,85 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
             raw_df = ak.stock_individual_fund_flow(stock=symbol, market=market)
             
             if raw_df.empty:
+                # Return empty DataFrame with standardized columns
                 return self.create_empty_dataframe([
-                    'date', 'symbol', 'close', 'pct_change',
-                    'main_net_inflow', 'main_net_inflow_rate',
-                    'super_large_net_inflow', 'large_net_inflow',
-                    'medium_net_inflow', 'small_net_inflow'
+                    'date', 'symbol', 'close_price', 'pct_change',
+                    'fundflow_main_net_inflow', 'fundflow_main_net_inflow_rate',
+                    'fundflow_super_large_net_inflow', 'fundflow_large_net_inflow',
+                    'fundflow_medium_net_inflow', 'fundflow_small_net_inflow'
                 ])
             
-            # Standardize the data
-            standardized = pd.DataFrame()
-            standardized['date'] = pd.to_datetime(raw_df['日期']).dt.strftime('%Y-%m-%d')
-            standardized['symbol'] = symbol
-            standardized['close'] = raw_df['收盘价'].astype(float)
-            standardized['pct_change'] = raw_df['涨跌幅'].astype(float)
-            standardized['main_net_inflow'] = raw_df['主力净流入-净额'].astype(float)
-            standardized['main_net_inflow_rate'] = raw_df['主力净流入-净占比'].astype(float)
-            standardized['super_large_net_inflow'] = raw_df['超大单净流入-净额'].astype(float)
-            standardized['large_net_inflow'] = raw_df['大单净流入-净额'].astype(float)
-            standardized['medium_net_inflow'] = raw_df['中单净流入-净额'].astype(float)
-            standardized['small_net_inflow'] = raw_df['小单净流入-净额'].astype(float)
+            # Use enhanced standardization framework
+            standardized_df = self.get_data_with_full_standardization(
+                apply_field_validation=True,
+                field_types={
+                    'fundflow_main_net_inflow': FieldType.NET_FLOW,
+                    'fundflow_main_net_inflow_rate': FieldType.RATE,
+                    'fundflow_super_large_net_inflow': FieldType.NET_FLOW,
+                    'fundflow_large_net_inflow': FieldType.NET_FLOW,
+                    'fundflow_medium_net_inflow': FieldType.NET_FLOW,
+                    'fundflow_small_net_inflow': FieldType.NET_FLOW
+                },
+                amount_fields={
+                    'fundflow_main_net_inflow': 'yuan',
+                    'fundflow_super_large_net_inflow': 'yuan',
+                    'fundflow_large_net_inflow': 'yuan',
+                    'fundflow_medium_net_inflow': 'yuan',
+                    'fundflow_small_net_inflow': 'yuan'
+                }
+            )
             
-            # Filter by date range
-            mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
-            result = standardized[mask].reset_index(drop=True)
-            
-            # Ensure JSON compatibility
-            return self.ensure_json_compatible(result)
+            # Apply custom field mapping for fund flow data
+            if not standardized_df.empty:
+                # Map raw data to standardized fields
+                standardized_df['date'] = pd.to_datetime(raw_df['日期']).dt.strftime('%Y-%m-%d')
+                standardized_df['symbol'] = symbol
+                standardized_df['close_price'] = raw_df['收盘价'].astype(float)
+                standardized_df['pct_change'] = raw_df['涨跌幅'].astype(float)
+                standardized_df['fundflow_main_net_inflow'] = raw_df['主力净流入-净额'].astype(float)
+                standardized_df['fundflow_main_net_inflow_rate'] = raw_df['主力净流入-净占比'].astype(float)
+                standardized_df['fundflow_super_large_net_inflow'] = raw_df['超大单净流入-净额'].astype(float)
+                standardized_df['fundflow_large_net_inflow'] = raw_df['大单净流入-净额'].astype(float)
+                standardized_df['fundflow_medium_net_inflow'] = raw_df['中单净流入-净额'].astype(float)
+                standardized_df['fundflow_small_net_inflow'] = raw_df['小单净流入-净额'].astype(float)
+                
+                # Filter by date range
+                mask = (standardized_df['date'] >= start_date) & (standardized_df['date'] <= end_date)
+                result = standardized_df[mask].reset_index(drop=True)
+                
+                return self.ensure_json_compatible(result)
+            else:
+                # Fallback to manual standardization if framework fails
+                return self._manual_standardize_fundflow(raw_df, symbol, start_date, end_date)
             
         except Exception as e:
             raise RuntimeError(f"Failed to fetch stock fund flow data: {e}") from e
+    
+    def _manual_standardize_fundflow(
+        self, 
+        raw_df: pd.DataFrame, 
+        symbol: str, 
+        start_date: str, 
+        end_date: str
+    ) -> pd.DataFrame:
+        """Manual standardization fallback method"""
+        standardized = pd.DataFrame()
+        standardized['date'] = pd.to_datetime(raw_df['日期']).dt.strftime('%Y-%m-%d')
+        standardized['symbol'] = symbol
+        standardized['close_price'] = raw_df['收盘价'].astype(float)
+        standardized['pct_change'] = raw_df['涨跌幅'].astype(float)
+        standardized['fundflow_main_net_inflow'] = raw_df['主力净流入-净额'].astype(float)
+        standardized['fundflow_main_net_inflow_rate'] = raw_df['主力净流入-净占比'].astype(float)
+        standardized['fundflow_super_large_net_inflow'] = raw_df['超大单净流入-净额'].astype(float)
+        standardized['fundflow_large_net_inflow'] = raw_df['大单净流入-净额'].astype(float)
+        standardized['fundflow_medium_net_inflow'] = raw_df['中单净流入-净额'].astype(float)
+        standardized['fundflow_small_net_inflow'] = raw_df['小单净流入-净额'].astype(float)
+        
+        # Filter by date range
+        mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
+        result = standardized[mask].reset_index(drop=True)
+        
+        return self.ensure_json_compatible(result)
     
     def get_sector_fund_flow(
         self,
@@ -163,10 +200,10 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
             standardized['sector_code'] = raw_df.get('板块代码', raw_df.index).astype(str)
             standardized['sector_name'] = raw_df['板块名称'].astype(str)
             standardized['sector_type'] = sector_type
-            standardized['main_net_inflow'] = raw_df['主力净流入-净额'].astype(float)
-            standardized['pct_change'] = raw_df['涨跌幅'].astype(float)
-            standardized['leading_stock'] = raw_df.get('领涨股', '').astype(str)
-            standardized['leading_stock_pct'] = raw_df.get('领涨股涨跌幅', 0.0).astype(float)
+            standardized['main_net_inflow'] = pd.to_numeric(raw_df['主力净流入-净额'], errors='coerce')
+            standardized['pct_change'] = pd.to_numeric(raw_df['涨跌幅'], errors='coerce')
+            standardized['leading_stock'] = raw_df.get('领涨股', pd.Series([''] * len(raw_df))).astype(str)
+            standardized['leading_stock_pct'] = pd.to_numeric(raw_df.get('领涨股涨跌幅', pd.Series([0.0] * len(raw_df))), errors='coerce')
             
             # Ensure JSON compatibility
             return self.ensure_json_compatible(standardized)
@@ -256,7 +293,7 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
             standardized = pd.DataFrame()
             standardized['sector_code'] = raw_df['板块代码'].astype(str)
             standardized['sector_name'] = raw_df['板块名称'].astype(str)
-            standardized['constituent_count'] = raw_df.get('公司数量', 0).astype(int)
+            standardized['constituent_count'] = pd.to_numeric(raw_df.get('公司数量', pd.Series([0] * len(raw_df))), errors='coerce').astype(int)
             
             # Ensure JSON compatibility
             return self.ensure_json_compatible(standardized)
@@ -332,7 +369,7 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
             standardized = pd.DataFrame()
             standardized['sector_code'] = raw_df['板块代码'].astype(str)
             standardized['sector_name'] = raw_df['板块名称'].astype(str)
-            standardized['constituent_count'] = raw_df.get('公司数量', 0).astype(int)
+            standardized['constituent_count'] = pd.to_numeric(raw_df.get('公司数量', pd.Series([0] * len(raw_df))), errors='coerce').astype(int)
             
             # Ensure JSON compatibility
             return self.ensure_json_compatible(standardized)

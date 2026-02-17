@@ -227,10 +227,10 @@ class BaseProvider(ABC):
         
         # 1. Handle NaN and Infinity in numeric columns
         for col in df.select_dtypes(include=['float64', 'float32', 'float16']).columns:
-            # Replace NaN with None
-            df[col] = df[col].replace([np.nan], None)
-            # Replace Infinity with None
-            df[col] = df[col].replace([np.inf, -np.inf], None)
+            # Replace Infinity with NaN first
+            df[col] = df[col].replace([np.inf, -np.inf], np.nan)
+            # Replace NaN with None using replace dict (this works correctly)
+            df[col] = df[col].replace({np.nan: None})
         
         # 2. Convert datetime columns to strings
         for col in df.select_dtypes(include=['datetime64']).columns:
@@ -469,28 +469,139 @@ class BaseProvider(ABC):
         Standardize data format (field names, types, etc.).
         
         This method should be overridden by subclasses to implement
-        specific standardization logic.
+        specific standardization logic including field type mapping.
         
         Args:
-            df: Raw DataFrame
+            df: Raw DataFrame (after field mapping)
             
         Returns:
             pd.DataFrame: Standardized DataFrame
         """
-        return self.ensure_json_compatible(df)
+        # Default implementation - subclasses should override with specific field types
+        return df
+
+    def apply_field_standardization(
+        self, 
+        df: pd.DataFrame, 
+        field_types: Dict[str, FieldType]
+    ) -> pd.DataFrame:
+        """
+        Apply field name standardization based on field types.
+        
+        Args:
+            df: DataFrame with standard field names
+            field_types: Mapping of field names to their types for validation
+            
+        Returns:
+            DataFrame with validated field names
+        """
+        return self.field_standardizer.standardize_dataframe(df, field_types)
+
+    def apply_amount_conversion(
+        self, 
+        df: pd.DataFrame, 
+        amount_fields: Dict[str, str]
+    ) -> pd.DataFrame:
+        """
+        Apply amount unit conversion.
+        
+        Args:
+            df: DataFrame with amount fields
+            amount_fields: Mapping of field names to their source units
+                          e.g., {'balance': 'yi_yuan', 'amount': 'wan_yuan'}
+        
+        Returns:
+            DataFrame with amounts converted to yuan
+        """
+        return self.unit_converter.convert_dataframe_amounts(df, amount_fields)
     
-    def get_data(self) -> pd.DataFrame:
+    def get_data(self, apply_standardization: bool = True) -> pd.DataFrame:
         """
         Main method to fetch and standardize data.
         
         This method orchestrates the data fetching and standardization process:
         1. Fetch raw data
-        2. Standardize data format
-        3. Ensure JSON compatibility
+        2. Apply field mapping from source fields to standard fields
+        3. Apply field name standardization
+        4. Apply amount unit conversion
+        5. Ensure JSON compatibility
+        
+        Args:
+            apply_standardization: Whether to apply full standardization pipeline.
+                                 Set to False to bypass standardization and return raw data.
         
         Returns:
             pd.DataFrame: Standardized, JSON-compatible data
         """
         raw_df = self.fetch_data()
-        standardized_df = self.standardize_data(raw_df)
+        
+        if not apply_standardization:
+            return self.ensure_json_compatible(raw_df)
+        
+        # Get module name for field mapping
+        module_name = self.__class__.__module__.split('.')[-2]
+        source_name = self.get_source_name()
+        
+        # Apply field mapping from source fields to standard fields
+        mapped_df = self.map_source_fields(raw_df, source_name)
+        
+        # Apply standardization (this will be overridden by subclasses with specific field types)
+        standardized_df = self.standardize_data(mapped_df)
+        
+        # Ensure JSON compatibility
         return self.ensure_json_compatible(standardized_df)
+    
+    def get_data_with_full_standardization(
+        self, 
+        apply_field_validation: bool = True,
+        field_types: Optional[Dict[str, FieldType]] = None,
+        amount_fields: Optional[Dict[str, str]] = None
+    ) -> pd.DataFrame:
+        """
+        Enhanced method to fetch and apply full standardization pipeline.
+        
+        This method applies a complete standardization pipeline:
+        1. Fetch raw data
+        2. Apply field mapping from source fields to standard fields
+        3. Apply field name standardization and validation
+        4. Apply amount unit conversion
+        5. Ensure JSON compatibility
+        
+        Args:
+            apply_field_validation: Whether to apply field name validation
+            field_types: Mapping of field names to their types for validation
+                        (required if apply_field_validation is True)
+            amount_fields: Mapping of field names to their source units for conversion
+                          e.g., {'balance': 'yi_yuan', 'amount': 'wan_yuan'}
+        
+        Returns:
+            pd.DataFrame: Fully standardized, JSON-compatible data
+        """
+        raw_df = self.fetch_data()
+        
+        # Get module name for field mapping
+        module_name = self.__class__.__module__.split('.')[-2]
+        source_name = self.get_source_name()
+        
+        # Apply field mapping from source fields to standard fields
+        mapped_df = self.map_source_fields(raw_df, source_name)
+        
+        # Apply field name standardization and validation if requested
+        if apply_field_validation:
+            if field_types is None:
+                raise ValueError("field_types must be provided when apply_field_validation is True")
+            validated_df = self.apply_field_standardization(mapped_df, field_types)
+        else:
+            validated_df = mapped_df
+        
+        # Apply amount unit conversion if specified
+        if amount_fields:
+            converted_df = self.apply_amount_conversion(validated_df, amount_fields)
+        else:
+            converted_df = validated_df
+        
+        # Apply any additional standardization from subclass
+        final_df = self.standardize_data(converted_df)
+        
+        # Ensure JSON compatibility
+        return self.ensure_json_compatible(final_df)

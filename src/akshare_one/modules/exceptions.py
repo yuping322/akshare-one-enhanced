@@ -23,7 +23,7 @@ class MarketDataError(Exception):
 
 
 class InvalidParameterError(MarketDataError):
-    """
+    r"""
     Exception raised when invalid parameters are provided to a data provider.
     
     This includes:

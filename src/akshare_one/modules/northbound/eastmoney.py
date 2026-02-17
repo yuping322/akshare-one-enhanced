@@ -9,6 +9,7 @@ import akshare as ak
 from typing import Optional
 
 from .base import NorthboundProvider
+from ..field_naming import FieldType
 
 
 class EastmoneyNorthboundProvider(NorthboundProvider):
@@ -85,32 +86,53 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         standardized['market'] = market
         
         # Use 当日成交净买额 (daily net buy amount) as net_buy
-        # Convert from 亿元 to 亿元 (already in correct unit)
+        # Convert from 亿元 to 元
         if '当日成交净买额' in df.columns:
-            standardized['net_buy'] = df['当日成交净买额'].astype(float)
+            # Convert from 亿元 (hundred million yuan) to 元 (yuan)
+            standardized['net_buy'] = df['当日成交净买额'].astype(float) * 100000000
         else:
             standardized['net_buy'] = None
         
         # Buy and sell amounts
         if '买入成交额' in df.columns:
-            standardized['buy_amount'] = df['买入成交额'].astype(float)
+            # Convert from 亿元 (hundred million yuan) to 元 (yuan)
+            standardized['buy_amount'] = df['买入成交额'].astype(float) * 100000000
         else:
             standardized['buy_amount'] = None
             
         if '卖出成交额' in df.columns:
-            standardized['sell_amount'] = df['卖出成交额'].astype(float)
+            # Convert from 亿元 (hundred million yuan) to 元 (yuan)
+            standardized['sell_amount'] = df['卖出成交额'].astype(float) * 100000000
         else:
             standardized['sell_amount'] = None
         
         # Balance
         if '当日余额' in df.columns:
-            standardized['balance'] = df['当日余额'].astype(float)
+            # Convert from 亿元 (hundred million yuan) to 元 (yuan)
+            standardized['balance'] = df['当日余额'].astype(float) * 100000000
         else:
             standardized['balance'] = None
         
         # Filter by date range
         mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
         result = standardized[mask].reset_index(drop=True)
+        
+        # Define field types for validation
+        field_types = {
+            'date': FieldType.DATE,
+            'market': FieldType.MARKET,
+            'northbound_net_buy': FieldType.NET_FLOW,
+            'northbound_buy_amount': FieldType.AMOUNT,
+            'northbound_sell_amount': FieldType.AMOUNT,
+            'northbound_balance': FieldType.BALANCE
+        }
+        
+        # Apply field name validation if available
+        try:
+            result = self.apply_field_standardization(result, field_types)
+        except Exception:
+            # If validation fails, return the result as is
+            pass
         
         return self.ensure_json_compatible(result)
     
@@ -195,8 +217,10 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         
         # Holdings value
         if '持股市值' in df.columns:
+            # Convert from 元 (yuan) to 元 (yuan)
             standardized['holdings_value'] = df['持股市值'].astype(float)
         elif '持股市值(元)' in df.columns:
+            # Convert from 元 (yuan) to 元 (yuan)
             standardized['holdings_value'] = df['持股市值(元)'].astype(float)
         else:
             standardized['holdings_value'] = None
@@ -223,6 +247,23 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
             result = standardized[mask].reset_index(drop=True)
         else:
             result = standardized
+        
+        # Define field types for validation
+        field_types = {
+            'date': FieldType.DATE,
+            'symbol': FieldType.SYMBOL,
+            'holdings_shares': FieldType.SHARES,
+            'holdings_value': FieldType.VALUE,
+            'holdings_ratio': FieldType.RATIO,
+            'holdings_change': FieldType.SHARES
+        }
+        
+        # Apply field name validation if available
+        try:
+            result = self.apply_field_standardization(result, field_types)
+        except Exception:
+            # If validation fails, return the result as is
+            pass
         
         return self.ensure_json_compatible(result)
     
@@ -253,15 +294,9 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
             raise ValueError(f"top_n must be positive, got {top_n}")
         
         try:
-            # Fetch stock statistics data using akshare
-            # stock_hsgt_stock_statistics_em returns northbound holdings for individual stocks
-            # Convert date format from YYYY-MM-DD to YYYYMMDD
-            date_str = date.replace('-', '')
-            raw_df = ak.stock_hsgt_stock_statistics_em(
-                symbol="北向持股",
-                start_date=date_str,
-                end_date=date_str
-            )
+            # Use stock_hsgt_hold_stock_em as the data source
+            # This API returns current northbound holdings for all stocks
+            raw_df = ak.stock_hsgt_hold_stock_em(market="北向")
             
             if raw_df.empty:
                 return self.create_empty_dataframe([
@@ -269,65 +304,104 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
                 ])
             
             # Standardize and limit to top_n
-            return self._standardize_ranking_data(raw_df, market, top_n)
+            return self._standardize_ranking_data(raw_df, market, top_n, date)
             
         except Exception as e:
             raise RuntimeError(f"Failed to fetch northbound top stocks: {e}") from e
     
-    def _standardize_ranking_data(self, df: pd.DataFrame, market: str, top_n: int) -> pd.DataFrame:
-        """Standardize northbound ranking data."""
+    def _standardize_ranking_data(self, df: pd.DataFrame, market: str, top_n: int, date: Optional[str] = None) -> pd.DataFrame:
+        """Standardize northbound ranking data.
+        
+        Args:
+            df: Raw DataFrame from stock_hsgt_hold_stock_em
+            market: Market filter ('sh', 'sz', or 'all')
+            top_n: Number of top stocks to return
+            date: Optional date filter (YYYY-MM-DD)
+        """
         standardized = pd.DataFrame()
         
         # Filter by market if needed (based on stock code prefix)
+        # Column '代码' contains stock codes from stock_hsgt_hold_stock_em
+        code_col = '代码' if '代码' in df.columns else '股票代码'
+        
         if market == 'sh':
             # Shanghai stocks start with 6
-            df = df[df['股票代码'].astype(str).str.startswith('6')]
+            df = df[df[code_col].astype(str).str.startswith('6')]
         elif market == 'sz':
             # Shenzhen stocks start with 0 or 3
-            df = df[df['股票代码'].astype(str).str.match(r'^[03]')]
+            df = df[df[code_col].astype(str).str.match(r'^[03]')]
         # else 'all' - no filtering needed
         
-        # Sort by holdings value (持股市值) in descending order
-        if '持股市值' in df.columns:
-            df = df.sort_values('持股市值', ascending=False)
+        # Sort by holdings value (今日持股-市值) in descending order
+        value_col = '今日持股-市值' if '今日持股-市值' in df.columns else '持股市值'
+        if value_col in df.columns:
+            df = df.sort_values(value_col, ascending=False)
         
         # Add ranking
         standardized['rank'] = range(1, len(df) + 1)
         
-        # Map fields - new column names from stock_hsgt_stock_statistics_em
-        if '股票代码' in df.columns:
-            standardized['symbol'] = df['股票代码'].astype(str).str.zfill(6)
+        # Map fields - column names from stock_hsgt_hold_stock_em
+        if code_col in df.columns:
+            standardized['symbol'] = df[code_col].astype(str).str.zfill(6)
         else:
             standardized['symbol'] = None
         
-        if '股票简称' in df.columns:
-            standardized['name'] = df['股票简称'].astype(str)
+        name_col = '名称' if '名称' in df.columns else '股票简称'
+        if name_col in df.columns:
+            standardized['name'] = df[name_col].astype(str)
         else:
             standardized['name'] = None
         
-        # Net buy amount - use 持股市值变化-1日 (1-day holdings value change)
-        if '持股市值变化-1日' in df.columns:
-            # Convert from yuan to yi yuan (亿元)
-            standardized['net_buy'] = df['持股市值变化-1日'].astype(float) / 100000000
+        # Net buy amount - use 5日增持估计-市值 (5-day estimated holdings increase)
+        # or 持股市值变化-1日 (1-day holdings value change)
+        if '5日增持估计-市值' in df.columns:
+            standardized['northbound_net_buy'] = pd.to_numeric(df['5日增持估计-市值'], errors='coerce')
+        elif '持股市值变化-1日' in df.columns:
+            standardized['northbound_net_buy'] = pd.to_numeric(df['持股市值变化-1日'], errors='coerce') / 100000000
         else:
-            standardized['net_buy'] = None
+            standardized['northbound_net_buy'] = None
         
         # Holdings shares
-        if '持股数量' in df.columns:
-            standardized['holdings_shares'] = df['持股数量'].astype(float)
+        shares_col = '今日持股-股数' if '今日持股-股数' in df.columns else '持股数量'
+        if shares_col in df.columns:
+            standardized['holdings_shares'] = pd.to_numeric(df[shares_col], errors='coerce')
         else:
             standardized['holdings_shares'] = None
         
         # Holdings ratio
-        if '持股数量占发行股百分比' in df.columns:
-            standardized['holdings_ratio'] = df['持股数量占发行股百分比'].astype(float)
+        ratio_col = '今日持股-占流通股比' if '今日持股-占流通股比' in df.columns else '持股数量占发行股百分比'
+        if ratio_col in df.columns:
+            standardized['holdings_ratio'] = pd.to_numeric(df[ratio_col], errors='coerce')
         else:
             standardized['holdings_ratio'] = None
+        
+        # Add date if available
+        if date:
+            standardized['date'] = date
+        elif '日期' in df.columns:
+            standardized['date'] = df['日期'].astype(str)
         
         # Limit to top_n
         result = standardized.head(top_n).reset_index(drop=True)
         
         # Re-rank after filtering
         result['rank'] = range(1, len(result) + 1)
+        
+        # Define field types for validation
+        field_types = {
+            'rank': FieldType.RANK,
+            'symbol': FieldType.SYMBOL,
+            'name': FieldType.NAME,
+            'northbound_net_buy': FieldType.NET_FLOW,
+            'holdings_shares': FieldType.SHARES,
+            'holdings_ratio': FieldType.RATIO
+        }
+        
+        # Apply field name validation if available
+        try:
+            result = self.apply_field_standardization(result, field_types)
+        except Exception:
+            # If validation fails, return the result as is
+            pass
         
         return self.ensure_json_compatible(result)

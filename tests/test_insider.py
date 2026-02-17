@@ -32,6 +32,9 @@ class TestInnerTradeData:
     def test_transaction_date_range(self):
         """测试交易日期范围"""
         df = get_inner_trade_data(symbol="600405")
+        if df.empty:
+            pytest.skip("No insider trade data available for symbol 600405")
+        
         now = pd.Timestamp.now(tz="UTC")
         earliest_reasonable = pd.Timestamp("1970-01-01", tz="UTC")
 

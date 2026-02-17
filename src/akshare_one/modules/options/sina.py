@@ -1,3 +1,15 @@
+"""
+Sina/Eastmoney options data provider.
+
+This module implements the options data provider using option_current_em as the data source.
+Note: The original sina APIs (option_sse_list_sina, etc.) are broken, so we use eastmoney APIs.
+"""
+
+import numpy as np
+import re
+from datetime import datetime
+from typing import Optional
+
 import akshare as ak
 import pandas as pd
 
@@ -5,15 +17,33 @@ from ..cache import cache
 from .base import OptionsDataProvider
 
 
-class SinaOptionsProvider(OptionsDataProvider):
-    """Adapter for Sina/EastMoney options data API
+# Mapping from underlying symbol to name patterns
+UNDERLYING_PATTERNS = {
+    "510300": ["300ETF", "沪深300ETF"],
+    "510050": ["50ETF", "上证50ETF"],
+    "510500": ["500ETF", "中证500ETF"],
+    "000300": ["沪深300"],
+    "000016": ["上证50"],
+    "000905": ["中证500"],
+}
 
-    Note: Options data from akshare uses multiple API calls:
-    - option_sse_list_sina: Get expiration dates
-    - option_sse_codes_sina: Get option codes for a specific expiration
-    - option_sse_spot_price_sina: Get realtime data for a specific option
-    - option_sse_daily_sina: Get historical data for a specific option
+
+class SinaOptionsProvider(OptionsDataProvider):
+    """Adapter for Sina/EastMoney options data API.
+
+    Note: Uses option_current_em from eastmoney as the primary data source
+    since the original sina APIs are broken.
     """
+
+    def ensure_json_compatible(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Ensure DataFrame is JSON compatible by replacing NaN/Infinity with None."""
+        df = df.copy()
+        for col in df.columns:
+            if df[col].dtype in ['float64', 'float32', 'int64', 'int32']:
+                df[col] = df[col].replace({np.nan: None, np.inf: None, -np.inf: None})
+            elif df[col].dtype == 'object':
+                df[col] = df[col].replace({np.nan: None})
+        return df
 
     @cache(
         "options_chain_cache",
@@ -38,68 +68,53 @@ class SinaOptionsProvider(OptionsDataProvider):
             - implied_volatility: 隐含波动率
         """
         try:
-            # Get expiration dates
-            expirations = ak.option_sse_list_sina(symbol=self.underlying_symbol, exchange="null")
+            # Get all options data from eastmoney
+            raw_df = ak.option_current_em()
 
-            if not expirations:
+            if raw_df.empty:
+                raise ValueError(
+                    f"No options data available"
+                )
+
+            # Filter by underlying symbol
+            patterns = UNDERLYING_PATTERNS.get(self.underlying_symbol, [self.underlying_symbol])
+            pattern_regex = "|".join(patterns)
+            df = raw_df[raw_df['名称'].str.contains(pattern_regex, na=False, regex=True)].copy()
+
+            if df.empty:
                 raise ValueError(
                     f"No options found for underlying symbol: {self.underlying_symbol}"
                 )
 
-            # Get option codes for all expirations
-            all_options = []
-            for expiration in expirations:
-                try:
-                    # Get call options
-                    call_codes = ak.option_sse_codes_sina(
-                        symbol="看涨期权",
-                        trade_date=expiration,
-                        underlying=self.underlying_symbol,
-                    )
-                    if not call_codes.empty:
-                        call_codes["option_type"] = "call"
-                        call_codes["expiration"] = expiration
-                        all_options.append(call_codes)
-
-                    # Get put options
-                    put_codes = ak.option_sse_codes_sina(
-                        symbol="看跌期权",
-                        trade_date=expiration,
-                        underlying=self.underlying_symbol,
-                    )
-                    if not put_codes.empty:
-                        put_codes["option_type"] = "put"
-                        put_codes["expiration"] = expiration
-                        all_options.append(put_codes)
-                except Exception:
-                    # Continue with other expirations if one fails
-                    continue
-
-            if not all_options:
-                raise ValueError(
-                    f"No options found for underlying symbol: {self.underlying_symbol}"
-                )
-
-            # Combine all options
-            df = pd.concat(all_options, ignore_index=True)
+            # Parse option info from names
+            df['option_type'] = df['名称'].apply(self._parse_option_type)
+            df['expiration'] = df['名称'].apply(self._parse_expiration)
+            df['underlying'] = self.underlying_symbol
 
             # Rename columns
-            df = df.rename(columns={"期权代码": "symbol"})
+            df = df.rename(columns={
+                '代码': 'symbol',
+                '名称': 'name',
+                '最新价': 'price',
+                '涨跌额': 'change',
+                '涨跌幅': 'pct_change',
+                '成交量': 'volume',
+                '持仓量': 'open_interest',
+                '行权价': 'strike',
+            })
 
-            # Add underlying symbol
-            df["underlying"] = self.underlying_symbol
+            # Add placeholder for implied volatility
+            df['implied_volatility'] = None
 
-            # Add placeholder columns for data that requires additional API calls
-            df["name"] = ""
-            df["strike"] = None
-            df["price"] = None
-            df["change"] = None
-            df["pct_change"] = None
-            df["volume"] = None
-            df["open_interest"] = None
-            df["implied_volatility"] = None
+            # Select and order columns
+            standard_columns = [
+                'underlying', 'symbol', 'name', 'option_type', 'strike',
+                'expiration', 'price', 'change', 'pct_change', 'volume',
+                'open_interest', 'implied_volatility'
+            ]
 
-            return self._select_options_columns(df)
+            result = df[[col for col in standard_columns if col in df.columns]].copy()
+            return self.ensure_json_compatible(result)
         except Exception as e:
             raise ValueError(f"Failed to fetch options chain: {str(e)}") from e
 
@@ -126,58 +141,19 @@ class SinaOptionsProvider(OptionsDataProvider):
             - iv: 隐含波动率
         """
         try:
+            # Get all options data from eastmoney
+            raw_df = ak.option_current_em()
+
             if not symbol:
                 # Get all options for the underlying
-                # First get the option chain
-                chain_df = self.get_options_chain()
-                if chain_df.empty:
-                    return pd.DataFrame(
-                        columns=[
-                            "symbol",
-                            "underlying",
-                            "price",
-                            "change",
-                            "pct_change",
-                            "timestamp",
-                            "volume",
-                            "open_interest",
-                            "iv",
-                        ]
-                    )
+                patterns = UNDERLYING_PATTERNS.get(self.underlying_symbol, [self.underlying_symbol])
+                pattern_regex = "|".join(patterns)
+                df = raw_df[raw_df['名称'].str.contains(pattern_regex, na=False, regex=True)].copy()
+            else:
+                # Get specific option by symbol
+                df = raw_df[raw_df['代码'] == symbol].copy()
 
-                # Get realtime data for each option
-                all_realtime = []
-                for option_symbol in chain_df["symbol"].tolist():
-                    try:
-                        raw_df = ak.option_sse_spot_price_sina(symbol=option_symbol)
-                        if not raw_df.empty:
-                            realtime_df = self._clean_single_option(raw_df, option_symbol)
-                            all_realtime.append(realtime_df)
-                    except Exception:
-                        # Skip options that fail to fetch
-                        continue
-
-                if not all_realtime:
-                    return pd.DataFrame(
-                        columns=[
-                            "symbol",
-                            "underlying",
-                            "price",
-                            "change",
-                            "pct_change",
-                            "timestamp",
-                            "volume",
-                            "open_interest",
-                            "iv",
-                        ]
-                    )
-
-                return pd.concat(all_realtime, ignore_index=True)
-
-            # Get specific option data
-            raw_df = ak.option_sse_spot_price_sina(symbol=symbol)
-
-            if raw_df.empty:
+            if df.empty:
                 return pd.DataFrame(
                     columns=[
                         "symbol",
@@ -192,7 +168,28 @@ class SinaOptionsProvider(OptionsDataProvider):
                     ]
                 )
 
-            return self._clean_single_option(raw_df, symbol)
+            # Rename columns
+            df = df.rename(columns={
+                '代码': 'symbol',
+                '最新价': 'price',
+                '涨跌额': 'change',
+                '涨跌幅': 'pct_change',
+                '成交量': 'volume',
+                '持仓量': 'open_interest',
+            })
+
+            df['underlying'] = self.underlying_symbol
+            df['timestamp'] = datetime.now()
+            df['iv'] = None
+
+            # Select columns
+            standard_columns = [
+                'symbol', 'underlying', 'price', 'change', 'pct_change',
+                'timestamp', 'volume', 'open_interest', 'iv'
+            ]
+
+            result = df[[col for col in standard_columns if col in df.columns]].copy()
+            return self.ensure_json_compatible(result)
         except Exception as e:
             raise ValueError(f"Failed to fetch options realtime data: {str(e)}") from e
 
@@ -206,25 +203,19 @@ class SinaOptionsProvider(OptionsDataProvider):
             list[str]: 可用的到期日列表
         """
         try:
-            expirations = ak.option_sse_list_sina(symbol=underlying_symbol, exchange="null")
-            if not expirations:
+            # Get all options data from eastmoney
+            raw_df = ak.option_current_em()
+
+            # Filter by underlying symbol
+            patterns = UNDERLYING_PATTERNS.get(underlying_symbol, [underlying_symbol])
+            pattern_regex = "|".join(patterns)
+            df = raw_df[raw_df['名称'].str.contains(pattern_regex, na=False, regex=True)].copy()
+
+            if df.empty:
                 raise ValueError(f"No options found for underlying symbol: {underlying_symbol}")
 
-            # Validate by trying to get option codes for the first expiration
-            # This ensures the symbol is actually valid
-            try:
-                test_codes = ak.option_sse_codes_sina(
-                    symbol="看涨期权",
-                    trade_date=expirations[0],
-                    underlying=underlying_symbol,
-                )
-                if test_codes.empty:
-                    raise ValueError(f"No options found for underlying symbol: {underlying_symbol}")
-            except Exception:
-                raise ValueError(
-                    f"No options found for underlying symbol: {underlying_symbol}"
-                ) from None
-
+            # Extract unique expirations
+            expirations = df['名称'].apply(self._parse_expiration).dropna().unique().tolist()
             return sorted(expirations)
         except ValueError:
             raise
@@ -284,105 +275,20 @@ class SinaOptionsProvider(OptionsDataProvider):
         except Exception as e:
             raise ValueError(f"Failed to fetch options history: {str(e)}") from e
 
-    def _clean_single_option(self, raw_df: pd.DataFrame, symbol: str) -> pd.DataFrame:
-        """Cleans and standardizes single option data
+    def _parse_option_type(self, name: str) -> Optional[str]:
+        """Parse option type (call/put) from name."""
+        if '购' in name:
+            return 'call'
+        elif '沽' in name:
+            return 'put'
+        return None
 
-        The data from option_sse_spot_price_sina is in a key-value format:
-        - Column '字段' contains field names
-        - Column '值' contains field values
-
-        We need to pivot this into a single row DataFrame
-        """
-        if raw_df.empty or "字段" not in raw_df.columns or "值" not in raw_df.columns:
-            return pd.DataFrame(
-                columns=[
-                    "symbol",
-                    "underlying",
-                    "price",
-                    "change",
-                    "pct_change",
-                    "timestamp",
-                    "volume",
-                    "open_interest",
-                    "iv",
-                ]
-            )
-
-        # Create a dictionary from the key-value pairs
-        data_dict = dict(zip(raw_df["字段"], raw_df["值"], strict=True))
-
-        # Map Chinese field names to English
-        field_map = {
-            "最新价": "price",
-            "涨跌额": "change",
-            "涨幅": "pct_change",
-            "成交量": "volume",
-            "持仓量": "open_interest",
-            "行情时间": "timestamp",
-            "标的股票": "underlying",
-            "期权合约简称": "name",
-            "行权价": "strike",
-            "昨收价": "prev_close",
-        }
-
-        # Extract and rename fields
-        result = {}
-        for chinese_field, english_field in field_map.items():
-            value = data_dict.get(chinese_field)
-            result[english_field] = value
-
-        # Add symbol
-        result["symbol"] = symbol
-
-        # Parse numeric fields
-        for field in [
-            "price",
-            "change",
-            "pct_change",
-            "volume",
-            "open_interest",
-            "strike",
-            "prev_close",
-        ]:
-            if result.get(field) is not None:
-                try:
-                    result[field] = float(result[field])
-                except (ValueError, TypeError):
-                    result[field] = None
-
-        # Parse timestamp
-        if result.get("timestamp"):
-            try:
-                result["timestamp"] = pd.to_datetime(result["timestamp"])
-            except (ValueError, TypeError):
-                result["timestamp"] = pd.Timestamp.now(tz="Asia/Shanghai")
-        else:
-            result["timestamp"] = pd.Timestamp.now(tz="Asia/Shanghai")
-
-        # Add implied volatility placeholder
-        result["iv"] = None
-
-        # Create DataFrame
-        df = pd.DataFrame([result])
-
-        # Ensure all required columns exist
-        required_columns = [
-            "symbol",
-            "underlying",
-            "price",
-            "change",
-            "pct_change",
-            "timestamp",
-            "volume",
-            "open_interest",
-            "iv",
-        ]
-
-        for col in required_columns:
-            if col not in df.columns:
-                df[col] = None
-
-        return df[required_columns]
+    def _parse_expiration(self, name: str) -> Optional[str]:
+        """Parse expiration from name (e.g., '300ETF沽2月4288A' -> '2月')."""
+        match = re.search(r'(\d+月)', name)
+        if match:
+            return match.group(1)
+        return None
 
     def _clean_options_history(self, raw_df: pd.DataFrame, symbol: str) -> pd.DataFrame:
         """Cleans and standardizes options historical data"""
@@ -422,24 +328,6 @@ class SinaOptionsProvider(OptionsDataProvider):
                 df[col] = pd.to_numeric(df[col], errors="coerce")
 
         return self._select_history_columns(df)
-
-    def _select_options_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Selects and orders the standard options chain columns"""
-        standard_columns = [
-            "underlying",
-            "symbol",
-            "name",
-            "option_type",
-            "strike",
-            "expiration",
-            "price",
-            "change",
-            "pct_change",
-            "volume",
-            "open_interest",
-            "implied_volatility",
-        ]
-        return df[[col for col in standard_columns if col in df.columns]]
 
     def _select_history_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         """Selects and orders the standard options history columns"""

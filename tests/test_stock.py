@@ -148,7 +148,14 @@ class TestRealtimeData:
             assert df.iloc[0]["symbol"] == "600000"
         except RuntimeError as e:
             # Xueqiu API may be unavailable or format changed
-            if "unexpected response format" in str(e).lower():
+            error_msg = str(e).lower()
+            if any(keyword in error_msg for keyword in [
+                "unexpected response format",
+                "unexpected data structure",
+                "returned empty data",
+                "service may be unavailable",
+                "failed to fetch"
+            ]):
                 pytest.skip(f"Xueqiu API unavailable: {e}")
             else:
                 raise
