@@ -1,15 +1,18 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import pandas as pd
 
+from ..base import BaseProvider
 
-class OptionsDataProvider(ABC):
+
+class OptionsDataProvider(BaseProvider):
     """Abstract base class for options data providers"""
 
     def __init__(
         self,
         underlying_symbol: str,
         option_type: str | None = None,
+        **kwargs,
     ) -> None:
         """Initialize the options data provider
 
@@ -17,8 +20,18 @@ class OptionsDataProvider(ABC):
             underlying_symbol: 标的代码 (e.g., '510300' for 300ETF期权)
             option_type: 期权类型 (call/put), 默认为 None
         """
+        super().__init__(**kwargs)
         self.underlying_symbol = underlying_symbol
         self.option_type = option_type
+
+    def get_source_name(self) -> str:
+        return "options"
+
+    def get_data_type(self) -> str:
+        return "options"
+
+    def fetch_data(self) -> pd.DataFrame:
+        return self.get_options_chain()
 
     @abstractmethod
     def get_options_chain(self) -> pd.DataFrame:

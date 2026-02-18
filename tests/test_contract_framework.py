@@ -4,8 +4,9 @@ Test to verify the contract testing framework works correctly.
 This test demonstrates how to use the GoldenSampleValidator.
 """
 
-import pytest
 import pandas as pd
+import pytest
+
 from tests.utils.contract_test import GoldenSampleValidator
 
 

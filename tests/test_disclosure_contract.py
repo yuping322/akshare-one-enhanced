@@ -5,16 +5,17 @@ These tests validate that the data structure returned by disclosure interfaces
 matches the expected schema (golden samples). This helps detect upstream API changes.
 """
 
-import pytest
-import pandas as pd
 from unittest.mock import patch
 
-from tests.utils.contract_test import GoldenSampleValidator, create_golden_sample_if_missing
+import pandas as pd
+import pytest
+
 from src.akshare_one.modules.disclosure import (
     get_dividend_data,
     get_repurchase_data,
     get_st_delist_data,
 )
+from tests.utils.contract_test import GoldenSampleValidator
 
 
 @pytest.fixture

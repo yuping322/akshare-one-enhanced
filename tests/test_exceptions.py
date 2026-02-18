@@ -4,18 +4,19 @@ Unit tests for market data exception classes.
 Tests the exception hierarchy and error handling utilities.
 """
 
-import pytest
-import requests
 from unittest.mock import Mock
 
+import pytest
+import requests
+
 from akshare_one.modules.exceptions import (
-    MarketDataError,
-    InvalidParameterError,
     DataSourceUnavailableError,
-    NoDataError,
-    UpstreamChangedError,
-    RateLimitError,
     DataValidationError,
+    InvalidParameterError,
+    MarketDataError,
+    NoDataError,
+    RateLimitError,
+    UpstreamChangedError,
     handle_upstream_error,
 )
 
@@ -263,7 +264,7 @@ class TestExceptionUsageScenarios:
         def check_data_availability(response):
             if response.get('error') == 'NO_DATA':
                 raise NoDataError(
-                    f"No data available for the requested period"
+                    "No data available for the requested period"
                 )
         
         # Normal response should not raise

@@ -5,6 +5,7 @@ This module defines the abstract interface for northbound capital data providers
 """
 
 from abc import abstractmethod
+
 import pandas as pd
 
 from ..base import BaseProvider

@@ -5,7 +5,7 @@ This module defines the abstract interface for equity pledge data providers.
 """
 
 from abc import abstractmethod
-from typing import Optional
+
 import pandas as pd
 
 from ..base import BaseProvider
@@ -35,7 +35,7 @@ class EquityPledgeProvider(BaseProvider):
     @abstractmethod
     def get_equity_pledge(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

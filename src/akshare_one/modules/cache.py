@@ -4,6 +4,7 @@ from functools import wraps
 from typing import Any, TypeVar
 
 from cachetools import TTLCache, cached
+from ..metrics import get_stats_collector
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -41,13 +42,25 @@ def cache(cache_key: str, key: Callable[..., Any] | None = None) -> Callable[[F]
             if cache_enabled:
                 if cache_key not in CACHE_CONFIG:
                     raise KeyError(
-                        f"Cache configuration '{cache_key}' not found. "
-                        f"Available keys: {list(CACHE_CONFIG.keys())}"
+                        f"Cache configuration '{cache_key}' not found. Available keys: {list(CACHE_CONFIG.keys())}"
                     )
-                if key is not None:
-                    return cached(CACHE_CONFIG[cache_key], key=key)(func)(*args, **kwargs)
-                else:
-                    return cached(CACHE_CONFIG[cache_key])(func)(*args, **kwargs)
+
+                # 获取统计收集器
+                stats_collector = get_stats_collector()
+
+                try:
+                    if key is not None:
+                        result = cached(CACHE_CONFIG[cache_key], key=key)(func)(*args, **kwargs)
+                        stats_collector.record_cache_hit(cache_key)
+                        return result
+                    else:
+                        result = cached(CACHE_CONFIG[cache_key])(func)(*args, **kwargs)
+                        stats_collector.record_cache_hit(cache_key)
+                        return result
+                except KeyError:
+                    # 缓存未命中
+                    stats_collector.record_cache_miss(cache_key)
+                    return func(*args, **kwargs)
             return func(*args, **kwargs)
 
         return wrapper  # type: ignore
@@ -72,11 +85,15 @@ def smart_cache(
         interval_attr: Attribute name to check for interval type
         key: Optional custom cache key function
     """
+
     def decorator(func: F) -> F:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             cache_enabled = os.getenv("AKSHARE_ONE_CACHE_ENABLED", "true").lower() in (
-                "1", "true", "yes", "on",
+                "1",
+                "true",
+                "yes",
+                "on",
             )
 
             if not cache_enabled:
@@ -94,8 +111,7 @@ def smart_cache(
 
             if cache_key not in CACHE_CONFIG:
                 raise KeyError(
-                    f"Cache configuration '{cache_key}' not found. "
-                    f"Available keys: {list(CACHE_CONFIG.keys())}"
+                    f"Cache configuration '{cache_key}' not found. Available keys: {list(CACHE_CONFIG.keys())}"
                 )
 
             if key is not None:

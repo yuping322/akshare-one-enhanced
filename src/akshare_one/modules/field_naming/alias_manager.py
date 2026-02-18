@@ -6,10 +6,8 @@
 
 import logging
 import warnings
-from typing import Dict, Optional
 
 import pandas as pd
-
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +17,7 @@ class FieldAliasManager:
     
     def __init__(
         self, 
-        alias_config: Dict[str, str],
+        alias_config: dict[str, str],
         enable_warnings: bool = True
     ):
         """
@@ -33,7 +31,7 @@ class FieldAliasManager:
         self.aliases = alias_config
         self.enable_warnings = enable_warnings
         # 创建反向映射：新字段名到旧字段名列表
-        self.reverse_aliases: Dict[str, list] = {}
+        self.reverse_aliases: dict[str, list] = {}
         for old_name, new_name in alias_config.items():
             if new_name not in self.reverse_aliases:
                 self.reverse_aliases[new_name] = []
@@ -140,7 +138,7 @@ class FieldAliasManager:
             f"Available fields: {list(df.columns)}"
         )
     
-    def get_standard_name(self, legacy_name: str) -> Optional[str]:
+    def get_standard_name(self, legacy_name: str) -> str | None:
         """
         获取旧字段名对应的标准字段名
         
@@ -164,7 +162,7 @@ class FieldAliasManager:
         """
         return field_name in self.aliases
     
-    def get_all_aliases(self) -> Dict[str, str]:
+    def get_all_aliases(self) -> dict[str, str]:
         """
         获取所有别名映射
         

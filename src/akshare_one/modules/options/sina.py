@@ -5,19 +5,17 @@ This module implements the options data provider using option_current_em as the 
 Note: The original sina APIs (option_sse_list_sina, etc.) are broken, so we use eastmoney APIs.
 """
 
-import numpy as np
 import re
 from datetime import datetime
-from typing import Optional
 
 import akshare as ak
+import numpy as np
 import pandas as pd
+
+from mappings.mapping_utils import get_option_underlying_patterns
 
 from ..cache import cache
 from .base import OptionsDataProvider
-from mappings.mapping_utils import get_option_underlying_patterns
-
-
 
 
 class SinaOptionsProvider(OptionsDataProvider):
@@ -65,7 +63,7 @@ class SinaOptionsProvider(OptionsDataProvider):
 
             if raw_df.empty:
                 raise ValueError(
-                    f"No options data available"
+                    "No options data available"
                 )
 
             # Filter by underlying symbol
@@ -267,7 +265,7 @@ class SinaOptionsProvider(OptionsDataProvider):
         except Exception as e:
             raise ValueError(f"Failed to fetch options history: {str(e)}") from e
 
-    def _parse_option_type(self, name: str) -> Optional[str]:
+    def _parse_option_type(self, name: str) -> str | None:
         """Parse option type (call/put) from name."""
         if '购' in name:
             return 'call'
@@ -275,7 +273,7 @@ class SinaOptionsProvider(OptionsDataProvider):
             return 'put'
         return None
 
-    def _parse_expiration(self, name: str) -> Optional[str]:
+    def _parse_expiration(self, name: str) -> str | None:
         """Parse expiration from name (e.g., '300ETF沽2月4288A' -> '2月')."""
         match = re.search(r'(\d+月)', name)
         if match:

@@ -6,7 +6,7 @@ and falls back to the next one if the current source fails.
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 import pandas as pd
 
@@ -144,7 +144,6 @@ class MultiSourceRouter:
             ValueError: If all providers fail
         """
         error_details: list[tuple[str, str]] = []
-        successful_source = None
 
         for name, provider in self.providers:
             try:
@@ -159,7 +158,6 @@ class MultiSourceRouter:
                             f"Successfully fetched data from '{name}' after "
                             f"{len(error_details)} failed attempt(s)"
                         )
-                    successful_source = name
                     return result
 
                 if self.enable_logging:

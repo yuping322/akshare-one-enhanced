@@ -1,14 +1,15 @@
 """Tests for newly added data source providers."""
 
+from unittest.mock import Mock
+
 import pandas as pd
 import pytest
-from unittest.mock import Mock, patch
 
-from akshare_one.modules.info.factory import InfoDataFactory
-from akshare_one.modules.news.factory import NewsDataFactory
-from akshare_one.modules.historical.factory import HistoricalDataFactory
 from akshare_one.modules.financial.factory import FinancialDataFactory
+from akshare_one.modules.historical.factory import HistoricalDataFactory
+from akshare_one.modules.info.factory import InfoDataFactory
 from akshare_one.modules.multi_source import MultiSourceRouter
+from akshare_one.modules.news.factory import NewsDataFactory
 
 
 def test_sina_info_provider_creation():
@@ -255,11 +256,11 @@ def test_all_new_providers_registered_in_factories():
 
 def test_provider_registration_classes_correct():
     """Test that registered providers are the correct classes."""
+    from akshare_one.modules.financial.cninfo import CninfoFinancialReport
+    from akshare_one.modules.historical.netease import NetEaseHistorical
+    from akshare_one.modules.historical.tencent import TencentHistorical
     from akshare_one.modules.info.sina import SinaInfo
     from akshare_one.modules.news.sina import SinaNews
-    from akshare_one.modules.historical.tencent import TencentHistorical
-    from akshare_one.modules.historical.netease import NetEaseHistorical
-    from akshare_one.modules.financial.cninfo import CninfoFinancialReport
     
     # Test Info factory
     info_provider = InfoDataFactory.get_provider('sina', symbol='600000')

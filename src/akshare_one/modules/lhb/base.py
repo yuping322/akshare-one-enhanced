@@ -5,6 +5,7 @@ This module defines the abstract interface for dragon tiger list data providers.
 """
 
 from abc import abstractmethod
+
 import pandas as pd
 
 from ..base import BaseProvider

@@ -5,7 +5,7 @@ This module implements the goodwill data provider using Eastmoney as the data so
 It wraps akshare functions and standardizes the output format.
 """
 
-from typing import Optional
+
 import pandas as pd
 
 from .base import GoodwillProvider
@@ -37,7 +37,7 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
     
     def get_goodwill_data(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

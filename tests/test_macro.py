@@ -2,18 +2,14 @@
 Unit tests for macro economic data module.
 """
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import Mock, patch
+import pytest
 
 from akshare_one.modules.macro import (
     get_lpr_rate,
     get_pmi_index,
-    get_cpi_data,
-    get_ppi_data,
-    get_m2_supply,
-    get_shibor_rate,
-    get_social_financing,
 )
 from akshare_one.modules.macro.factory import MacroFactory
 from akshare_one.modules.macro.official import OfficialMacroProvider

@@ -1,7 +1,9 @@
 import re
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import pandas as pd
+
+from ..base import BaseProvider
 
 
 def parse_futures_symbol(symbol: str, contract: str = "main") -> tuple[str, str]:
@@ -57,7 +59,7 @@ def parse_futures_symbol(symbol: str, contract: str = "main") -> tuple[str, str]
     return base_symbol, contract
 
 
-class HistoricalFuturesDataProvider(ABC):
+class HistoricalFuturesDataProvider(BaseProvider):
     def __init__(
         self,
         symbol: str,
@@ -66,14 +68,24 @@ class HistoricalFuturesDataProvider(ABC):
         interval_multiplier: int = 1,
         start_date: str = "1970-01-01",
         end_date: str = "2030-12-31",
+        **kwargs,
     ) -> None:
-        # Parse and normalize symbol/contract
+        super().__init__(**kwargs)
         self.symbol, self.contract = parse_futures_symbol(symbol, contract)
         self.interval = interval
         self.interval_multiplier = interval_multiplier
         self.start_date = start_date
         self.end_date = end_date
         self._validate_dates()
+
+    def get_source_name(self) -> str:
+        return "futures"
+
+    def get_data_type(self) -> str:
+        return "futures"
+
+    def fetch_data(self) -> pd.DataFrame:
+        return self.get_hist_data()
 
     def _validate_dates(self) -> None:
         try:
@@ -119,27 +131,31 @@ class HistoricalFuturesDataProvider(ABC):
         pass
 
 
-class RealtimeFuturesDataProvider(ABC):
+class RealtimeFuturesDataProvider(BaseProvider):
     symbol: str | None
     contract: str | None
     original_symbol: str | None
 
-    def __init__(self, symbol: str | None = None) -> None:
+    def __init__(self, symbol: str | None = None, **kwargs) -> None:
+        super().__init__(**kwargs)
         if symbol:
-            # Parse the symbol to extract base symbol for filtering
-            # For realtime data, we want to support:
-            # - symbol="CU" -> filter by variety code CU
-            # - symbol="CU0" -> filter by variety code CU (main contract indicator)
-            # - symbol="CU2405" -> filter by specific contract CU2405
             parsed_symbol, parsed_contract = parse_futures_symbol(symbol, "main")
             self.symbol = parsed_symbol
             self.contract = parsed_contract
-            # Keep the original input for reference
             self.original_symbol = symbol.upper().strip()
         else:
             self.symbol = None
             self.contract = None
             self.original_symbol = None
+
+    def get_source_name(self) -> str:
+        return "futures"
+
+    def get_data_type(self) -> str:
+        return "futures"
+
+    def fetch_data(self) -> pd.DataFrame:
+        return self.get_current_data()
 
     @abstractmethod
     def get_current_data(self) -> pd.DataFrame:

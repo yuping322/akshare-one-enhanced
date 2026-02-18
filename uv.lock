@@ -69,15 +69,18 @@ talib = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "fastmcp" },
     { name = "mkdocs-material" },
     { name = "pandas-stubs" },
     { name = "pre-commit" },
+    { name = "pydantic" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "ty" },
     { name = "types-cachetools" },
     { name = "types-requests" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -93,15 +96,18 @@ provides-extras = ["talib", "mcp"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "fastmcp", specifier = ">=2.11.3" },
     { name = "mkdocs-material", specifier = ">=9.6.15" },
     { name = "pandas-stubs", specifier = ">=2.3.0.250703" },
     { name = "pre-commit", specifier = ">=4.2.0" },
+    { name = "pydantic", specifier = ">=2.0.0" },
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "pytest-cov", specifier = ">=6.2.1" },
     { name = "ruff", specifier = ">=0.12.1" },
     { name = "ty", specifier = ">=0.0.10" },
     { name = "types-cachetools", specifier = ">=6.1.0.20250717" },
     { name = "types-requests", specifier = ">=2.32.4.20250809" },
+    { name = "uvicorn", specifier = ">=0.35.0" },
 ]
 
 [[package]]

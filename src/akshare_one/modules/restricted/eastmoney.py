@@ -5,7 +5,7 @@ This module implements the restricted release data provider using Eastmoney as t
 It wraps akshare functions and standardizes the output format.
 """
 
-from typing import Optional
+
 import pandas as pd
 
 from .base import RestrictedReleaseProvider
@@ -37,7 +37,7 @@ class EastmoneyRestrictedReleaseProvider(RestrictedReleaseProvider):
     
     def get_restricted_release(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

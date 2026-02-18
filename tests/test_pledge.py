@@ -2,16 +2,17 @@
 Unit tests for equity pledge (股权质押) data module.
 """
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import Mock, patch
+import pytest
 
 from akshare_one.modules.pledge import (
     get_equity_pledge,
     get_equity_pledge_ratio_rank,
 )
-from akshare_one.modules.pledge.factory import EquityPledgeFactory
 from akshare_one.modules.pledge.eastmoney import EastmoneyEquityPledgeProvider
+from akshare_one.modules.pledge.factory import EquityPledgeFactory
 
 
 class TestEquityPledgeFactory:

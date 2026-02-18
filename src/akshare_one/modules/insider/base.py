@@ -1,11 +1,23 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import pandas as pd
 
+from ..base import BaseProvider
 
-class InsiderDataProvider(ABC):
-    def __init__(self, symbol: str) -> None:
+
+class InsiderDataProvider(BaseProvider):
+    def __init__(self, symbol: str, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.symbol = symbol
+
+    def get_source_name(self) -> str:
+        return "insider"
+
+    def get_data_type(self) -> str:
+        return "insider"
+
+    def fetch_data(self) -> pd.DataFrame:
+        return self.get_inner_trade_data()
 
     @abstractmethod
     def get_inner_trade_data(self) -> pd.DataFrame:

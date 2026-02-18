@@ -33,20 +33,66 @@ theme:
 
 nav:
   - 首页: index.md
-  - 快速开始: quickstart.md
-  - API 参考:
-    - 概览: api/overview.md
-    - 历史数据: api/historical.md
-    - 实时数据: api/realtime.md
-    - 基础信息: api/basic-info.md
-    - 新闻数据: api/news.md
-    - 财务数据: api/financial.md
-    - 期货数据: api/futures.md
-    - 内部交易: api/insider.md
-    - 技术指标: api/indicators.md
-    - 期权数据: api/options.md
-    - 债券数据: api/bonds.md
-  - 示例: examples.md
+  - 入门指南:
+    - 安装: getting-started/installation.md
+    - 快速开始: getting-started/quickstart.md
+    - 示例代码: getting-started/examples.md
+  - 核心 API:
+    - API 概览: core-api/overview.md
+    - 历史数据: core-api/historical.md
+    - 实时数据: core-api/realtime.md
+    - 基础信息: core-api/basic-info.md
+    - 新闻数据: core-api/news.md
+    - 财务数据: core-api/financial.md
+    - 期货数据: core-api/futures.md
+    - 期权数据: core-api/options.md
+    - 内部交易: core-api/insider.md
+    - 技术指标: core-api/indicators.md
+  - 扩展模块:
+    - 模块概览: extended-modules/overview.md
+    - 基础数据:
+      - 指数数据: extended-modules/index.md
+      - ETF基金: extended-modules/etf.md
+      - 可转债: extended-modules/bond.md
+      - 行业板块: extended-modules/industry.md
+      - 概念板块: extended-modules/concept.md
+      - 港股美股: extended-modules/hkus.md
+      - 科创板创业板: extended-modules/board.md
+      - 新股次新: extended-modules/ipo.md
+      - ST股票: extended-modules/st.md
+      - 停复牌: extended-modules/suspended.md
+    - 市场分析:
+      - 资金流: extended-modules/fundflow.md
+      - 公告信披: extended-modules/disclosure.md
+      - 北向资金: extended-modules/northbound.md
+      - 宏观数据: extended-modules/macro.md
+      - 大宗交易: extended-modules/blockdeal.md
+      - 龙虎榜: extended-modules/lhb.md
+      - 涨停池: extended-modules/limitup.md
+      - 融资融券: extended-modules/margin.md
+      - 股权质押: extended-modules/pledge.md
+      - 限售解禁: extended-modules/restricted.md
+      - 商誉: extended-modules/goodwill.md
+      - ESG评级: extended-modules/esg.md
+    - 深度分析:
+      - 估值分析: extended-modules/valuation.md
+      - 股东数据: extended-modules/shareholder.md
+      - 业绩快报: extended-modules/performance.md
+      - 分析师研报: extended-modules/analyst.md
+      - 市场情绪: extended-modules/sentiment.md
+  - 高级主题:
+    - 多数据源架构: advanced/multi-source.md
+    - 错误处理: advanced/error-handling.md
+    - 缓存系统: advanced/cache.md
+    - 性能优化: advanced/performance.md
+  - 开发文档:
+    - 架构设计: development/architecture.md
+    - 测试指南: development/testing.md
+    - 贡献指南: development/contributing.md
+    - 发布说明:
+      - v0.5.0: development/release-notes/v0.5.0.md
+  - 迁移指南:
+    - 从 AKShare 迁移: migration/from-akshare.md
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -64,7 +110,29 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
 
 plugins:
   - search:
       lang: zh
+  - macros:
+      include_dir: .
+  - minify:
+      minify_html: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/zwldarren/akshare-one
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/akshare-one/
+  version:
+    provider: mike

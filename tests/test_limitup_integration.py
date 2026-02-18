@@ -5,13 +5,14 @@ These tests make real API calls and are skipped by default.
 Run with: pytest tests/test_limitup_integration.py --run-integration
 """
 
-import pytest
-import pandas as pd
 from datetime import datetime, timedelta
 
+import pandas as pd
+import pytest
+
 from akshare_one.modules.limitup import (
-    get_limit_up_pool,
     get_limit_down_pool,
+    get_limit_up_pool,
     get_limit_up_stats,
 )
 

@@ -5,7 +5,7 @@ This module defines the abstract interface for restricted stock release data pro
 """
 
 from abc import abstractmethod
-from typing import Optional
+
 import pandas as pd
 
 from ..base import BaseProvider
@@ -35,7 +35,7 @@ class RestrictedReleaseProvider(BaseProvider):
     @abstractmethod
     def get_restricted_release(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

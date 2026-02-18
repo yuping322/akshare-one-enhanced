@@ -2,16 +2,17 @@
 Unit tests for margin financing (融资融券) data module.
 """
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import Mock, patch
+import pytest
 
 from akshare_one.modules.margin import (
     get_margin_data,
     get_margin_summary,
 )
-from akshare_one.modules.margin.factory import MarginFactory
 from akshare_one.modules.margin.eastmoney import EastmoneyMarginProvider
+from akshare_one.modules.margin.factory import MarginFactory
 
 
 class TestMarginFactory:

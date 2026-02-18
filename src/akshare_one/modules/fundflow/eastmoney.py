@@ -7,8 +7,8 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import FundFlowProvider
 from ..field_naming import FieldType
+from .base import FundFlowProvider
 
 
 class EastmoneyFundFlowProvider(FundFlowProvider):

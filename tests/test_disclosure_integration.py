@@ -4,9 +4,10 @@ Integration tests for disclosure news data.
 Tests the actual data fetching and standardization from Eastmoney.
 """
 
-import pytest
-import pandas as pd
 from datetime import datetime, timedelta
+
+import pandas as pd
+import pytest
 
 from src.akshare_one.modules.disclosure import (
     get_disclosure_news,
@@ -171,7 +172,7 @@ class TestDisclosureNewsIntegration:
             has_keyword = any(
                 any(keyword in title or keyword in category 
                     for keyword in major_keywords)
-                for title, category in zip(df['title'], df['category'])
+                for title, category in zip(df['title'], df['category'], strict=False)
             )
             # If we got results, they should be relevant (but may be empty if no events)
             if len(df) > 0:

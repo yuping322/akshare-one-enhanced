@@ -4,12 +4,13 @@ Unit tests for FieldStandardizer methods.
 Tests the standardize_field_name, standardize_dataframe, and validate_field_name methods.
 """
 
-import pytest
 import pandas as pd
+import pytest
+
 from akshare_one.modules.field_naming import (
     FieldStandardizer,
-    NamingRules,
     FieldType,
+    NamingRules,
 )
 
 

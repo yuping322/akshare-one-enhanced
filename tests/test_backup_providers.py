@@ -18,50 +18,38 @@ This test module covers the newly added backup providers:
 - macro: sina
 """
 
-import pytest
-import pandas as pd
 
 from akshare_one.modules.blockdeal.factory import BlockDealFactory
 from akshare_one.modules.blockdeal.sina import SinaBlockDealProvider
-
 from akshare_one.modules.disclosure.factory import DisclosureFactory
 from akshare_one.modules.disclosure.sina import SinaDisclosureProvider
-
 from akshare_one.modules.esg.factory import ESGFactory
 from akshare_one.modules.esg.sina import SinaESGProvider
-
 from akshare_one.modules.fundflow.factory import FundFlowFactory
 from akshare_one.modules.fundflow.sina import SinaFundFlowProvider
-
+from akshare_one.modules.futures.eastmoney import (
+    EastmoneyFuturesHistoricalProvider,
+    EastmoneyFuturesRealtimeProvider,
+)
+from akshare_one.modules.futures.factory import FuturesDataFactory
 from akshare_one.modules.goodwill.factory import GoodwillFactory
 from akshare_one.modules.goodwill.sina import SinaGoodwillProvider
-
-from akshare_one.modules.futures.factory import FuturesDataFactory
-from akshare_one.modules.futures.eastmoney import EastmoneyFuturesHistoricalProvider, EastmoneyFuturesRealtimeProvider
-
-from akshare_one.modules.insider.factory import InsiderDataFactory
 from akshare_one.modules.insider.eastmoney import EastmoneyInsiderProvider
-
+from akshare_one.modules.insider.factory import InsiderDataFactory
 from akshare_one.modules.lhb.factory import DragonTigerFactory
 from akshare_one.modules.lhb.sina import SinaLHBProvider
-
 from akshare_one.modules.limitup.factory import LimitUpDownFactory
 from akshare_one.modules.limitup.sina import SinaLimitUpDownProvider
-
-from akshare_one.modules.margin.factory import MarginFactory
-from akshare_one.modules.margin.sina import SinaMarginProvider
-
-from akshare_one.modules.northbound.factory import NorthboundFactory
-from akshare_one.modules.northbound.sina import SinaNorthboundProvider
-
-from akshare_one.modules.options.factory import OptionsDataFactory
-from akshare_one.modules.options.eastmoney import EastmoneyOptionsProvider
-
-from akshare_one.modules.pledge.factory import EquityPledgeFactory
-from akshare_one.modules.pledge.sina import SinaEquityPledgeProvider
-
 from akshare_one.modules.macro.factory import MacroFactory
 from akshare_one.modules.macro.sina import SinaMacroProvider
+from akshare_one.modules.margin.factory import MarginFactory
+from akshare_one.modules.margin.sina import SinaMarginProvider
+from akshare_one.modules.northbound.factory import NorthboundFactory
+from akshare_one.modules.northbound.sina import SinaNorthboundProvider
+from akshare_one.modules.options.eastmoney import EastmoneyOptionsProvider
+from akshare_one.modules.options.factory import OptionsDataFactory
+from akshare_one.modules.pledge.factory import EquityPledgeFactory
+from akshare_one.modules.pledge.sina import SinaEquityPledgeProvider
 
 
 class TestBlockDealSinaProvider:

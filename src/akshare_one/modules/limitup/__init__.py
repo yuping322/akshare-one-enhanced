@@ -7,7 +7,8 @@ This module provides interfaces to fetch limit up/down data including:
 - Limit up/down statistics
 """
 
-from typing import Literal
+from typing import Any, Dict, Literal
+
 import pandas as pd
 
 from .factory import LimitUpDownFactory
@@ -16,14 +17,18 @@ from .factory import LimitUpDownFactory
 def get_limit_up_pool(
     date: str,
     source: Literal["eastmoney"] = "eastmoney",
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """
     Get limit up pool data.
-    
+
     Args:
         date: Date in YYYY-MM-DD format
         source: Data source ('eastmoney')
-    
+        columns: Columns to return (default: all)
+        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+
     Returns:
         pd.DataFrame: Standardized limit up pool data with columns:
             - date: Date (YYYY-MM-DD)
@@ -36,26 +41,31 @@ def get_limit_up_pool(
             - consecutive_days: Number of consecutive limit up days
             - reason: Reason for limit up
             - turnover_rate: Turnover rate
-    
+
     Example:
         >>> df = get_limit_up_pool("2024-01-01")
         >>> print(df.head())
     """
     provider = LimitUpDownFactory.get_provider(source=source)
-    return provider.get_limit_up_pool(date)
+    df = provider.get_limit_up_pool(date)
+    return provider.apply_data_filter(df, columns, row_filter)
 
 
 def get_limit_down_pool(
     date: str,
     source: Literal["eastmoney"] = "eastmoney",
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """
     Get limit down pool data.
-    
+
     Args:
         date: Date in YYYY-MM-DD format
         source: Data source ('eastmoney')
-    
+        columns: Columns to return (default: all)
+        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+
     Returns:
         pd.DataFrame: Standardized limit down pool data with columns:
             - date: Date (YYYY-MM-DD)
@@ -65,46 +75,52 @@ def get_limit_down_pool(
             - limit_down_time: Time when limit down occurred
             - open_count: Number of times limit down was broken
             - turnover_rate: Turnover rate
-    
+
     Example:
         >>> df = get_limit_down_pool("2024-01-01")
         >>> print(df.head())
     """
     provider = LimitUpDownFactory.get_provider(source=source)
-    return provider.get_limit_down_pool(date)
+    df = provider.get_limit_down_pool(date)
+    return provider.apply_data_filter(df, columns, row_filter)
 
 
 def get_limit_up_stats(
     start_date: str,
     end_date: str,
     source: Literal["eastmoney"] = "eastmoney",
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """
     Get limit up/down statistics.
-    
+
     Args:
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
         source: Data source ('eastmoney')
-    
+        columns: Columns to return (default: all)
+        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+
     Returns:
         pd.DataFrame: Statistics with columns:
             - date: Date (YYYY-MM-DD)
             - limit_up_count: Number of limit up stocks
             - limit_down_count: Number of limit down stocks
             - broken_rate: Rate of broken limit ups (%)
-    
+
     Example:
         >>> df = get_limit_up_stats("2024-01-01", "2024-01-31")
         >>> print(df.head())
     """
     provider = LimitUpDownFactory.get_provider(source=source)
-    return provider.get_limit_up_stats(start_date, end_date)
+    df = provider.get_limit_up_stats(start_date, end_date)
+    return provider.apply_data_filter(df, columns, row_filter)
 
 
 __all__ = [
-    'get_limit_up_pool',
-    'get_limit_down_pool',
-    'get_limit_up_stats',
-    'LimitUpDownFactory',
+    "get_limit_up_pool",
+    "get_limit_down_pool",
+    "get_limit_up_stats",
+    "LimitUpDownFactory",
 ]

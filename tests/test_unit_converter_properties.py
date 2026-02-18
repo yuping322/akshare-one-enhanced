@@ -7,19 +7,19 @@ Feature: field-naming-standardization
 Task: 3.2 为 UnitConverter 编写属性测试
 """
 
+import numpy as np
 import pandas as pd
 import pytest
-import numpy as np
 
 try:
-    from hypothesis import given, strategies as st, assume, settings
+    from hypothesis import assume, given, settings
+    from hypothesis import strategies as st
     HYPOTHESIS_AVAILABLE = True
 except ImportError:
     HYPOTHESIS_AVAILABLE = False
     pytest.skip("Hypothesis not installed", allow_module_level=True)
 
 from akshare_one.modules.field_naming.unit_converter import UnitConverter
-
 
 # ============================================================================
 # Test Data Generators (Hypothesis Strategies)
@@ -285,7 +285,7 @@ class TestProperty10AmountStorageAndDisplaySeparation:
         stored_df = converter.convert_dataframe_amounts(df, field_units)
         
         # Verify all values are in yuan by converting to display units and back
-        for field_name, source_unit in field_units.items():
+        for field_name, _source_unit in field_units.items():
             # Get the stored values (in yuan)
             stored_values = stored_df[field_name]
             

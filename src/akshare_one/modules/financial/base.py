@@ -1,11 +1,23 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import pandas as pd
 
+from ..base import BaseProvider
 
-class FinancialDataProvider(ABC):
-    def __init__(self, symbol: str) -> None:
+
+class FinancialDataProvider(BaseProvider):
+    def __init__(self, symbol: str, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.symbol = symbol
+
+    def get_source_name(self) -> str:
+        return "financial"
+
+    def get_data_type(self) -> str:
+        return "financial"
+
+    def fetch_data(self) -> pd.DataFrame:
+        return self.get_balance_sheet()
 
     @abstractmethod
     def get_balance_sheet(self) -> pd.DataFrame:

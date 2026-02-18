@@ -4,7 +4,7 @@ Sina goodwill data provider.
 This module implements the goodwill data provider using Sina as the data source.
 """
 
-from typing import Optional
+
 import pandas as pd
 
 from .base import GoodwillProvider
@@ -25,7 +25,7 @@ class SinaGoodwillProvider(GoodwillProvider):
 
     def get_goodwill_data(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

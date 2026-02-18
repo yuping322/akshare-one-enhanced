@@ -6,7 +6,7 @@
 
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Set, Tuple
+
 import pandas as pd
 
 from .models import FieldType, NamingRules
@@ -18,10 +18,10 @@ class ValidationResult:
     
     field_name: str                    # 字段名
     is_valid: bool                     # 是否有效
-    field_type: Optional[FieldType] = None  # 字段类型（如果已知）
-    error_message: Optional[str] = None     # 错误消息
-    suggested_name: Optional[str] = None    # 建议的字段名
-    pattern: Optional[str] = None           # 期望的命名模式
+    field_type: FieldType | None = None  # 字段类型（如果已知）
+    error_message: str | None = None     # 错误消息
+    suggested_name: str | None = None    # 建议的字段名
+    pattern: str | None = None           # 期望的命名模式
 
 
 class FieldValidator:
@@ -29,8 +29,8 @@ class FieldValidator:
     
     def __init__(
         self, 
-        naming_rules: Optional[NamingRules] = None,
-        whitelist: Optional[Set[str]] = None
+        naming_rules: NamingRules | None = None,
+        whitelist: set[str] | None = None
     ):
         """
         初始化验证器
@@ -43,7 +43,7 @@ class FieldValidator:
         self.whitelist = whitelist or set()
         self._field_type_patterns = self._build_field_type_mapping()
     
-    def _build_field_type_mapping(self) -> Dict[FieldType, str]:
+    def _build_field_type_mapping(self) -> dict[FieldType, str]:
         """
         构建字段类型到命名模式的映射
         
@@ -89,8 +89,8 @@ class FieldValidator:
     def validate_dataframe(
         self, 
         df: pd.DataFrame,
-        field_types: Optional[Dict[str, FieldType]] = None
-    ) -> Dict[str, ValidationResult]:
+        field_types: dict[str, FieldType] | None = None
+    ) -> dict[str, ValidationResult]:
         """
         验证DataFrame中所有字段的命名
         
@@ -162,7 +162,7 @@ class FieldValidator:
         self, 
         field_name: str, 
         field_type: FieldType
-    ) -> Tuple[bool, Optional[str], Optional[str]]:
+    ) -> tuple[bool, str | None, str | None]:
         """
         验证单个字段名是否符合规范
         
@@ -193,7 +193,7 @@ class FieldValidator:
         
         return False, error_message, suggested_name
     
-    def _infer_field_type(self, field_name: str) -> Optional[FieldType]:
+    def _infer_field_type(self, field_name: str) -> FieldType | None:
         """
         根据字段名推断字段类型
         
@@ -312,7 +312,7 @@ class FieldValidator:
     def _suggest_field_name(
         self, 
         field_name: str, 
-        field_type: Optional[FieldType] = None
+        field_type: FieldType | None = None
     ) -> str:
         """
         根据字段名和类型生成建议
@@ -365,13 +365,12 @@ class FieldValidator:
                 normalized = 'is_' + normalized
         
         # 处理净流量类型的特殊情况
-        if field_type == FieldType.NET_FLOW:
-            if '_net_' not in normalized:
-                # 尝试插入 net_
-                parts = normalized.split('_')
-                if len(parts) >= 2:
-                    # 在最后一个词之前插入 net
-                    normalized = '_'.join(parts[:-1]) + '_net_' + parts[-1]
+        if field_type == FieldType.NET_FLOW and '_net_' not in normalized:
+            # 尝试插入 net_
+            parts = normalized.split('_')
+            if len(parts) >= 2:
+                # 在最后一个词之前插入 net
+                normalized = '_'.join(parts[:-1]) + '_net_' + parts[-1]
         
         return normalized
     
@@ -403,7 +402,7 @@ class FieldValidator:
         import json
         
         try:
-            with open(whitelist_path, 'r', encoding='utf-8') as f:
+            with open(whitelist_path, encoding='utf-8') as f:
                 data = json.load(f)
                 if isinstance(data, list):
                     self.whitelist = set(data)
@@ -434,8 +433,8 @@ class FieldValidator:
     
     def get_validation_summary(
         self, 
-        validation_results: Dict[str, ValidationResult]
-    ) -> Dict[str, any]:
+        validation_results: dict[str, ValidationResult]
+    ) -> dict[str, any]:
         """
         生成验证结果摘要
         

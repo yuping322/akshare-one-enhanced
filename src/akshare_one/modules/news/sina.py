@@ -31,7 +31,7 @@ class SinaNews(NewsDataProvider):
             
             return result
             
-        except Exception as e:
+        except Exception:
             # If Sina news data is not available, return empty DataFrame with proper columns
             columns = ["keyword", "title", "content", "publish_time", "source", "url"]
             return pd.DataFrame(columns=columns)

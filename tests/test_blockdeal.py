@@ -2,16 +2,16 @@
 Unit tests for block deal data module.
 """
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import Mock, patch
+import pytest
 
 from akshare_one.modules.blockdeal import (
     get_block_deal,
-    get_block_deal_summary,
 )
-from akshare_one.modules.blockdeal.factory import BlockDealFactory
 from akshare_one.modules.blockdeal.eastmoney import EastmoneyBlockDealProvider
+from akshare_one.modules.blockdeal.factory import BlockDealFactory
 
 
 class TestBlockDealFactory:

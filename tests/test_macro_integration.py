@@ -4,17 +4,15 @@ Integration tests for macro economic data module.
 These tests make real API calls to verify the module works end-to-end.
 """
 
-import pytest
 import pandas as pd
+import pytest
 
 from akshare_one.modules.macro import (
-    get_lpr_rate,
-    get_pmi_index,
     get_cpi_data,
-    get_ppi_data,
+    get_lpr_rate,
     get_m2_supply,
+    get_pmi_index,
     get_shibor_rate,
-    get_social_financing,
 )
 
 

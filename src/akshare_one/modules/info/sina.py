@@ -41,6 +41,6 @@ class SinaInfo(InfoDataProvider):
             # Return empty dataframe with proper structure
             return result
             
-        except Exception as e:
+        except Exception:
             # If Sina data is not available, return empty DataFrame with proper columns
             return pd.DataFrame(columns=self._expected_columns)

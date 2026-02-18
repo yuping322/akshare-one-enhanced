@@ -1,12 +1,16 @@
+"""
+Factory for creating futures data providers.
+"""
+
 from typing import Any
 
 from .base import HistoricalFuturesDataProvider, RealtimeFuturesDataProvider
-from .sina import SinaFuturesHistorical, SinaFuturesRealtime
 from .eastmoney import EastmoneyFuturesHistoricalProvider, EastmoneyFuturesRealtimeProvider
+from .sina import SinaFuturesHistorical, SinaFuturesRealtime
 
 
 class FuturesDataFactory:
-    """Factory class for creating futures data providers"""
+    """Factory class for creating futures data providers."""
 
     _historical_providers: dict[str, type[HistoricalFuturesDataProvider]] = {
         "sina": SinaFuturesHistorical,
@@ -19,69 +23,41 @@ class FuturesDataFactory:
     }
 
     @classmethod
-    def get_historical_provider(
-        cls, provider_name: str, **kwargs: Any
-    ) -> HistoricalFuturesDataProvider:
-        """Get a historical futures data provider by name
-
-        Args:
-            provider_name: Name of the provider (e.g., 'sina')
-            **kwargs: Additional arguments to pass to the provider's constructor
-
-        Returns:
-            HistoricalFuturesDataProvider: An instance of the requested provider
-
-        Raises:
-            ValueError: If the requested provider is not found
-        """
-        provider_class = cls._historical_providers.get(provider_name.lower())
-        if not provider_class:
-            raise ValueError(f"Unknown historical futures data provider: {provider_name}")
-
-        return provider_class(**kwargs)
+    def get_historical_provider(cls, source: str, **kwargs: Any) -> HistoricalFuturesDataProvider:
+        """Get a historical futures data provider by name."""
+        if source not in cls._historical_providers:
+            available = ", ".join(cls._historical_providers.keys())
+            raise ValueError(f"Unsupported source: {source}. Available: {available}")
+        return cls._historical_providers[source](**kwargs)
 
     @classmethod
-    def get_realtime_provider(
-        cls, provider_name: str, **kwargs: Any
-    ) -> RealtimeFuturesDataProvider:
-        """Get a realtime futures data provider by name
-
-        Args:
-            provider_name: Name of the provider (e.g., 'sina')
-            **kwargs: Additional arguments to pass to the provider's constructor
-
-        Returns:
-            RealtimeFuturesDataProvider: An instance of the requested provider
-
-        Raises:
-            ValueError: If the requested provider is not found
-        """
-        provider_class = cls._realtime_providers.get(provider_name.lower())
-        if not provider_class:
-            raise ValueError(f"Unknown realtime futures data provider: {provider_name}")
-
-        return provider_class(**kwargs)
+    def get_realtime_provider(cls, source: str, **kwargs: Any) -> RealtimeFuturesDataProvider:
+        """Get a realtime futures data provider by name."""
+        if source not in cls._realtime_providers:
+            available = ", ".join(cls._realtime_providers.keys())
+            raise ValueError(f"Unsupported source: {source}. Available: {available}")
+        return cls._realtime_providers[source](**kwargs)
 
     @classmethod
     def register_historical_provider(
         cls, name: str, provider_class: type[HistoricalFuturesDataProvider]
     ) -> None:
-        """Register a new historical futures data provider
-
-        Args:
-            name: Name to associate with this provider
-            provider_class: The provider class to register
-        """
-        cls._historical_providers[name.lower()] = provider_class
+        """Register a new historical futures data provider."""
+        cls._historical_providers[name] = provider_class
 
     @classmethod
     def register_realtime_provider(
         cls, name: str, provider_class: type[RealtimeFuturesDataProvider]
     ) -> None:
-        """Register a new realtime futures data provider
+        """Register a new realtime futures data provider."""
+        cls._realtime_providers[name] = provider_class
 
-        Args:
-            name: Name to associate with this provider
-            provider_class: The provider class to register
-        """
-        cls._realtime_providers[name.lower()] = provider_class
+    @classmethod
+    def list_historical_sources(cls) -> list[str]:
+        """List all available historical data sources."""
+        return list(cls._historical_providers.keys())
+
+    @classmethod
+    def list_realtime_sources(cls) -> list[str]:
+        """List all available realtime data sources."""
+        return list(cls._realtime_providers.keys())

@@ -9,32 +9,31 @@ This test suite covers:
 5. Integration tests (marked with @pytest.mark.integration)
 """
 
-import pytest
-import pandas as pd
-import numpy as np
 from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch
+
+import numpy as np
+import pandas as pd
+import pytest
 
 from akshare_one.modules.fundflow import (
-    get_stock_fund_flow,
-    get_sector_fund_flow,
-    get_main_fund_flow_rank,
-    get_industry_list,
-    get_industry_constituents,
-    get_concept_list,
-    get_concept_constituents,
     FundFlowFactory,
+    get_concept_constituents,
+    get_concept_list,
+    get_industry_constituents,
+    get_industry_list,
+    get_main_fund_flow_rank,
+    get_sector_fund_flow,
+    get_stock_fund_flow,
 )
 from akshare_one.modules.fundflow.base import FundFlowProvider
 from akshare_one.modules.fundflow.eastmoney import EastmoneyFundFlowProvider
-
-from tests.utils.contract_test import GoldenSampleValidator, create_golden_sample_if_missing
+from tests.utils.contract_test import GoldenSampleValidator
 from tests.utils.integration_helpers import (
     DataFrameValidator,
     integration_rate_limiter,
     skip_if_no_network,
 )
-
 
 # ============================================================================
 # Unit Tests - Provider Basics

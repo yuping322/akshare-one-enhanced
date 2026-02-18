@@ -10,26 +10,25 @@ These tests are marked with @pytest.mark.integration and require network access.
 Run with: pytest tests/test_fundflow_integration.py --run-integration
 """
 
-import pytest
-import pandas as pd
 from datetime import datetime, timedelta
 
-from akshare_one.modules.fundflow import (
-    get_stock_fund_flow,
-    get_sector_fund_flow,
-    get_main_fund_flow_rank,
-    get_industry_list,
-    get_industry_constituents,
-    get_concept_list,
-    get_concept_constituents,
-)
+import pandas as pd
+import pytest
 
+from akshare_one.modules.fundflow import (
+    get_concept_constituents,
+    get_concept_list,
+    get_industry_constituents,
+    get_industry_list,
+    get_main_fund_flow_rank,
+    get_sector_fund_flow,
+    get_stock_fund_flow,
+)
 from tests.utils.integration_helpers import (
     DataFrameValidator,
     integration_rate_limiter,
     skip_if_no_network,
 )
-
 
 # ============================================================================
 # Integration Tests - Complete Flow Testing
@@ -112,7 +111,7 @@ class TestCompleteFlowIndustry:
         # Verify we got data for at least one stock
         assert len(fund_flow_results) > 0, "Should get fund flow data for at least one stock"
         
-        print(f"\n✓ Complete industry flow test passed:")
+        print("\n✓ Complete industry flow test passed:")
         print(f"  - Industries: {len(industries)}")
         print(f"  - Constituents in {industry_name}: {len(constituents)}")
         print(f"  - Fund flow data fetched for {len(fund_flow_results)} stocks")
@@ -131,7 +130,7 @@ class TestCompleteFlowIndustry:
         validator = DataFrameValidator()
         
         # Get today's date
-        date_today = datetime.now().strftime('%Y-%m-%d')
+        datetime.now().strftime('%Y-%m-%d')
         
         integration_rate_limiter.wait()
         sector_flow = get_sector_fund_flow('industry')
@@ -151,7 +150,7 @@ class TestCompleteFlowIndustry:
         # Verify we have multiple sectors
         assert len(sector_flow) >= 10, "Should have at least 10 industry sectors"
         
-        print(f"\n✓ Industry sector fund flow test passed:")
+        print("\n✓ Industry sector fund flow test passed:")
         print(f"  - Sectors: {len(sector_flow)}")
         print(f"  - Date: {sector_flow['date'].iloc[0] if not sector_flow.empty else 'N/A'}")
 
@@ -230,7 +229,7 @@ class TestCompleteFlowConcept:
         # Verify we got data for at least one stock
         assert len(fund_flow_results) > 0, "Should get fund flow data for at least one stock"
         
-        print(f"\n✓ Complete concept flow test passed:")
+        print("\n✓ Complete concept flow test passed:")
         print(f"  - Concepts: {len(concepts)}")
         print(f"  - Constituents in {concept_name}: {len(constituents)}")
         print(f"  - Fund flow data fetched for {len(fund_flow_results)} stocks")
@@ -266,7 +265,7 @@ class TestCompleteFlowConcept:
         # Verify we have multiple sectors
         assert len(sector_flow) >= 10, "Should have at least 10 concept sectors"
         
-        print(f"\n✓ Concept sector fund flow test passed:")
+        print("\n✓ Concept sector fund flow test passed:")
         print(f"  - Sectors: {len(sector_flow)}")
         print(f"  - Date: {sector_flow['date'].iloc[0] if not sector_flow.empty else 'N/A'}")
 
@@ -370,7 +369,7 @@ class TestRealDataFetching:
             assert len(symbol) == 6, f"Symbol {symbol} should be 6 digits"
             assert symbol.isdigit(), f"Symbol {symbol} should be numeric"
         
-        print(f"\n✓ Main fund flow rank data validated:")
+        print("\n✓ Main fund flow rank data validated:")
         print(f"  - Total ranked stocks: {len(df)}")
         print(f"  - Top stock: {df['name'].iloc[0]} ({df['symbol'].iloc[0]})")
         print(f"  - Top inflow: {df['main_net_inflow'].iloc[0]:,.0f}")
@@ -414,7 +413,7 @@ class TestRealDataFetching:
         
         validator.validate_json_compatible(concepts)
         
-        print(f"\n✓ Sector lists completeness validated:")
+        print("\n✓ Sector lists completeness validated:")
         print(f"  - Industries: {len(industries)}")
         print(f"  - Concepts: {len(concepts)}")
 
@@ -456,7 +455,7 @@ class TestCrossValidation:
                 f"Constituent count mismatch for {industry['sector_name']}: " \
                 f"reported {reported_count}, actual {actual_count}"
             
-            print(f"\n✓ Constituent count consistency validated:")
+            print("\n✓ Constituent count consistency validated:")
             print(f"  - Industry: {industry['sector_name']}")
             print(f"  - Reported count: {reported_count}")
             print(f"  - Actual count: {actual_count}")
@@ -471,7 +470,7 @@ class TestCrossValidation:
         1. Main net inflow equals sum of components
         2. Data relationships are mathematically correct
         """
-        validator = DataFrameValidator()
+        DataFrameValidator()
         
         # Get fund flow for a well-known stock
         symbol = '600000'
@@ -484,7 +483,7 @@ class TestCrossValidation:
         if not df.empty and len(df) > 0:
             # Check if main_net_inflow approximately equals sum of components
             # (allowing for rounding errors)
-            for idx, row in df.iterrows():
+            for _idx, row in df.iterrows():
                 if pd.notna(row['fundflow_main_net_inflow']) and \
                    pd.notna(row['fundflow_super_large_net_inflow']) and \
                    pd.notna(row['fundflow_large_net_inflow']):
@@ -499,7 +498,7 @@ class TestCrossValidation:
                             f"Main net inflow inconsistency on {row['date']}: " \
                             f"calculated {calculated_main:,.0f}, reported {reported_main:,.0f}"
             
-            print(f"\n✓ Fund flow data consistency validated:")
+            print("\n✓ Fund flow data consistency validated:")
             print(f"  - Symbol: {symbol}")
             print(f"  - Records checked: {len(df)}")
 
@@ -523,7 +522,7 @@ class TestRealAPIErrorHandling:
     @skip_if_no_network()
     def test_future_date_real_api(self):
         """Test handling of future dates with real API."""
-        validator = DataFrameValidator()
+        DataFrameValidator()
         
         # Future date should return empty result
         future_date = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')

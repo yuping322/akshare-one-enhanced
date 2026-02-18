@@ -58,10 +58,7 @@ class SinaBlockDealProvider(BlockDealProvider):
             import akshare as ak
 
             # Call akshare function - Sina uses similar interface via akshare
-            if symbol:
-                raw_df = ak.stock_dzjy_mrmx(symbol=symbol)
-            else:
-                raw_df = ak.stock_dzjy_sctj()
+            raw_df = ak.stock_dzjy_mrmx(symbol=symbol) if symbol else ak.stock_dzjy_sctj()
 
             if raw_df.empty:
                 return self.create_empty_dataframe([

@@ -1,11 +1,23 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import pandas as pd
 
+from ..base import BaseProvider
 
-class InfoDataProvider(ABC):
-    def __init__(self, symbol: str) -> None:
+
+class InfoDataProvider(BaseProvider):
+    def __init__(self, symbol: str, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.symbol = symbol
+
+    def get_source_name(self) -> str:
+        return "info"
+
+    def get_data_type(self) -> str:
+        return "info"
+
+    def fetch_data(self) -> pd.DataFrame:
+        return self.get_basic_info()
 
     @abstractmethod
     def get_basic_info(self) -> pd.DataFrame:

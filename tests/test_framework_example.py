@@ -4,11 +4,12 @@ Example test demonstrating the testing framework.
 This file shows how to use the testing utilities and fixtures.
 """
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
+
 from tests.utils.contract_test import GoldenSampleValidator
-from tests.utils.integration_helpers import DataFrameValidator, MockDataGenerator
+from tests.utils.integration_helpers import DataFrameValidator
 
 
 class TestContractTestingExample:
@@ -252,7 +253,7 @@ class TestFixturesExample:
     
     def test_multiple_fixtures(self, sample_symbols, sample_date_range, mock_data_generator):
         """Example: Use multiple fixtures together."""
-        for symbol in sample_symbols:
+        for _symbol in sample_symbols:
             df = mock_data_generator.generate_mock_dataframe(
                 columns=['date', 'symbol', 'close'],
                 row_count=5,

@@ -118,8 +118,9 @@ class OfficialMacroProvider(MacroProvider):
             )
         
         try:
-            import akshare as ak
             import re
+
+            import akshare as ak
             
             # Call appropriate akshare function based on PMI type
             if pmi_type == 'manufacturing':
@@ -214,8 +215,9 @@ class OfficialMacroProvider(MacroProvider):
         self.validate_date_range(start_date, end_date)
         
         try:
-            import akshare as ak
             import re
+
+            import akshare as ak
             
             # Call akshare function
             raw_df = ak.macro_china_cpi()
@@ -283,8 +285,9 @@ class OfficialMacroProvider(MacroProvider):
         self.validate_date_range(start_date, end_date)
         
         try:
-            import akshare as ak
             import re
+
+            import akshare as ak
             
             # Call akshare function
             raw_df = ak.macro_china_ppi()

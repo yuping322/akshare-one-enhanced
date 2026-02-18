@@ -2,17 +2,18 @@
 Unit tests for limit up/down (涨停池) data module.
 """
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import Mock, patch
+import pytest
 
 from akshare_one.modules.limitup import (
-    get_limit_up_pool,
     get_limit_down_pool,
+    get_limit_up_pool,
     get_limit_up_stats,
 )
-from akshare_one.modules.limitup.factory import LimitUpDownFactory
 from akshare_one.modules.limitup.eastmoney import EastmoneyLimitUpDownProvider
+from akshare_one.modules.limitup.factory import LimitUpDownFactory
 
 
 class TestLimitUpDownFactory:

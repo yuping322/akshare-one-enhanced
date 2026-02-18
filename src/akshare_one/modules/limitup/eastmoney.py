@@ -238,8 +238,9 @@ class EastmoneyLimitUpDownProvider(LimitUpDownProvider):
         self.validate_date_range(start_date, end_date)
         
         try:
-            import akshare as ak
             from datetime import datetime, timedelta
+
+            import akshare as ak
             
             # Generate date range
             start = datetime.strptime(start_date, '%Y-%m-%d')

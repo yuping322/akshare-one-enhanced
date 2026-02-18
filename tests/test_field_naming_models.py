@@ -5,12 +5,11 @@ Tests the core data models including FieldType enum, NamingRules,
 FieldMapping, and MappingConfig classes.
 """
 
-import pytest
 from akshare_one.modules.field_naming import (
-    FieldType,
-    NamingRules,
     FieldMapping,
+    FieldType,
     MappingConfig,
+    NamingRules,
 )
 
 

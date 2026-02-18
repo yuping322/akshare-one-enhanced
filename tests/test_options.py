@@ -100,7 +100,7 @@ class TestOptionsChain:
 
             # 这个测试应该确保即使部分API调用失败，程序也能正常处理而不崩溃
             try:
-                df = get_options_chain(underlying_symbol="510300")
+                get_options_chain(underlying_symbol="510300")
                 # 如果没有抛出异常，测试通过
                 pass
             except Exception:

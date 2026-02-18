@@ -1,62 +1,17 @@
 """
 Factory for creating block deal data providers.
-
-This module implements the factory pattern for creating block deal data providers
-based on the specified data source.
 """
 
-from typing import Dict, Type
-
+from ..factory_base import BaseFactory
 from .base import BlockDealProvider
 from .eastmoney import EastmoneyBlockDealProvider
 from .sina import SinaBlockDealProvider
 
 
-class BlockDealFactory:
-    """
-    Factory class for creating block deal data providers.
-    
-    Supports multiple data sources and provides a unified interface
-    for creating provider instances.
-    """
-    
-    # Registry of available providers
-    _providers: Dict[str, Type[BlockDealProvider]] = {
-        'eastmoney': EastmoneyBlockDealProvider,
-        'sina': SinaBlockDealProvider,
+class BlockDealFactory(BaseFactory[BlockDealProvider]):
+    """Factory class for creating block deal data providers."""
+
+    _providers: dict[str, type[BlockDealProvider]] = {
+        "eastmoney": EastmoneyBlockDealProvider,
+        "sina": SinaBlockDealProvider,
     }
-    
-    @classmethod
-    def get_provider(cls, source: str, **kwargs) -> BlockDealProvider:
-        """
-        Create a block deal data provider instance.
-        
-        Args:
-            source: Data source name ('eastmoney')
-            **kwargs: Additional parameters for the provider
-        
-        Returns:
-            BlockDealProvider: Provider instance
-        
-        Raises:
-            ValueError: If the specified source is not supported
-        """
-        if source not in cls._providers:
-            available = ', '.join(cls._providers.keys())
-            raise ValueError(
-                f"Unsupported data source: {source}. "
-                f"Available sources: {available}"
-            )
-        
-        provider_class = cls._providers[source]
-        return provider_class(**kwargs)
-    
-    @classmethod
-    def list_sources(cls) -> list:
-        """
-        List all available data sources.
-        
-        Returns:
-            list: List of available source names
-        """
-        return list(cls._providers.keys())

@@ -4,9 +4,7 @@
 处理金额字段的单位转换，支持元、万元、亿元之间的转换。
 """
 
-from typing import Dict, Optional
 import pandas as pd
-import numpy as np
 
 
 class UnitConverter:
@@ -60,7 +58,7 @@ class UnitConverter:
     def convert_dataframe_amounts(
         self, 
         df: pd.DataFrame, 
-        amount_fields: Dict[str, str]
+        amount_fields: dict[str, str]
     ) -> pd.DataFrame:
         """
         转换DataFrame中所有金额字段的单位

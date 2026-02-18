@@ -6,13 +6,14 @@ from pathlib import Path
 # Add src to path for testing
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-import pytest
+from unittest.mock import Mock
+
 import pandas as pd
-from unittest.mock import Mock, MagicMock
+import pytest
 
 from akshare_one.modules.multi_source import (
-    MultiSourceRouter,
     ExecutionResult,
+    MultiSourceRouter,
 )
 
 

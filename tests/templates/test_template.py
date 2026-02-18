@@ -12,11 +12,9 @@ Usage:
     5. Add module-specific test cases as needed
 """
 
+from unittest.mock import patch
+
 import pytest
-import pandas as pd
-import numpy as np
-from datetime import datetime
-from unittest.mock import Mock, patch
 
 # TODO: Replace with actual imports
 # from akshare_one.modules.MODULE_NAME.base import PROVIDER_CLASS

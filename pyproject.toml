@@ -9,10 +9,10 @@ dependencies = [
     "cachetools>=5.5.0",
 ]
 license = "MIT"
-keywords = ["akshare", "financial-data", "stock-data", "quant", "mcp"]
+keywords = ["akshare", "financial-data", "stock-data", "quant"]
 
 [project.scripts]
-akshare-one-mcp = "akshare_one.mcp.server:run_server"
+akshare-one-mcp = "akshare_one_mcp.server:run_server"
 
 [project.urls]
 Homepage = "https://github.com/zwldarren/akshare-one"
@@ -37,20 +37,35 @@ dev = [
     "ty>=0.0.10",
     "types-cachetools>=6.1.0.20250717",
     "types-requests>=2.32.4.20250809",
+    "fastmcp>=2.11.3",
+    "pydantic>=2.0.0",
+    "uvicorn>=0.35.0",
 ]
 
 [build-system]
-requires = ["uv_build>=0.8.12,<0.9.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/akshare_one", "src/akshare_one_mcp"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
 addopts = "-v --cov=akshare_one --cov-report=term-missing"
+markers = [
+    "contract: Mark tests as contract tests",
+    "integration: Mark tests as integration tests (require network)",
+    "slow: Mark tests as slow running",
+]
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 
 [tool.ruff.lint]
 select = [
@@ -67,9 +82,33 @@ select = [
     # isort
     "I",
 ]
+ignore = [
+    "E501",  # Line too long (keep for readability)
+    "E402",  # Module level import not at top (sometimes needed for optional imports)
+]
 
-[tool.mypy]
-strict = true
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "B018",  # Useless expression (common in tests)
+    "SIM115",  # Use contextlib.suppress (not always better in tests)
+]
+"src/akshare_one/modules/*/__init__.py" = [
+    "F401",  # Unused import (re-exports)
+]
 
-[tool.pyright]
-typeCheckingMode = "standard"
+[tool.coverage.run]
+source = ["src/akshare_one"]
+omit = [
+    "src/akshare_one/mcp/*",  # Optional MCP server
+    "src/akshare_one/*/__init__.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 60
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+]

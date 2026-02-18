@@ -5,9 +5,9 @@ These tests verify end-to-end functionality with real data sources.
 Run with: pytest tests/test_northbound_integration.py -v -m integration
 """
 
-import pytest
-import pandas as pd
 from datetime import datetime, timedelta
+
+import pytest
 
 from akshare_one.modules.northbound import (
     get_northbound_flow,
@@ -19,7 +19,6 @@ from tests.utils.integration_helpers import (
     integration_rate_limiter,
     skip_if_no_network,
 )
-
 
 # ============================================================================
 # Integration Tests - Real Data Fetching

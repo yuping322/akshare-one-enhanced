@@ -4,7 +4,7 @@ Sina margin financing data provider.
 This module implements the margin financing data provider using Sina as the data source.
 """
 
-from typing import Optional
+
 import pandas as pd
 
 from .base import MarginProvider
@@ -25,7 +25,7 @@ class SinaMarginProvider(MarginProvider):
 
     def get_margin_data(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

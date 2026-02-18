@@ -4,12 +4,12 @@ Eastmoney provider for northbound capital data.
 This module implements the northbound capital data provider using Eastmoney as the data source.
 """
 
-import pandas as pd
-import akshare as ak
-from typing import Optional
 
-from .base import NorthboundProvider
+import akshare as ak
+import pandas as pd
+
 from ..field_naming import FieldType
+from .base import NorthboundProvider
 
 
 class EastmoneyNorthboundProvider(NorthboundProvider):
@@ -138,7 +138,7 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
     
     def get_northbound_holdings(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:
@@ -181,7 +181,7 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
     def _standardize_holdings_data(
         self,
         df: pd.DataFrame,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:
@@ -309,7 +309,7 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         except Exception as e:
             raise RuntimeError(f"Failed to fetch northbound top stocks: {e}") from e
     
-    def _standardize_ranking_data(self, df: pd.DataFrame, market: str, top_n: int, date: Optional[str] = None) -> pd.DataFrame:
+    def _standardize_ranking_data(self, df: pd.DataFrame, market: str, top_n: int, date: str | None = None) -> pd.DataFrame:
         """Standardize northbound ranking data.
         
         Args:

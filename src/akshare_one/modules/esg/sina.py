@@ -4,7 +4,7 @@ Sina ESG rating data provider.
 This module implements the ESG rating data provider using Sina as the data source.
 """
 
-from typing import Optional
+
 import pandas as pd
 
 from .base import ESGProvider
@@ -33,7 +33,7 @@ class SinaESGProvider(ESGProvider):
 
     def get_esg_rating(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:
@@ -61,7 +61,7 @@ class SinaESGProvider(ESGProvider):
     def get_esg_rating_rank(
         self,
         date: str,
-        industry: Optional[str],
+        industry: str | None,
         top_n: int
     ) -> pd.DataFrame:
         """

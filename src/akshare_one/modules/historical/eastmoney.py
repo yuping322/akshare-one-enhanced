@@ -1,12 +1,19 @@
+import time
+
 import akshare as ak
 import pandas as pd
 
+from ...logging_config import get_logger, log_api_request
 from ..cache import cache
 from .base import HistoricalDataProvider
 
 
 class EastMoneyHistorical(HistoricalDataProvider):
     """Adapter for EastMoney historical stock data API"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.logger = get_logger(__name__)
 
     @cache(
         "hist_data_cache",
@@ -29,14 +36,56 @@ class EastMoneyHistorical(HistoricalDataProvider):
         self.interval = self.interval.lower()
         self._validate_interval_params(self.interval, self.interval_multiplier)
 
+        start_time = time.time()
+
         try:
+            self.logger.debug(
+                "Fetching historical data",
+                extra={
+                    "context": {
+                        "source": "eastmoney",
+                        "symbol": self.symbol,
+                        "interval": self.interval,
+                        "interval_multiplier": self.interval_multiplier,
+                        "adjust": self.adjust,
+                        "start_date": self.start_date,
+                        "end_date": self.end_date,
+                        "action": "fetch_start",
+                    }
+                },
+            )
+
             if self.interval in ["minute", "hour"]:
                 df = self._get_intraday_data()
             else:
                 df = self._get_daily_plus_data()
 
+            duration_ms = (time.time() - start_time) * 1000
+
+            log_api_request(
+                logger=self.logger,
+                source="eastmoney",
+                endpoint="historical",
+                params={"symbol": self.symbol, "interval": self.interval, "adjust": self.adjust},
+                duration_ms=duration_ms,
+                status="success",
+                rows=len(df),
+            )
+
             return df
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+
+            log_api_request(
+                logger=self.logger,
+                source="eastmoney",
+                endpoint="historical",
+                params={"symbol": self.symbol, "interval": self.interval},
+                duration_ms=duration_ms,
+                status="error",
+                error=str(e),
+            )
+
             raise ValueError(f"Failed to fetch historical data: {str(e)}") from e
 
     def _get_intraday_data(self) -> pd.DataFrame:
@@ -235,14 +284,36 @@ class EastMoneyHistorical(HistoricalDataProvider):
 
     def _get_etf_data(self, start_date: str, end_date: str) -> pd.DataFrame:
         """Fetch ETF data using akshare's fund_etf_hist_sina function"""
-        # Determine market prefix based on the first digit
         market_prefix = "sh" if self.symbol.startswith("5") else "sh"
 
         etf_symbol = f"{market_prefix}{self.symbol}"
 
+        self.logger.debug(
+            f"Fetching ETF data for {etf_symbol}",
+            extra={
+                "context": {
+                    "source": "eastmoney",
+                    "symbol": self.symbol,
+                    "etf_symbol": etf_symbol,
+                    "action": "fetch_etf",
+                }
+            },
+        )
+
         raw_df: pd.DataFrame = ak.fund_etf_hist_sina(symbol=etf_symbol)
 
         if raw_df.empty:
+            self.logger.warning(
+                f"No ETF data found for {self.symbol}",
+                extra={
+                    "context": {
+                        "source": "eastmoney",
+                        "symbol": self.symbol,
+                        "etf_symbol": etf_symbol,
+                        "action": "no_data",
+                    }
+                },
+            )
             raise ValueError(f"No data found for ETF {self.symbol}")
 
         # Filter by date range if needed

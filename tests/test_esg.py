@@ -2,16 +2,17 @@
 Unit tests for ESG (ESG 评级) data module.
 """
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import Mock, patch
+import pytest
 
 from akshare_one.modules.esg import (
     get_esg_rating,
     get_esg_rating_rank,
 )
-from akshare_one.modules.esg.factory import ESGFactory
 from akshare_one.modules.esg.eastmoney import EastmoneyESGProvider
+from akshare_one.modules.esg.factory import ESGFactory
 
 
 class TestESGFactory:

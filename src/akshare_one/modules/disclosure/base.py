@@ -5,7 +5,7 @@ This module defines the abstract interface for disclosure news data providers.
 """
 
 from abc import abstractmethod
-from typing import Optional
+
 import pandas as pd
 
 from ..base import BaseProvider
@@ -75,8 +75,8 @@ class DisclosureProvider(BaseProvider):
         return category_map.get(category_lower, 'all')
     
     @staticmethod
-    def standardize_dividend_ratio(dividend_per_share: Optional[float], 
-                                   price: Optional[float]) -> Optional[float]:
+    def standardize_dividend_ratio(dividend_per_share: float | None, 
+                                   price: float | None) -> float | None:
         """
         Calculate dividend ratio (dividend yield).
         

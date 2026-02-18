@@ -1,9 +1,11 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import pandas as pd
 
+from ..base import BaseProvider
 
-class HistoricalDataProvider(ABC):
+
+class HistoricalDataProvider(BaseProvider):
     def __init__(
         self,
         symbol: str,
@@ -12,7 +14,9 @@ class HistoricalDataProvider(ABC):
         start_date: str = "1970-01-01",
         end_date: str = "2030-12-31",
         adjust: str = "none",
+        **kwargs,
     ) -> None:
+        super().__init__(**kwargs)
         self.symbol = symbol
         self.interval = interval
         self.interval_multiplier = interval_multiplier
@@ -20,6 +24,15 @@ class HistoricalDataProvider(ABC):
         self.end_date = end_date
         self.adjust = adjust
         self._validate_dates()
+
+    def get_source_name(self) -> str:
+        return "historical"
+
+    def get_data_type(self) -> str:
+        return "historical"
+
+    def fetch_data(self) -> pd.DataFrame:
+        return self.get_hist_data()
 
     def _validate_dates(self) -> None:
         try:

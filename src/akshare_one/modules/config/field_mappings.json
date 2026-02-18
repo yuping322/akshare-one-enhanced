@@ -1,0 +1,494 @@
+{
+  "version": "1.0",
+  "description": "Field mapping configuration for akshare-one-enhanced modules",
+  "modules": {
+    "fundflow": {
+      "description": "Fund flow data module",
+      "field_types": {
+        "date": "DATE",
+        "symbol": "SYMBOL",
+        "close_price": "AMOUNT",
+        "pct_change": "RATE",
+        "fundflow_main_net_inflow": "NET_FLOW",
+        "fundflow_main_net_inflow_rate": "RATE",
+        "fundflow_super_large_net_inflow": "NET_FLOW",
+        "fundflow_large_net_inflow": "NET_FLOW",
+        "fundflow_medium_net_inflow": "NET_FLOW",
+        "fundflow_small_net_inflow": "NET_FLOW"
+      },
+      "amount_fields": {
+        "fundflow_main_net_inflow": "yuan",
+        "fundflow_super_large_net_inflow": "yuan",
+        "fundflow_large_net_inflow": "yuan",
+        "fundflow_medium_net_inflow": "yuan",
+        "fundflow_small_net_inflow": "yuan"
+      }
+    },
+    "northbound": {
+      "description": "Northbound capital data module",
+      "field_types": {
+        "date": "DATE",
+        "market": "MARKET",
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "net_buy": "NET_FLOW",
+        "buy_amount": "AMOUNT",
+        "sell_amount": "AMOUNT",
+        "balance": "BALANCE",
+        "holdings_shares": "SHARES",
+        "holdings_value": "VALUE",
+        "holdings_ratio": "RATIO",
+        "holdings_change": "SHARES"
+      },
+      "amount_fields": {
+        "net_buy": "yi_yuan",
+        "buy_amount": "yi_yuan",
+        "sell_amount": "yi_yuan",
+        "balance": "yi_yuan",
+        "holdings_value": "yi_yuan"
+      }
+    },
+    "margin": {
+      "description": "Margin financing data module",
+      "field_types": {
+        "date": "DATE",
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "margin_balance": "BALANCE",
+        "margin_buy": "AMOUNT",
+        "short_balance": "BALANCE",
+        "short_sell_volume": "VOLUME",
+        "total_balance": "BALANCE"
+      },
+      "amount_fields": {
+        "margin_balance": "wan_yuan",
+        "margin_buy": "wan_yuan",
+        "short_balance": "wan_yuan",
+        "total_balance": "wan_yuan"
+      }
+    },
+    "pledge": {
+      "description": "Equity pledge data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "shareholder_name": "NAME",
+        "pledge_shares": "SHARES",
+        "pledge_ratio": "RATE",
+        "pledgee": "NAME",
+        "pledge_date": "DATE"
+      },
+      "amount_fields": {}
+    },
+    "lhb": {
+      "description": "Dragon Tiger (Long Hu Bang) data module",
+      "field_types": {
+        "date": "DATE",
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "close_price": "AMOUNT",
+        "pct_change": "RATE",
+        "turnover_amount": "AMOUNT",
+        "department": "NAME",
+        "buy_amount": "AMOUNT",
+        "sell_amount": "AMOUNT",
+        "net_buy": "NET_FLOW"
+      },
+      "amount_fields": {
+        "turnover_amount": "wan_yuan",
+        "buy_amount": "wan_yuan",
+        "sell_amount": "wan_yuan",
+        "net_buy": "wan_yuan"
+      }
+    },
+    "blockdeal": {
+      "description": "Block deal data module",
+      "field_types": {
+        "date": "DATE",
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "block_trade_price": "AMOUNT",
+        "block_trade_volume": "VOLUME",
+        "block_trade_amount": "AMOUNT",
+        "buyer": "NAME",
+        "seller": "NAME"
+      },
+      "amount_fields": {
+        "block_trade_amount": "wan_yuan"
+      }
+    },
+    "esg": {
+      "description": "ESG rating data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "esg_score": "RATE",
+        "esg_rating": "TYPE",
+        "industry": "TYPE"
+      },
+      "amount_fields": {}
+    },
+    "goodwill": {
+      "description": "Goodwill data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "goodwill_balance": "BALANCE",
+        "goodwill_ratio": "RATE",
+        "report_period": "DATE"
+      },
+      "amount_fields": {
+        "goodwill_balance": "wan_yuan"
+      }
+    },
+    "disclosure": {
+      "description": "Disclosure data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "announcement_title": "NAME",
+        "announcement_type": "TYPE",
+        "announcement_date": "DATE"
+      },
+      "amount_fields": {}
+    },
+    "restricted": {
+      "description": "Restricted release data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "release_date": "DATE",
+        "release_shares": "SHARES",
+        "release_ratio": "RATE",
+        "release_amount": "AMOUNT"
+      },
+      "amount_fields": {
+        "release_amount": "wan_yuan"
+      }
+    },
+    "limitup": {
+      "description": "Limit up/down data module",
+      "field_types": {
+        "date": "DATE",
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "close_price": "AMOUNT",
+        "pct_change": "RATE",
+        "turnover_amount": "AMOUNT",
+        "turnover_rate": "RATE",
+        "limit_up_count": "COUNT",
+        "limit_down_count": "COUNT"
+      },
+      "amount_fields": {
+        "turnover_amount": "wan_yuan"
+      }
+    },
+    "macro": {
+      "description": "Macro economic data module",
+      "field_types": {
+        "date": "DATE",
+        "indicator": "NAME",
+        "value": "VALUE",
+        "unit": "TYPE"
+      },
+      "amount_fields": {}
+    },
+    "analyst": {
+      "description": "Analyst rating data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "analyst_rating": "TYPE",
+        "target_price": "AMOUNT",
+        "rating_date": "DATE",
+        "analyst_name": "NAME",
+        "institution": "NAME"
+      },
+      "amount_fields": {
+        "target_price": "yuan"
+      }
+    },
+    "bond": {
+      "description": "Bond data module",
+      "field_types": {
+        "bond_code": "SYMBOL",
+        "bond_name": "NAME",
+        "issue_date": "DATE",
+        "maturity_date": "DATE",
+        "coupon_rate": "RATE",
+        "issue_amount": "AMOUNT",
+        "bond_price": "AMOUNT",
+        "yield_rate": "RATE"
+      },
+      "amount_fields": {
+        "issue_amount": "yi_yuan",
+        "bond_price": "yuan"
+      }
+    },
+    "shareholder": {
+      "description": "Shareholder data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "shareholder_name": "NAME",
+        "shareholder_type": "TYPE",
+        "holdings_shares": "SHARES",
+        "holdings_ratio": "RATIO",
+        "change_shares": "SHARES",
+        "report_date": "DATE"
+      },
+      "amount_fields": {}
+    },
+    "index": {
+      "description": "Index data module",
+      "field_types": {
+        "date": "DATE",
+        "index_code": "SYMBOL",
+        "index_name": "NAME",
+        "open": "AMOUNT",
+        "close": "AMOUNT",
+        "high": "AMOUNT",
+        "low": "AMOUNT",
+        "volume": "VOLUME",
+        "amount": "AMOUNT"
+      },
+      "amount_fields": {
+        "amount": "wan_yuan"
+      }
+    },
+    "etf": {
+      "description": "ETF data module",
+      "field_types": {
+        "date": "DATE",
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "nav": "AMOUNT",
+        "nav_change": "RATE",
+        "subscription_status": "TYPE",
+        "redemption_status": "TYPE"
+      },
+      "amount_fields": {
+        "nav": "yuan"
+      }
+    },
+    "performance": {
+      "description": "Performance forecast data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "report_period": "DATE",
+        "forecast_type": "TYPE",
+        "forecast_profit": "AMOUNT",
+        "profit_change": "RATE",
+        "announcement_date": "DATE"
+      },
+      "amount_fields": {
+        "forecast_profit": "wan_yuan"
+      }
+    },
+    "sentiment": {
+      "description": "Market sentiment data module",
+      "field_types": {
+        "date": "DATE",
+        "sentiment_index": "RATE",
+        "bull_ratio": "RATIO",
+        "bear_ratio": "RATIO",
+        "volume": "VOLUME",
+        "turnover": "AMOUNT"
+      },
+      "amount_fields": {
+        "turnover": "yi_yuan"
+      }
+    },
+    "valuation": {
+      "description": "Valuation data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "pe_ratio": "RATIO",
+        "pb_ratio": "RATIO",
+        "ps_ratio": "RATIO",
+        "market_cap": "VALUE",
+        "float_market_cap": "VALUE"
+      },
+      "amount_fields": {
+        "market_cap": "yi_yuan",
+        "float_market_cap": "yi_yuan"
+      }
+    },
+    "options": {
+      "description": "Options data module",
+      "field_types": {
+        "date": "DATE",
+        "option_code": "SYMBOL",
+        "option_name": "NAME",
+        "strike_price": "AMOUNT",
+        "premium": "AMOUNT",
+        "volume": "VOLUME",
+        "open_interest": "COUNT",
+        "implied_volatility": "RATE",
+        "expiry_date": "DATE"
+      },
+      "amount_fields": {
+        "strike_price": "yuan",
+        "premium": "yuan"
+      }
+    },
+    "futures": {
+      "description": "Futures data module",
+      "field_types": {
+        "date": "DATE",
+        "contract_code": "SYMBOL",
+        "contract_name": "NAME",
+        "open": "AMOUNT",
+        "close": "AMOUNT",
+        "high": "AMOUNT",
+        "low": "AMOUNT",
+        "volume": "VOLUME",
+        "turnover": "AMOUNT",
+        "open_interest": "COUNT"
+      },
+      "amount_fields": {
+        "turnover": "yi_yuan"
+      }
+    },
+    "financial": {
+      "description": "Financial statement data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "report_period": "DATE",
+        "revenue": "AMOUNT",
+        "net_profit": "AMOUNT",
+        "total_assets": "AMOUNT",
+        "total_liabilities": "AMOUNT",
+        "equity": "AMOUNT",
+        "eps": "AMOUNT",
+        "roe": "RATE"
+      },
+      "amount_fields": {
+        "revenue": "yuan",
+        "net_profit": "yuan",
+        "total_assets": "yuan",
+        "total_liabilities": "yuan",
+        "equity": "yuan"
+      }
+    },
+    "indicators": {
+      "description": "Technical indicators module",
+      "field_types": {
+        "date": "DATE",
+        "symbol": "SYMBOL",
+        "indicator_name": "NAME",
+        "indicator_value": "VALUE",
+        "signal": "TYPE"
+      },
+      "amount_fields": {}
+    },
+    "insider": {
+      "description": "Insider trading data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "insider_name": "NAME",
+        "insider_title": "NAME",
+        "trade_date": "DATE",
+        "trade_type": "TYPE",
+        "trade_shares": "SHARES",
+        "trade_price": "AMOUNT",
+        "trade_amount": "AMOUNT"
+      },
+      "amount_fields": {
+        "trade_price": "yuan",
+        "trade_amount": "yuan"
+      }
+    },
+    "info": {
+      "description": "Stock info data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "industry": "TYPE",
+        "sector": "TYPE",
+        "listing_date": "DATE",
+        "total_shares": "SHARES",
+        "float_shares": "SHARES",
+        "market_cap": "VALUE"
+      },
+      "amount_fields": {
+        "market_cap": "yi_yuan"
+      }
+    },
+    "realtime": {
+      "description": "Realtime quote data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "price": "AMOUNT",
+        "open": "AMOUNT",
+        "high": "AMOUNT",
+        "low": "AMOUNT",
+        "volume": "VOLUME",
+        "turnover": "AMOUNT",
+        "bid_price": "AMOUNT",
+        "ask_price": "AMOUNT",
+        "pct_change": "RATE"
+      },
+      "amount_fields": {
+        "turnover": "wan_yuan"
+      }
+    },
+    "historical": {
+      "description": "Historical price data module",
+      "field_types": {
+        "date": "DATE",
+        "symbol": "SYMBOL",
+        "open": "AMOUNT",
+        "close": "AMOUNT",
+        "high": "AMOUNT",
+        "low": "AMOUNT",
+        "volume": "VOLUME",
+        "turnover": "AMOUNT",
+        "pct_change": "RATE",
+        "turnover_rate": "RATE"
+      },
+      "amount_fields": {
+        "turnover": "wan_yuan"
+      }
+    },
+    "news": {
+      "description": "News data module",
+      "field_types": {
+        "news_title": "NAME",
+        "news_content": "NAME",
+        "news_date": "DATE",
+        "news_source": "NAME",
+        "sentiment": "TYPE",
+        "related_symbols": "SYMBOL"
+      },
+      "amount_fields": {}
+    },
+    "concept": {
+      "description": "Concept data module",
+      "field_types": {
+        "concept_name": "NAME",
+        "concept_code": "SYMBOL",
+        "stock_symbol": "SYMBOL",
+        "stock_name": "NAME",
+        "add_date": "DATE",
+        "remove_date": "DATE"
+      },
+      "amount_fields": {}
+    },
+    "industry": {
+      "description": "Industry classification data module",
+      "field_types": {
+        "industry_code": "SYMBOL",
+        "industry_name": "NAME",
+        "stock_symbol": "SYMBOL",
+        "stock_name": "NAME",
+        "level": "COUNT"
+      },
+      "amount_fields": {}
+    }
+  }
+}

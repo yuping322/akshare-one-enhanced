@@ -7,7 +7,8 @@ This module provides interfaces to fetch dragon tiger list data including:
 - Broker statistics from dragon tiger list
 """
 
-from typing import Literal
+from typing import Any, Dict, Literal
+
 import pandas as pd
 
 from .factory import DragonTigerFactory
@@ -17,15 +18,19 @@ def get_dragon_tiger_list(
     date: str,
     symbol: str | None = None,
     source: Literal["eastmoney"] = "eastmoney",
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """
     Get dragon tiger list data.
-    
+
     Args:
         date: Date in YYYY-MM-DD format
         symbol: Stock symbol (optional, if None returns all stocks)
         source: Data source ('eastmoney')
-    
+        columns: Columns to return (default: all)
+        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+
     Returns:
         pd.DataFrame: Standardized dragon tiger list data with columns:
             - date: Date (YYYY-MM-DD)
@@ -39,13 +44,14 @@ def get_dragon_tiger_list(
             - net_amount: Dragon tiger list net amount
             - total_amount: Dragon tiger list total transaction amount
             - turnover_rate: Turnover rate
-    
+
     Example:
         >>> df = get_dragon_tiger_list("2024-01-01")
         >>> print(df.head())
     """
     provider = DragonTigerFactory.get_provider(source=source)
-    return provider.get_dragon_tiger_list(date, symbol)
+    df = provider.get_dragon_tiger_list(date, symbol)
+    return provider.apply_data_filter(df, columns, row_filter)
 
 
 def get_dragon_tiger_summary(
@@ -53,25 +59,30 @@ def get_dragon_tiger_summary(
     end_date: str,
     group_by: Literal["stock", "broker", "reason"] = "stock",
     source: Literal["eastmoney"] = "eastmoney",
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """
     Get dragon tiger list summary statistics.
-    
+
     Args:
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
         group_by: Grouping dimension ('stock', 'broker', or 'reason')
         source: Data source ('eastmoney')
-    
+        columns: Columns to return (default: all)
+        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+
     Returns:
         pd.DataFrame: Summary statistics grouped by specified dimension
-    
+
     Example:
         >>> df = get_dragon_tiger_summary("2024-01-01", "2024-01-31", group_by="stock")
         >>> print(df.head())
     """
     provider = DragonTigerFactory.get_provider(source=source)
-    return provider.get_dragon_tiger_summary(start_date, end_date, group_by)
+    df = provider.get_dragon_tiger_summary(start_date, end_date, group_by)
+    return provider.apply_data_filter(df, columns, row_filter)
 
 
 def get_dragon_tiger_broker_stats(
@@ -79,16 +90,20 @@ def get_dragon_tiger_broker_stats(
     end_date: str,
     top_n: int = 50,
     source: Literal["eastmoney"] = "eastmoney",
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """
     Get broker statistics from dragon tiger list.
-    
+
     Args:
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
         top_n: Number of top brokers to return
         source: Data source ('eastmoney')
-    
+        columns: Columns to return (default: all)
+        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+
     Returns:
         pd.DataFrame: Broker statistics with columns:
             - rank: Ranking position
@@ -100,18 +115,19 @@ def get_dragon_tiger_broker_stats(
             - sell_count: Number of sell transactions
             - net_amount: Net amount (buy - sell)
             - total_amount: Total transaction amount
-    
+
     Example:
         >>> df = get_dragon_tiger_broker_stats("2024-01-01", "2024-01-31", top_n=20)
         >>> print(df.head())
     """
     provider = DragonTigerFactory.get_provider(source=source)
-    return provider.get_dragon_tiger_broker_stats(start_date, end_date, top_n)
+    df = provider.get_dragon_tiger_broker_stats(start_date, end_date, top_n)
+    return provider.apply_data_filter(df, columns, row_filter)
 
 
 __all__ = [
-    'get_dragon_tiger_list',
-    'get_dragon_tiger_summary',
-    'get_dragon_tiger_broker_stats',
-    'DragonTigerFactory',
+    "get_dragon_tiger_list",
+    "get_dragon_tiger_summary",
+    "get_dragon_tiger_broker_stats",
+    "DragonTigerFactory",
 ]

@@ -6,9 +6,8 @@
 import json
 import os
 from datetime import datetime, timedelta
+
 import akshare as ak
-import pandas as pd
-from typing import Dict, List, Optional
 
 
 class DynamicMappingManager:
@@ -33,7 +32,7 @@ class DynamicMappingManager:
         file_time = os.path.getmtime(cache_file)
         return datetime.fromtimestamp(file_time) < datetime.now() - timedelta(days=days)
 
-    def generate_underlying_patterns(self) -> Dict[str, List[str]]:
+    def generate_underlying_patterns(self) -> dict[str, list[str]]:
         """动态生成底层资产模式映射"""
         mapping = {}
 
@@ -97,7 +96,7 @@ class DynamicMappingManager:
 
         return mapping
 
-    def get_underlying_patterns(self) -> Dict[str, List[str]]:
+    def get_underlying_patterns(self) -> dict[str, list[str]]:
         """获取底层资产模式映射，带缓存"""
         cache_file = os.path.join(self.cache_dir, "underlying_patterns.json")
 
@@ -115,7 +114,7 @@ class DynamicMappingManager:
         elif self._underlying_patterns is None:
             # 尝试从缓存加载
             try:
-                with open(cache_file, 'r', encoding='utf-8') as f:
+                with open(cache_file, encoding='utf-8') as f:
                     self._underlying_patterns = json.load(f)
             except FileNotFoundError:
                 # 如果缓存不存在，生成新的
@@ -125,7 +124,7 @@ class DynamicMappingManager:
 
         return self._underlying_patterns
 
-    def get_patterns_for_symbol(self, symbol: str) -> List[str]:
+    def get_patterns_for_symbol(self, symbol: str) -> list[str]:
         """获取特定符号的匹配模式"""
         patterns = self.get_underlying_patterns()
         return patterns.get(symbol, [symbol])
@@ -142,12 +141,12 @@ class DynamicMappingManager:
 _mapping_manager = DynamicMappingManager()
 
 
-def get_underlying_patterns() -> Dict[str, List[str]]:
+def get_underlying_patterns() -> dict[str, list[str]]:
     """获取底层资产模式映射"""
     return _mapping_manager.get_underlying_patterns()
 
 
-def get_patterns_for_symbol(symbol: str) -> List[str]:
+def get_patterns_for_symbol(symbol: str) -> list[str]:
     """获取特定符号的匹配模式"""
     return _mapping_manager.get_patterns_for_symbol(symbol)
 

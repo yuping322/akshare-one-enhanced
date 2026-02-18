@@ -2,17 +2,18 @@
 Unit tests for goodwill (商誉) data module.
 """
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import Mock, patch
+import pytest
 
 from akshare_one.modules.goodwill import (
+    get_goodwill_by_industry,
     get_goodwill_data,
     get_goodwill_impairment,
-    get_goodwill_by_industry,
 )
-from akshare_one.modules.goodwill.factory import GoodwillFactory
 from akshare_one.modules.goodwill.eastmoney import EastmoneyGoodwillProvider
+from akshare_one.modules.goodwill.factory import GoodwillFactory
 
 
 class TestGoodwillFactory:

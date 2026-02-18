@@ -7,12 +7,10 @@
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Optional
 
 import pandas as pd
 
-from .models import FieldMapping, MappingConfig, FieldType
-
+from .models import FieldMapping, MappingConfig
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +18,7 @@ logger = logging.getLogger(__name__)
 class FieldMapper:
     """字段映射器，管理源数据字段到标准字段的映射"""
     
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """
         初始化映射器
         
@@ -29,7 +27,7 @@ class FieldMapper:
                         如果为 None，使用默认的 field_mappings 目录
         """
         self.config_path = config_path
-        self.mappings: Dict[str, Dict[str, MappingConfig]] = {}
+        self.mappings: dict[str, dict[str, MappingConfig]] = {}
         self._load_mappings()
     
     def _load_mappings(self) -> None:
@@ -70,7 +68,7 @@ class FieldMapper:
             config_file: 配置文件路径
         """
         try:
-            with open(config_file, 'r', encoding='utf-8') as f:
+            with open(config_file, encoding='utf-8') as f:
                 data = json.load(f)
             
             config = MappingConfig.from_dict(data)
@@ -146,7 +144,7 @@ class FieldMapper:
         source: str, 
         module: str, 
         source_field: str
-    ) -> Optional[FieldMapping]:
+    ) -> FieldMapping | None:
         """
         获取特定字段的映射配置
         

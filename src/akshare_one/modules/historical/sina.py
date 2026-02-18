@@ -1,12 +1,19 @@
+import time
+
 import akshare as ak
 import pandas as pd
 
+from ...logging_config import get_logger, log_api_request
 from ..cache import cache
 from .base import HistoricalDataProvider
 
 
 class SinaHistorical(HistoricalDataProvider):
     """Adapter for Sina historical stock data API"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.logger = get_logger(__name__)
 
     @cache(
         "hist_data_cache",
@@ -29,7 +36,25 @@ class SinaHistorical(HistoricalDataProvider):
         self.interval = self.interval.lower()
         self._validate_interval_params(self.interval, self.interval_multiplier)
 
+        start_time = time.time()
+
         try:
+            self.logger.debug(
+                "Fetching historical data",
+                extra={
+                    "context": {
+                        "source": "sina",
+                        "symbol": self.symbol,
+                        "interval": self.interval,
+                        "interval_multiplier": self.interval_multiplier,
+                        "adjust": self.adjust,
+                        "start_date": self.start_date,
+                        "end_date": self.end_date,
+                        "action": "fetch_start",
+                    }
+                },
+            )
+
             stock = (
                 f"sh{self.symbol}"
                 if not self.symbol.startswith(("sh", "sz", "bj"))
@@ -43,8 +68,32 @@ class SinaHistorical(HistoricalDataProvider):
             else:
                 df = self._get_daily_plus_data(stock)
 
+            duration_ms = (time.time() - start_time) * 1000
+
+            log_api_request(
+                logger=self.logger,
+                source="sina",
+                endpoint="historical",
+                params={"symbol": self.symbol, "interval": self.interval, "adjust": self.adjust},
+                duration_ms=duration_ms,
+                status="success",
+                rows=len(df),
+            )
+
             return df
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+
+            log_api_request(
+                logger=self.logger,
+                source="sina",
+                endpoint="historical",
+                params={"symbol": self.symbol, "interval": self.interval},
+                duration_ms=duration_ms,
+                status="error",
+                error=str(e),
+            )
+
             raise ValueError(f"Failed to fetch historical data: {str(e)}") from e
 
     def _get_minute_data(self, stock: str) -> pd.DataFrame:

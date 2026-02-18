@@ -5,7 +5,7 @@
 """
 
 import re
-from typing import Dict, Optional, Tuple
+
 import pandas as pd
 
 from .models import FieldType, NamingRules
@@ -24,7 +24,7 @@ class FieldStandardizer:
         self.naming_rules = naming_rules
         self._field_type_patterns = self._build_field_type_mapping()
     
-    def _build_field_type_mapping(self) -> Dict[FieldType, str]:
+    def _build_field_type_mapping(self) -> dict[FieldType, str]:
         """
         构建字段类型到命名模式的映射
         
@@ -100,7 +100,7 @@ class FieldStandardizer:
     def standardize_dataframe(
         self, 
         df: pd.DataFrame, 
-        field_mapping: Dict[str, FieldType]
+        field_mapping: dict[str, FieldType]
     ) -> pd.DataFrame:
         """
         标准化整个DataFrame的字段名
@@ -135,7 +135,7 @@ class FieldStandardizer:
         self, 
         field_name: str, 
         field_type: FieldType
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """
         验证字段名是否符合规范
         

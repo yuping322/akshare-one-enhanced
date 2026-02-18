@@ -2,17 +2,18 @@
 Unit tests for dragon tiger list (龙虎榜) data module.
 """
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import Mock, patch
+import pytest
 
 from akshare_one.modules.lhb import (
+    get_dragon_tiger_broker_stats,
     get_dragon_tiger_list,
     get_dragon_tiger_summary,
-    get_dragon_tiger_broker_stats,
 )
-from akshare_one.modules.lhb.factory import DragonTigerFactory
 from akshare_one.modules.lhb.eastmoney import EastmoneyDragonTigerProvider
+from akshare_one.modules.lhb.factory import DragonTigerFactory
 
 
 class TestDragonTigerFactory:

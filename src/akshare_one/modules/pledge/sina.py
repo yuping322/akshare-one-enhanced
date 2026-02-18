@@ -4,7 +4,7 @@ Sina equity pledge data provider.
 This module implements the equity pledge data provider using Sina as the data source.
 """
 
-from typing import Optional
+
 import pandas as pd
 
 from .base import EquityPledgeProvider
@@ -25,7 +25,7 @@ class SinaEquityPledgeProvider(EquityPledgeProvider):
 
     def get_equity_pledge(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

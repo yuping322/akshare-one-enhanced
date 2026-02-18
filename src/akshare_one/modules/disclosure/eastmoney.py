@@ -74,8 +74,9 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
         
         # Fetch data from akshare
         try:
-            import akshare as ak
             from datetime import datetime, timedelta
+
+            import akshare as ak
             
             # Convert dates to datetime objects
             start_dt = datetime.strptime(start_date, '%Y-%m-%d')
@@ -232,8 +233,8 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
         
         # Fetch data from akshare
         try:
+
             import akshare as ak
-            from datetime import datetime
             
             if symbol:
                 # Fetch data for single stock
@@ -370,8 +371,8 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
         
         # Fetch data from akshare
         try:
+
             import akshare as ak
-            from datetime import datetime
             
             # Fetch all repurchase data
             raw_df = ak.stock_repurchase_em()

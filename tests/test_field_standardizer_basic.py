@@ -4,11 +4,10 @@ Basic unit tests for FieldStandardizer class structure.
 Tests the initialization and basic structure of the FieldStandardizer class.
 """
 
-import pytest
 from akshare_one.modules.field_naming import (
     FieldStandardizer,
-    NamingRules,
     FieldType,
+    NamingRules,
 )
 
 

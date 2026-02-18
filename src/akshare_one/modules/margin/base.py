@@ -5,7 +5,7 @@ This module defines the abstract interface for margin financing data providers.
 """
 
 from abc import abstractmethod
-from typing import Optional
+
 import pandas as pd
 
 from ..base import BaseProvider
@@ -35,7 +35,7 @@ class MarginProvider(BaseProvider):
     @abstractmethod
     def get_margin_data(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

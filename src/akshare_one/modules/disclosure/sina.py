@@ -72,8 +72,9 @@ class SinaDisclosureProvider(DisclosureProvider):
             )
 
         try:
-            import akshare as ak
             from datetime import datetime, timedelta
+
+            import akshare as ak
 
             start_dt = datetime.strptime(start_date, '%Y-%m-%d')
             end_dt = datetime.strptime(end_date, '%Y-%m-%d')

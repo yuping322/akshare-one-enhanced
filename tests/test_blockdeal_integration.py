@@ -4,8 +4,8 @@ Integration tests for block deal data module.
 These tests make real API calls to verify the module works end-to-end.
 """
 
-import pytest
 import pandas as pd
+import pytest
 
 from akshare_one.modules.blockdeal import (
     get_block_deal,

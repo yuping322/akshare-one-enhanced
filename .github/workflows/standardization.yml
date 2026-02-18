@@ -1,0 +1,42 @@
+name: Field Standardization Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  standardization-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest pytest-cov
+
+      - name: Run standardization check
+        run: python tests/standardization_check.py --ci
+
+      - name: Run base provider tests
+        run: python -m pytest tests/test_base_provider.py -v --tb=short
+
+      - name: Generate data dictionary
+        run: python tests/data_dictionary_generator.py --generate-all
+
+      - name: Upload check results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: standardization-results
+          path: |
+            tests/results/
+            docs/data_dictionary.json

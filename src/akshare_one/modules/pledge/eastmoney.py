@@ -5,7 +5,7 @@ This module implements the equity pledge data provider using Eastmoney as the da
 It wraps akshare functions and standardizes the output format.
 """
 
-from typing import Optional
+
 import pandas as pd
 
 from .base import EquityPledgeProvider
@@ -37,7 +37,7 @@ class EastmoneyEquityPledgeProvider(EquityPledgeProvider):
     
     def get_equity_pledge(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

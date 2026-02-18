@@ -5,7 +5,7 @@ This module defines the abstract interface for goodwill data providers.
 """
 
 from abc import abstractmethod
-from typing import Optional
+
 import pandas as pd
 
 from ..base import BaseProvider
@@ -36,7 +36,7 @@ class GoodwillProvider(BaseProvider):
     @abstractmethod
     def get_goodwill_data(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

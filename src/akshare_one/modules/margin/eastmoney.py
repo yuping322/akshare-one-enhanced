@@ -5,7 +5,7 @@ This module implements the margin financing data provider using Eastmoney as the
 It wraps akshare functions and standardizes the output format.
 """
 
-from typing import Optional
+
 import pandas as pd
 
 from .base import MarginProvider
@@ -37,7 +37,7 @@ class EastmoneyMarginProvider(MarginProvider):
     
     def get_margin_data(
         self,
-        symbol: Optional[str],
+        symbol: str | None,
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:

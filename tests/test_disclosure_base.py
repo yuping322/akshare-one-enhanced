@@ -4,7 +4,6 @@ Unit tests for DisclosureProvider base class.
 Tests the data standardization methods specific to disclosure data.
 """
 
-import pytest
 from src.akshare_one.modules.disclosure.base import DisclosureProvider
 
 

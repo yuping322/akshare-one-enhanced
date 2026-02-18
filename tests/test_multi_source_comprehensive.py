@@ -1,6 +1,5 @@
 """Comprehensive tests for multi-source functionality and failover mechanisms."""
 
-import unittest.mock as mock
 from unittest.mock import Mock, patch
 
 import pandas as pd
@@ -9,7 +8,6 @@ import pytest
 from akshare_one import (
     get_basic_info_multi_source,
     get_financial_data_multi_source,
-    get_financial_metrics_multi_source,
     get_hist_data_multi_source,
     get_news_data_multi_source,
 )
@@ -193,9 +191,7 @@ def test_get_hist_data_multi_source_integration():
         
         # Configure factory to return different mocks based on source name
         def get_mock_provider(source, **kwargs):
-            if source == "eastmoney_direct":
-                return mock_provider1
-            elif source == "eastmoney":
+            if source == "eastmoney_direct" or source == "eastmoney":
                 return mock_provider1
             elif source == "sina":
                 return mock_provider2

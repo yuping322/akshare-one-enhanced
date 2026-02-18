@@ -2,16 +2,17 @@
 Unit tests for restricted stock release (限售解禁) data module.
 """
 
-import pytest
+from unittest.mock import patch
+
 import pandas as pd
-from unittest.mock import Mock, patch
+import pytest
 
 from akshare_one.modules.restricted import (
     get_restricted_release,
     get_restricted_release_calendar,
 )
-from akshare_one.modules.restricted.factory import RestrictedReleaseFactory
 from akshare_one.modules.restricted.eastmoney import EastmoneyRestrictedReleaseProvider
+from akshare_one.modules.restricted.factory import RestrictedReleaseFactory
 
 
 class TestRestrictedReleaseFactory:

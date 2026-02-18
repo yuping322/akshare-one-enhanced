@@ -1,0 +1,175 @@
+{
+  "passed": [
+    {
+      "check": "config_file_exists",
+      "message": "配置文件存在: /Users/fengzhi/Downloads/git/akshare-one-enhanced/src/akshare_one/modules/config/field_mappings.json"
+    },
+    {
+      "check": "config_modules_count",
+      "message": "已配置模块数: 31"
+    },
+    {
+      "check": "module_standardization",
+      "module": "disclosure",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "options",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "analyst",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "restricted",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "futures",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "financial",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "lhb",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "bond",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "indicators",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "insider",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "fundflow",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "shareholder",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "pledge",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "limitup",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "info",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "realtime",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "historical",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "macro",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "news",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "concept",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "esg",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "industry",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "index",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "etf",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "goodwill",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "blockdeal",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "margin",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "performance",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "sentiment",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "valuation",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "northbound",
+      "message": "模块已完成标准化配置"
+    }
+  ],
+  "warnings": [],
+  "errors": [],
+  "summary": {
+    "total_modules": 31,
+    "modules_with_config": 31,
+    "modules_using_standardization": 31,
+    "modules_needing_attention": 0
+  }
+}

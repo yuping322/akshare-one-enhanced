@@ -6,27 +6,38 @@ This module provides interfaces to fetch ESG rating data including:
 - ESG rating rank (ESG 评级排名) - industry rankings
 """
 
-from typing import Literal, Optional
+from typing import Any, Dict, Literal, Optional
+
 import pandas as pd
 
 from .factory import ESGFactory
 
 
 def get_esg_rating(
-    symbol: Optional[str] = None,
+    symbol: str | None = None,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
     source: Literal["eastmoney"] = "eastmoney",
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
+    page: int = 1,
+    page_size: int | None = 1,
 ) -> pd.DataFrame:
     """
     Get ESG rating data.
-    
+
     Args:
         symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
         source: Data source ('eastmoney')
-    
+        columns: Columns to return (default: all)
+        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        page: Page number to return (default: 1)
+        page_size: Number of items per page (default: 1, returns only first page)
+            If None, returns all matching data.
+            If specified, returns only the requested page of data.
+
     Returns:
         pd.DataFrame: Standardized ESG rating data with columns:
             - symbol: Stock symbol
@@ -36,35 +47,40 @@ def get_esg_rating(
             - s_score: Social score
             - g_score: Governance score
             - rating_agency: Rating agency name
-    
+
     Example:
         >>> # Get ESG rating for a specific stock
         >>> df = get_esg_rating("600000", start_date="2024-01-01")
         >>> print(df.head())
-        >>> 
-        >>> # Get ESG rating for all stocks
-        >>> df = get_esg_rating(start_date="2024-01-01", end_date="2024-12-31")
+        >>>
+        >>> # Get first page with 10 items
+        >>> df = get_esg_rating(page=1, page_size=10)
         >>> print(df.head())
     """
     provider = ESGFactory.get_provider(source=source)
-    return provider.get_esg_rating(symbol, start_date, end_date)
+    df = provider.get_esg_rating(symbol, start_date, end_date, page, page_size)
+    return provider.apply_data_filter(df, columns, row_filter)
 
 
 def get_esg_rating_rank(
     date: str,
-    industry: Optional[str] = None,
+    industry: str | None = None,
     top_n: int = 100,
     source: Literal["eastmoney"] = "eastmoney",
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """
     Get ESG rating rankings.
-    
+
     Args:
         date: Query date in YYYY-MM-DD format
         industry: Industry filter (optional). If None, returns all industries.
         top_n: Number of top stocks to return (default: 100)
         source: Data source ('eastmoney')
-    
+        columns: Columns to return (default: all)
+        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+
     Returns:
         pd.DataFrame: ESG rating rankings with columns:
             - rank: Overall rank
@@ -73,22 +89,23 @@ def get_esg_rating_rank(
             - esg_score: Overall ESG score
             - industry: Industry name
             - industry_rank: Rank within industry
-    
+
     Example:
         >>> # Get top 100 ESG ratings
         >>> df = get_esg_rating_rank("2024-12-31")
         >>> print(df.head())
-        >>> 
+        >>>
         >>> # Get top ESG ratings for banking industry
         >>> df = get_esg_rating_rank("2024-12-31", industry="银行")
         >>> print(df.head())
     """
     provider = ESGFactory.get_provider(source=source)
-    return provider.get_esg_rating_rank(date, industry, top_n)
+    df = provider.get_esg_rating_rank(date, industry, top_n)
+    return provider.apply_data_filter(df, columns, row_filter)
 
 
 __all__ = [
-    'get_esg_rating',
-    'get_esg_rating_rank',
-    'ESGFactory',
+    "get_esg_rating",
+    "get_esg_rating_rank",
+    "ESGFactory",
 ]

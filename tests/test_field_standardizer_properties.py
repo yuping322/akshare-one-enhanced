@@ -8,12 +8,14 @@ Task: 2.3 为 FieldStandardizer 编写属性测试
 """
 
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
+
 import pandas as pd
 import pytest
 
 try:
-    from hypothesis import given, strategies as st, assume, settings
+    from hypothesis import assume, given, settings
+    from hypothesis import strategies as st
     from hypothesis.extra.pandas import column, data_frames
     HYPOTHESIS_AVAILABLE = True
 except ImportError:
@@ -22,10 +24,9 @@ except ImportError:
 
 from akshare_one.modules.field_naming import (
     FieldStandardizer,
-    NamingRules,
     FieldType,
+    NamingRules,
 )
-
 
 # ============================================================================
 # Test Data Generators (Hypothesis Strategies)
