@@ -52,9 +52,7 @@ def get_hist_data(
         ],
         Field(description="List of technical indicators to calculate"),
     ] = None,
-    recent_n: Annotated[
-        int | None, Field(description="Number of most recent records to return", ge=1)
-    ] = None,
+    recent_n: Annotated[int | None, Field(description="Number of most recent records to return", ge=1)] = None,
 ) -> str:
     """Get historical stock market data with optional technical indicators.
 
@@ -125,9 +123,7 @@ def get_realtime_data(
 @mcp.tool
 def get_news_data(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
-    recent_n: Annotated[
-        int | None, Field(description="Number of most recent records to return", ge=1)
-    ] = 10,
+    recent_n: Annotated[int | None, Field(description="Number of most recent records to return", ge=1)] = 10,
 ) -> str:
     """Get stock-related news data."""
     df = ako.get_news_data(symbol=symbol, source="eastmoney")
@@ -139,9 +135,7 @@ def get_news_data(
 @mcp.tool
 def get_balance_sheet(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
-    recent_n: Annotated[
-        int | None, Field(description="Number of most recent records to return", ge=1)
-    ] = 10,
+    recent_n: Annotated[int | None, Field(description="Number of most recent records to return", ge=1)] = 10,
 ) -> str:
     """Get company balance sheet data."""
     df = ako.get_balance_sheet(symbol=symbol, source="sina")
@@ -153,9 +147,7 @@ def get_balance_sheet(
 @mcp.tool
 def get_income_statement(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
-    recent_n: Annotated[
-        int | None, Field(description="Number of most recent records to return", ge=1)
-    ] = 10,
+    recent_n: Annotated[int | None, Field(description="Number of most recent records to return", ge=1)] = 10,
 ) -> str:
     """Get company income statement data."""
     df = ako.get_income_statement(symbol=symbol, source="sina")
@@ -168,9 +160,7 @@ def get_income_statement(
 def get_cash_flow(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
     source: Annotated[Literal["sina"], Field(description="Data source")] = "sina",
-    recent_n: Annotated[
-        int | None, Field(description="Number of most recent records to return", ge=1)
-    ] = 10,
+    recent_n: Annotated[int | None, Field(description="Number of most recent records to return", ge=1)] = 10,
 ) -> str:
     """Get company cash flow statement data."""
     df = ako.get_cash_flow(symbol=symbol, source=source)
@@ -191,9 +181,7 @@ def get_inner_trade_data(
 @mcp.tool
 def get_financial_metrics(
     symbol: Annotated[str, Field(description="Stock symbol/ticker (e.g. '000001')")],
-    recent_n: Annotated[
-        int | None, Field(description="Number of most recent records to return", ge=1)
-    ] = 10,
+    recent_n: Annotated[int | None, Field(description="Number of most recent records to return", ge=1)] = 10,
 ) -> str:
     """Get key financial metrics from the three major financial statements."""
     df = ako.get_financial_metrics(symbol)
@@ -238,9 +226,7 @@ def get_hist_data_multi_source(
         list[str] | None,
         Field(description="List of data sources to try in order"),
     ] = None,
-    recent_n: Annotated[
-        int | None, Field(description="Number of most recent records to return", ge=1)
-    ] = None,
+    recent_n: Annotated[int | None, Field(description="Number of most recent records to return", ge=1)] = None,
 ) -> str:
     """Get historical stock data with automatic multi-source failover.
 
@@ -294,9 +280,7 @@ def get_stock_fund_flow(
     Returns fund flow data including main net inflow, super large orders,
     large orders, medium orders, and small orders.
     """
-    from akshare_one.modules.fundflow import get_stock_fund_flow as _get_stock_fund_flow
-
-    df = _get_stock_fund_flow(symbol=symbol, start_date=start_date, end_date=end_date)
+    df = ako.get_stock_fund_flow(symbol=symbol, start_date=start_date, end_date=end_date)
     if recent_n is not None:
         df = df.tail(recent_n)
     return df.to_json(orient="records") or "[]"
@@ -309,9 +293,7 @@ def get_sector_fund_flow(
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
 ) -> str:
     """Get sector fund flow data (industry or concept sectors)."""
-    from akshare_one.modules.fundflow import get_sector_fund_flow as _get_sector_fund_flow
-
-    df = _get_sector_fund_flow(sector_type=sector_type, start_date=start_date, end_date=end_date)
+    df = ako.get_sector_fund_flow(sector_type=sector_type, start_date=start_date, end_date=end_date)
     return df.to_json(orient="records") or "[]"
 
 
@@ -323,9 +305,7 @@ def get_main_fund_flow_rank(
     ] = "net_inflow",
 ) -> str:
     """Get main fund flow ranking by date."""
-    from akshare_one.modules.fundflow import get_main_fund_flow_rank as _get_main_fund_flow_rank
-
-    df = _get_main_fund_flow_rank(date=date, indicator=indicator)
+    df = ako.get_main_fund_flow_rank(date=date, indicator=indicator)
     return df.to_json(orient="records") or "[]"
 
 
@@ -339,9 +319,7 @@ def get_northbound_flow(
     market: Annotated[Literal["sh", "sz", "all"], Field(description="Market type")] = "all",
 ) -> str:
     """Get northbound capital flow data (Shanghai/Shenzhen Connect)."""
-    from akshare_one.modules.northbound import get_northbound_flow as _get_northbound_flow
-
-    df = _get_northbound_flow(start_date=start_date, end_date=end_date, market=market)
+    df = ako.get_northbound_flow(start_date=start_date, end_date=end_date, market=market)
     return df.to_json(orient="records") or "[]"
 
 
@@ -353,9 +331,7 @@ def get_northbound_holdings(
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,
 ) -> str:
     """Get northbound capital holdings for a specific stock."""
-    from akshare_one.modules.northbound import get_northbound_holdings as _get_northbound_holdings
-
-    df = _get_northbound_holdings(symbol=symbol, start_date=start_date, end_date=end_date)
+    df = ako.get_northbound_holdings(symbol=symbol, start_date=start_date, end_date=end_date)
     if recent_n is not None:
         df = df.tail(recent_n)
     return df.to_json(orient="records") or "[]"
@@ -368,11 +344,7 @@ def get_northbound_top_stocks(
     top_n: Annotated[int, Field(description="Number of top stocks to return", ge=1, le=1000)] = 100,
 ) -> str:
     """Get northbound capital top stocks ranking."""
-    from akshare_one.modules.northbound import (
-        get_northbound_top_stocks as _get_northbound_top_stocks,
-    )
-
-    df = _get_northbound_top_stocks(date=date, market=market, top_n=top_n)
+    df = ako.get_northbound_top_stocks(date=date, market=market, top_n=top_n)
     return df.to_json(orient="records") or "[]"
 
 
@@ -382,9 +354,7 @@ def get_northbound_top_stocks(
 @mcp.tool
 def get_dragon_tiger_list(
     date: Annotated[str, Field(description="Query date (YYYY-MM-DD)")],
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (optional, None for all stocks)")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (optional, None for all stocks)")] = None,
 ) -> str:
     """Get dragon tiger list (trading anomaly data) for a specific date."""
     from akshare_one.modules.lhb import get_dragon_tiger_list as _get_dragon_tiger_list
@@ -397,9 +367,7 @@ def get_dragon_tiger_list(
 def get_dragon_tiger_summary(
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")],
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")],
-    group_by: Annotated[
-        Literal["stock", "broker", "reason"], Field(description="Grouping dimension")
-    ] = "stock",
+    group_by: Annotated[Literal["stock", "broker", "reason"], Field(description="Grouping dimension")] = "stock",
 ) -> str:
     """Get dragon tiger list summary statistics."""
     from akshare_one.modules.lhb import get_dragon_tiger_summary as _get_dragon_tiger_summary
@@ -465,9 +433,7 @@ def get_limit_up_stats(
 
 @mcp.tool
 def get_disclosure_news(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")] = "1970-01-01",
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
     category: Annotated[
@@ -479,9 +445,7 @@ def get_disclosure_news(
     """Get disclosure news data (announcements, dividends, repurchases, ST risk)."""
     from akshare_one.modules.disclosure import get_disclosure_news as _get_disclosure_news
 
-    df = _get_disclosure_news(
-        symbol=symbol, start_date=start_date, end_date=end_date, category=category
-    )
+    df = _get_disclosure_news(symbol=symbol, start_date=start_date, end_date=end_date, category=category)
     if recent_n is not None:
         df = df.tail(recent_n)
     return df.to_json(orient="records") or "[]"
@@ -489,9 +453,7 @@ def get_disclosure_news(
 
 @mcp.tool
 def get_dividend_data(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")] = "1970-01-01",
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,
@@ -507,9 +469,7 @@ def get_dividend_data(
 
 @mcp.tool
 def get_repurchase_data(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")] = "1970-01-01",
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,
@@ -525,9 +485,7 @@ def get_repurchase_data(
 
 @mcp.tool
 def get_st_delist_data(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,
 ) -> str:
     """Get ST/delist risk data for stocks."""
@@ -656,9 +614,7 @@ def get_social_financing(
 
 @mcp.tool
 def get_block_deal(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")] = "1970-01-01",
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,
@@ -693,9 +649,7 @@ def get_block_deal_summary(
 
 @mcp.tool
 def get_margin_data(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")] = "1970-01-01",
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,
@@ -730,9 +684,7 @@ def get_margin_summary(
 
 @mcp.tool
 def get_equity_pledge(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")] = "1970-01-01",
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,
@@ -765,9 +717,7 @@ def get_equity_pledge_ratio_rank(
 
 @mcp.tool
 def get_restricted_release(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")] = "1970-01-01",
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,
@@ -800,9 +750,7 @@ def get_restricted_release_calendar(
 
 @mcp.tool
 def get_goodwill_data(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")] = "1970-01-01",
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,
@@ -843,9 +791,7 @@ def get_goodwill_by_industry(
 
 @mcp.tool
 def get_esg_rating(
-    symbol: Annotated[
-        str | None, Field(description="Stock symbol (e.g. '600000'), None for all")
-    ] = None,
+    symbol: Annotated[str | None, Field(description="Stock symbol (e.g. '600000'), None for all")] = None,
     start_date: Annotated[str, Field(description="Start date (YYYY-MM-DD)")] = "1970-01-01",
     end_date: Annotated[str, Field(description="End date (YYYY-MM-DD)")] = "2030-12-31",
     recent_n: Annotated[int | None, Field(description="Return most recent N records", ge=1)] = None,

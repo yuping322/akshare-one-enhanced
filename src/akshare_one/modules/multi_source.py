@@ -6,7 +6,7 @@ and falls back to the next one if the current source fails.
 
 import logging
 from dataclasses import dataclass
-from typing import Any, TypeVar
+from typing import Any, TypeVar, Optional
 
 import pandas as pd
 
@@ -24,7 +24,7 @@ class ExecutionResult:
     source: str | None
     error: str | None
     attempts: int
-    error_details: list[tuple[str, str]] = None  # [(source, error_msg), ...]
+    error_details: Optional[list[tuple[str, str]]] = None  # [(source, error_msg), ...]
 
     def __post_init__(self) -> None:
         if self.error_details is None:
@@ -155,8 +155,7 @@ class MultiSourceRouter:
                     self._update_stats(name, True)
                     if self.enable_logging and error_details:
                         logger.info(
-                            f"Successfully fetched data from '{name}' after "
-                            f"{len(error_details)} failed attempt(s)"
+                            f"Successfully fetched data from '{name}' after {len(error_details)} failed attempt(s)"
                         )
                     return result
 
@@ -173,18 +172,12 @@ class MultiSourceRouter:
                 error_details.append((name, error_msg))
                 self._update_stats(name, False)
                 if self.enable_logging:
-                    logger.warning(
-                        f"Provider '{name}' failed for '{method_name}': {error_msg}"
-                    )
+                    logger.warning(f"Provider '{name}' failed for '{method_name}': {error_msg}")
                 continue
 
         # All providers failed
-        error_summary = "\n".join(
-            [f"  {source}: {error}" for source, error in error_details]
-        )
-        raise ValueError(
-            f"All data sources failed for '{method_name}':\n{error_summary}"
-        )
+        error_summary = "\n".join([f"  {source}: {error}" for source, error in error_details])
+        raise ValueError(f"All data sources failed for '{method_name}':\n{error_summary}")
 
     def execute_with_fallback(
         self,
@@ -224,9 +217,7 @@ class MultiSourceRouter:
                             f"using fallback method '{fallback_method}'"
                         )
                 else:
-                    error_msg = (
-                        f"Provider has neither '{primary_method}' nor '{fallback_method}'"
-                    )
+                    error_msg = f"Provider has neither '{primary_method}' nor '{fallback_method}'"
                     error_details.append((name, error_msg))
                     self._update_stats(name, False)
                     raise AttributeError(error_msg)
@@ -253,12 +244,8 @@ class MultiSourceRouter:
                 continue
 
         # All providers failed
-        error_summary = "\n".join(
-            [f"  {source}: {error}" for source, error in error_details]
-        )
-        raise ValueError(
-            f"All providers failed for '{primary_method}' (or '{fallback_method}'):\n{error_summary}"
-        )
+        error_summary = "\n".join([f"  {source}: {error}" for source, error in error_details])
+        raise ValueError(f"All providers failed for '{primary_method}' (or '{fallback_method}'):\n{error_summary}")
 
     def execute_with_result(
         self,
@@ -310,9 +297,7 @@ class MultiSourceRouter:
                 self._update_stats(name, False)
 
         # All providers failed
-        error_summary = "\n".join(
-            [f"  {source}: {error}" for source, error in error_details]
-        )
+        error_summary = "\n".join([f"  {source}: {error}" for source, error in error_details])
         return ExecutionResult(
             success=False,
             data=None,
@@ -450,6 +435,190 @@ def create_financial_router(
     for source in sources:
         try:
             provider = FinancialDataFactory.get_provider(source, symbol=symbol)
+            providers.append((source, provider))
+        except Exception as e:
+            logger.warning(f"Failed to initialize provider '{source}': {e}")
+
+    return MultiSourceRouter(
+        providers,
+        required_columns=required_columns,
+        min_rows=min_rows,
+    )
+
+
+def create_northbound_router(
+    sources: list[str] | None = None,
+    required_columns: list[str] | None = None,
+    min_rows: int = 1,
+) -> MultiSourceRouter:
+    """Create a router for northbound capital data with multiple sources.
+
+    Args:
+        sources: List of source names to try (default: ["eastmoney", "sina"])
+        required_columns: Required columns in result
+        min_rows: Minimum rows required for valid result
+
+    Returns:
+        MultiSourceRouter: Configured router
+    """
+    from .northbound.factory import NorthboundFactory
+
+    if sources is None:
+        sources = ["eastmoney", "sina"]
+
+    providers = []
+
+    for source in sources:
+        try:
+            provider = NorthboundFactory.get_provider(source)
+            providers.append((source, provider))
+        except Exception as e:
+            logger.warning(f"Failed to initialize provider '{source}': {e}")
+
+    return MultiSourceRouter(
+        providers,
+        required_columns=required_columns,
+        min_rows=min_rows,
+    )
+
+
+def create_fundflow_router(
+    symbol: str | None = None,
+    sources: list[str] | None = None,
+    required_columns: list[str] | None = None,
+    min_rows: int = 1,
+) -> MultiSourceRouter:
+    """Create a router for fund flow data with multiple sources.
+
+    Args:
+        symbol: Stock symbol (optional for sector/rank queries)
+        sources: List of source names to try (default: ["eastmoney", "sina"])
+        required_columns: Required columns in result
+        min_rows: Minimum rows required for valid result
+
+    Returns:
+        MultiSourceRouter: Configured router
+    """
+    from .fundflow.factory import FundFlowFactory
+
+    if sources is None:
+        sources = ["eastmoney", "sina"]
+
+    providers = []
+
+    for source in sources:
+        try:
+            provider = FundFlowFactory.get_provider(source, symbol=symbol)
+            providers.append((source, provider))
+        except Exception as e:
+            logger.warning(f"Failed to initialize provider '{source}': {e}")
+
+    return MultiSourceRouter(
+        providers,
+        required_columns=required_columns,
+        min_rows=min_rows,
+    )
+
+
+def create_dragon_tiger_router(
+    sources: list[str] | None = None,
+    required_columns: list[str] | None = None,
+    min_rows: int = 1,
+) -> MultiSourceRouter:
+    """Create a router for dragon tiger list data with multiple sources.
+
+    Args:
+        sources: List of source names to try (default: ["eastmoney", "sina"])
+        required_columns: Required columns in result
+        min_rows: Minimum rows required for valid result
+
+    Returns:
+        MultiSourceRouter: Configured router
+    """
+    from .lhb.factory import DragonTigerFactory
+
+    if sources is None:
+        sources = ["eastmoney", "sina"]
+
+    providers = []
+
+    for source in sources:
+        try:
+            provider = DragonTigerFactory.get_provider(source)
+            providers.append((source, provider))
+        except Exception as e:
+            logger.warning(f"Failed to initialize provider '{source}': {e}")
+
+    return MultiSourceRouter(
+        providers,
+        required_columns=required_columns,
+        min_rows=min_rows,
+    )
+
+
+def create_limit_up_down_router(
+    sources: list[str] | None = None,
+    required_columns: list[str] | None = None,
+    min_rows: int = 1,
+) -> MultiSourceRouter:
+    """Create a router for limit up/down data with multiple sources.
+
+    Args:
+        sources: List of source names to try (default: ["eastmoney", "sina"])
+        required_columns: Required columns in result
+        min_rows: Minimum rows required for valid result
+
+    Returns:
+        MultiSourceRouter: Configured router
+    """
+    from .limitup.factory import LimitUpDownFactory
+
+    if sources is None:
+        sources = ["eastmoney", "sina"]
+
+    providers = []
+
+    for source in sources:
+        try:
+            provider = LimitUpDownFactory.get_provider(source)
+            providers.append((source, provider))
+        except Exception as e:
+            logger.warning(f"Failed to initialize provider '{source}': {e}")
+
+    return MultiSourceRouter(
+        providers,
+        required_columns=required_columns,
+        min_rows=min_rows,
+    )
+
+
+def create_block_deal_router(
+    symbol: str | None = None,
+    sources: list[str] | None = None,
+    required_columns: list[str] | None = None,
+    min_rows: int = 1,
+) -> MultiSourceRouter:
+    """Create a router for block deal data with multiple sources.
+
+    Args:
+        symbol: Stock symbol (optional)
+        sources: List of source names to try (default: ["eastmoney", "sina"])
+        required_columns: Required columns in result
+        min_rows: Minimum rows required for valid result
+
+    Returns:
+        MultiSourceRouter: Configured router
+    """
+    from .blockdeal.factory import BlockDealFactory
+
+    if sources is None:
+        sources = ["eastmoney", "sina"]
+
+    providers = []
+
+    for source in sources:
+        try:
+            provider = BlockDealFactory.get_provider(source, symbol=symbol)
             providers.append((source, provider))
         except Exception as e:
             logger.warning(f"Failed to initialize provider '{source}': {e}")

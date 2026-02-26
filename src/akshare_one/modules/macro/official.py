@@ -13,197 +13,177 @@ from .base import MacroProvider
 class OfficialMacroProvider(MacroProvider):
     """
     Macro economic data provider using official sources.
-    
+
     This provider wraps akshare functions to fetch macro data from official
     sources and standardizes the output format for consistency.
     """
-    
+
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return 'official'
-    
+        return "official"
+
     def fetch_data(self) -> pd.DataFrame:
         """
         Fetch raw data from official sources.
-        
+
         This method is not directly used as each specific method
         fetches its own data. Implemented for BaseProvider compatibility.
-        
+
         Returns:
             pd.DataFrame: Empty DataFrame
         """
         return pd.DataFrame()
-    
-    def get_lpr_rate(
-        self,
-        start_date: str,
-        end_date: str
-    ) -> pd.DataFrame:
+
+    def get_lpr_rate(self, start_date: str, end_date: str) -> pd.DataFrame:
         """
         Get LPR (Loan Prime Rate) interest rate data.
-        
+
         Args:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
-        
+
         Returns:
             pd.DataFrame: Standardized LPR rate data with columns:
                 - date: Date (YYYY-MM-DD)
                 - lpr_1y: 1-year LPR rate (%)
                 - lpr_5y: 5-year LPR rate (%)
-        
+
         Example:
             >>> provider = OfficialMacroProvider()
             >>> df = provider.get_lpr_rate('2024-01-01', '2024-12-31')
         """
         self.validate_date_range(start_date, end_date)
-        
+
         try:
             import akshare as ak
-            
+
             # Call akshare function
             raw_df = ak.macro_china_lpr()
-            
+
             if raw_df.empty:
-                return self.create_empty_dataframe([
-                    'date', 'lpr_1y', 'lpr_5y'
-                ])
-            
+                return self.create_empty_dataframe(["date", "lpr_1y", "lpr_5y"])
+
             # Standardize the data
             standardized = pd.DataFrame()
-            standardized['date'] = pd.to_datetime(raw_df['TRADE_DATE']).dt.strftime('%Y-%m-%d')
-            standardized['lpr_1y'] = raw_df['LPR1Y'].astype(float)
-            standardized['lpr_5y'] = raw_df['LPR5Y'].astype(float)
-            
+            standardized["date"] = pd.to_datetime(raw_df["TRADE_DATE"]).dt.strftime("%Y-%m-%d")
+            standardized["lpr_1y"] = raw_df["LPR1Y"].astype(float)
+            standardized["lpr_5y"] = raw_df["LPR5Y"].astype(float)
+
             # Filter by date range
-            mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
+            mask = (standardized["date"] >= start_date) & (standardized["date"] <= end_date)
             result = standardized[mask].reset_index(drop=True)
-            
+
             # Ensure JSON compatibility
             return self.ensure_json_compatible(result)
-            
+
         except Exception as e:
             raise RuntimeError(f"Failed to fetch LPR rate data: {e}") from e
-    
-    def get_pmi_index(
-        self,
-        start_date: str,
-        end_date: str,
-        pmi_type: str
-    ) -> pd.DataFrame:
+
+    def get_pmi_index(self, start_date: str, end_date: str, pmi_type: str) -> pd.DataFrame:
         """
         Get PMI (Purchasing Managers' Index) data.
-        
+
         Args:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
             pmi_type: PMI type ('manufacturing', 'non_manufacturing', or 'caixin')
-        
+
         Returns:
             pd.DataFrame: Standardized PMI index data with columns:
                 - date: Date (YYYY-MM-DD)
                 - pmi_value: PMI value
                 - yoy: Year-over-year change
                 - mom: Month-over-month change
-        
+
         Raises:
             ValueError: If pmi_type is invalid
         """
         self.validate_date_range(start_date, end_date)
-        
-        if pmi_type not in ['manufacturing', 'non_manufacturing', 'caixin']:
-            raise ValueError(
-                f"Invalid pmi_type: {pmi_type}. "
-                "Must be 'manufacturing', 'non_manufacturing', or 'caixin'"
-            )
-        
+
+        if pmi_type not in ["manufacturing", "non_manufacturing", "caixin"]:
+            raise ValueError(f"Invalid pmi_type: {pmi_type}. Must be 'manufacturing', 'non_manufacturing', or 'caixin'")
+
         try:
             import re
 
             import akshare as ak
-            
+
             # Call appropriate akshare function based on PMI type
-            if pmi_type == 'manufacturing':
+            if pmi_type == "manufacturing":
                 raw_df = ak.macro_china_pmi()
-            elif pmi_type == 'non_manufacturing':
+            elif pmi_type == "non_manufacturing":
                 raw_df = ak.macro_china_non_man_pmi()
             else:  # caixin
                 raw_df = ak.macro_china_cx_pmi()
-            
+
             if raw_df.empty:
-                return self.create_empty_dataframe([
-                    'date', 'pmi_value', 'yoy', 'mom'
-                ])
-            
+                return self.create_empty_dataframe(["date", "pmi_value", "yoy", "mom"])
+
             # Parse Chinese date format (e.g., "2026年01月份" -> "2026-01-01")
             def parse_chinese_date(date_str):
                 """Parse Chinese date format like '2026年01月份' to 'YYYY-MM-DD'"""
-                match = re.match(r'(\d{4})年(\d{2})月份?', str(date_str))
+                match = re.match(r"(\d{4})年(\d{2})月份?", str(date_str))
                 if match:
                     year, month = match.groups()
                     return f"{year}-{month}-01"
                 # Try standard date parsing as fallback
                 try:
-                    return pd.to_datetime(date_str).strftime('%Y-%m-%d')
+                    return pd.to_datetime(date_str).strftime("%Y-%m-%d")
                 except (ValueError, TypeError):
                     return None
-            
+
             # Standardize the data
             standardized = pd.DataFrame()
-            
+
             # Find the date column (could be '月份' or other names)
             date_col = None
-            for col in ['月份', '日期', 'date']:
+            for col in ["月份", "日期", "date"]:
                 if col in raw_df.columns:
                     date_col = col
                     break
             if date_col is None:
                 # Use the first column as date column
                 date_col = raw_df.columns[0]
-            
-            standardized['date'] = raw_df[date_col].apply(parse_chinese_date)
-            
+
+            standardized["date"] = raw_df[date_col].apply(parse_chinese_date)
+
             # Select the appropriate column based on PMI type
-            if pmi_type == 'manufacturing':
-                pmi_col = '制造业-指数' if '制造业-指数' in raw_df.columns else raw_df.columns[1]
-                standardized['pmi_value'] = pd.to_numeric(raw_df[pmi_col], errors='coerce')
-                yoy_col = '制造业-同比增长' if '制造业-同比增长' in raw_df.columns else None
-                standardized['yoy'] = pd.to_numeric(raw_df[yoy_col], errors='coerce') if yoy_col else None
-            elif pmi_type == 'non_manufacturing':
-                pmi_col = '非制造业-指数' if '非制造业-指数' in raw_df.columns else raw_df.columns[1]
-                standardized['pmi_value'] = pd.to_numeric(raw_df[pmi_col], errors='coerce')
-                yoy_col = '非制造业-同比增长' if '非制造业-同比增长' in raw_df.columns else None
-                standardized['yoy'] = pd.to_numeric(raw_df[yoy_col], errors='coerce') if yoy_col else None
+            if pmi_type == "manufacturing":
+                pmi_col = "制造业-指数" if "制造业-指数" in raw_df.columns else raw_df.columns[1]
+                standardized["pmi_value"] = pd.to_numeric(raw_df[pmi_col], errors="coerce")
+                yoy_col = "制造业-同比增长" if "制造业-同比增长" in raw_df.columns else None
+                standardized["yoy"] = pd.to_numeric(raw_df[yoy_col], errors="coerce") if yoy_col else None
+            elif pmi_type == "non_manufacturing":
+                pmi_col = "非制造业-指数" if "非制造业-指数" in raw_df.columns else raw_df.columns[1]
+                standardized["pmi_value"] = pd.to_numeric(raw_df[pmi_col], errors="coerce")
+                yoy_col = "非制造业-同比增长" if "非制造业-同比增长" in raw_df.columns else None
+                standardized["yoy"] = pd.to_numeric(raw_df[yoy_col], errors="coerce") if yoy_col else None
             else:  # caixin
-                pmi_col = '指数' if '指数' in raw_df.columns else raw_df.columns[1]
-                standardized['pmi_value'] = pd.to_numeric(raw_df[pmi_col], errors='coerce')
-                standardized['yoy'] = None
-            
+                pmi_col = "指数" if "指数" in raw_df.columns else raw_df.columns[1]
+                standardized["pmi_value"] = pd.to_numeric(raw_df[pmi_col], errors="coerce")
+                standardized["yoy"] = None
+
             # MoM is typically not provided in raw data, set to None
-            standardized['mom'] = None
-            
+            standardized["mom"] = None
+
             # Filter by date range
-            mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
+            mask = (standardized["date"] >= start_date) & (standardized["date"] <= end_date)
             result = standardized[mask].reset_index(drop=True)
-            
+
             # Ensure JSON compatibility
             return self.ensure_json_compatible(result)
-            
+
         except Exception as e:
             raise RuntimeError(f"Failed to fetch PMI index data: {e}") from e
-    
-    def get_cpi_data(
-        self,
-        start_date: str,
-        end_date: str
-    ) -> pd.DataFrame:
+
+    def get_cpi_data(self, start_date: str, end_date: str) -> pd.DataFrame:
         """
         Get CPI (Consumer Price Index) data.
-        
+
         Args:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
-        
+
         Returns:
             pd.DataFrame: Standardized CPI data with columns:
                 - date: Date (YYYY-MM-DD)
@@ -213,67 +193,61 @@ class OfficialMacroProvider(MacroProvider):
                 - cumulative: Cumulative value
         """
         self.validate_date_range(start_date, end_date)
-        
+
         try:
             import re
 
             import akshare as ak
-            
+
             # Call akshare function
             raw_df = ak.macro_china_cpi()
-            
+
             if raw_df.empty:
-                return self.create_empty_dataframe([
-                    'date', 'current', 'yoy', 'mom', 'cumulative'
-                ])
-            
+                return self.create_empty_dataframe(["date", "current", "yoy", "mom", "cumulative"])
+
             # Parse Chinese date format (e.g., "2026年01月份" -> "2026-01-01")
             def parse_chinese_date(date_str):
                 """Parse Chinese date format like '2026年01月份' to 'YYYY-MM-DD'"""
-                match = re.match(r'(\d{4})年(\d{2})月份?', str(date_str))
+                match = re.match(r"(\d{4})年(\d{2})月份?", str(date_str))
                 if match:
                     year, month = match.groups()
                     return f"{year}-{month}-01"
                 # Try standard date parsing as fallback
                 try:
-                    return pd.to_datetime(date_str).strftime('%Y-%m-%d')
+                    return pd.to_datetime(date_str).strftime("%Y-%m-%d")
                 except (ValueError, TypeError):
                     return None
-            
+
             # Standardize the data
             standardized = pd.DataFrame()
-            standardized['date'] = raw_df['月份'].apply(parse_chinese_date)
-            standardized['current'] = raw_df.get('当月', 0.0)
-            standardized['yoy'] = raw_df.get('同比增长', 0.0)
-            standardized['mom'] = raw_df.get('环比增长', 0.0)
-            standardized['cumulative'] = raw_df.get('累计', 0.0)
-            
+            standardized["date"] = raw_df["月份"].apply(parse_chinese_date)
+            standardized["current"] = raw_df.get("当月", 0.0)
+            standardized["yoy"] = raw_df.get("同比增长", 0.0)
+            standardized["mom"] = raw_df.get("环比增长", 0.0)
+            standardized["cumulative"] = raw_df.get("累计", 0.0)
+
             # Convert to float, handling any non-numeric values
-            for col in ['current', 'yoy', 'mom', 'cumulative']:
-                standardized[col] = pd.to_numeric(standardized[col], errors='coerce')
-            
+            for col in ["current", "yoy", "mom", "cumulative"]:
+                standardized[col] = pd.to_numeric(standardized[col], errors="coerce")
+
             # Filter by date range
-            mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
+            mask = (standardized["date"] >= start_date) & (standardized["date"] <= end_date)
             result = standardized[mask].reset_index(drop=True)
-            
+
             # Ensure JSON compatibility
             return self.ensure_json_compatible(result)
-            
+
         except Exception as e:
             raise RuntimeError(f"Failed to fetch CPI data: {e}") from e
-    
-    def get_ppi_data(
-        self,
-        start_date: str,
-        end_date: str
-    ) -> pd.DataFrame:
+
+    def get_ppi_data(self, start_date: str, end_date: str) -> pd.DataFrame:
         """
         Get PPI (Producer Price Index) data.
-        
+
         Args:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
-        
+
         Returns:
             pd.DataFrame: Standardized PPI data with columns:
                 - date: Date (YYYY-MM-DD)
@@ -283,67 +257,61 @@ class OfficialMacroProvider(MacroProvider):
                 - cumulative: Cumulative value
         """
         self.validate_date_range(start_date, end_date)
-        
+
         try:
             import re
 
             import akshare as ak
-            
+
             # Call akshare function
             raw_df = ak.macro_china_ppi()
-            
+
             if raw_df.empty:
-                return self.create_empty_dataframe([
-                    'date', 'current', 'yoy', 'mom', 'cumulative'
-                ])
-            
+                return self.create_empty_dataframe(["date", "current", "yoy", "mom", "cumulative"])
+
             # Parse Chinese date format (e.g., "2026年01月份" -> "2026-01-01")
             def parse_chinese_date(date_str):
                 """Parse Chinese date format like '2026年01月份' to 'YYYY-MM-DD'"""
-                match = re.match(r'(\d{4})年(\d{2})月份?', str(date_str))
+                match = re.match(r"(\d{4})年(\d{2})月份?", str(date_str))
                 if match:
                     year, month = match.groups()
                     return f"{year}-{month}-01"
                 # Try standard date parsing as fallback
                 try:
-                    return pd.to_datetime(date_str).strftime('%Y-%m-%d')
+                    return pd.to_datetime(date_str).strftime("%Y-%m-%d")
                 except (ValueError, TypeError):
                     return None
-            
+
             # Standardize the data
             standardized = pd.DataFrame()
-            standardized['date'] = raw_df['月份'].apply(parse_chinese_date)
-            standardized['current'] = raw_df.get('当月', 0.0)
-            standardized['yoy'] = raw_df.get('同比增长', 0.0)
-            standardized['mom'] = raw_df.get('环比增长', 0.0)
-            standardized['cumulative'] = raw_df.get('累计', 0.0)
-            
+            standardized["date"] = raw_df["月份"].apply(parse_chinese_date)
+            standardized["current"] = raw_df.get("当月", 0.0)
+            standardized["yoy"] = raw_df.get("同比增长", 0.0)
+            standardized["mom"] = raw_df.get("环比增长", 0.0)
+            standardized["cumulative"] = raw_df.get("累计", 0.0)
+
             # Convert to float, handling any non-numeric values
-            for col in ['current', 'yoy', 'mom', 'cumulative']:
-                standardized[col] = pd.to_numeric(standardized[col], errors='coerce')
-            
+            for col in ["current", "yoy", "mom", "cumulative"]:
+                standardized[col] = pd.to_numeric(standardized[col], errors="coerce")
+
             # Filter by date range
-            mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
+            mask = (standardized["date"] >= start_date) & (standardized["date"] <= end_date)
             result = standardized[mask].reset_index(drop=True)
-            
+
             # Ensure JSON compatibility
             return self.ensure_json_compatible(result)
-            
+
         except Exception as e:
             raise RuntimeError(f"Failed to fetch PPI data: {e}") from e
-    
-    def get_m2_supply(
-        self,
-        start_date: str,
-        end_date: str
-    ) -> pd.DataFrame:
+
+    def get_m2_supply(self, start_date: str, end_date: str) -> pd.DataFrame:
         """
         Get M2 money supply data.
-        
+
         Args:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
-        
+
         Returns:
             pd.DataFrame: Standardized M2 supply data with columns:
                 - date: Date (YYYY-MM-DD)
@@ -351,74 +319,68 @@ class OfficialMacroProvider(MacroProvider):
                 - yoy_growth_rate: Year-over-year growth rate (%)
         """
         self.validate_date_range(start_date, end_date)
-        
+
         try:
             import akshare as ak
-            
+
             # Call akshare function
             raw_df = ak.macro_china_m2_yearly()
-            
+
             if raw_df.empty:
-                return self.create_empty_dataframe([
-                    'date', 'm2_balance', 'yoy_growth_rate'
-                ])
-            
+                return self.create_empty_dataframe(["date", "m2_balance", "yoy_growth_rate"])
+
             # Standardize the data
             # Note: The akshare API returns columns: '商品', '日期', '今值', '预测值', '前值'
             # '今值' is the current year-over-year growth rate
             # M2 balance data is not available from this API
             standardized = pd.DataFrame()
-            
+
             # Find the date column (could be '日期' or other names)
             date_col = None
-            for col in ['日期', '月份', 'date']:
+            for col in ["日期", "月份", "date"]:
                 if col in raw_df.columns:
                     date_col = col
                     break
             if date_col is None:
                 # Use the second column as date column (first is usually '商品')
                 date_col = raw_df.columns[1] if len(raw_df.columns) > 1 else raw_df.columns[0]
-            
-            standardized['date'] = pd.to_datetime(raw_df[date_col]).dt.strftime('%Y-%m-%d')
-            standardized['m2_balance'] = None  # Not available from this API
-            
+
+            standardized["date"] = pd.to_datetime(raw_df[date_col]).dt.strftime("%Y-%m-%d")
+            standardized["m2_balance"] = None  # Not available from this API
+
             # Find the value column (could be '今值' or other names)
             value_col = None
-            for col in ['今值', 'value', '数值']:
+            for col in ["今值", "value", "数值"]:
                 if col in raw_df.columns:
                     value_col = col
                     break
             if value_col is None:
                 # Use the third column as value column
                 value_col = raw_df.columns[2] if len(raw_df.columns) > 2 else raw_df.columns[-1]
-            
-            standardized['yoy_growth_rate'] = pd.to_numeric(raw_df[value_col], errors='coerce')
-            
+
+            standardized["yoy_growth_rate"] = pd.to_numeric(raw_df[value_col], errors="coerce")
+
             # Filter out rows with None/NaN yoy_growth_rate
-            standardized = standardized.dropna(subset=['yoy_growth_rate']).reset_index(drop=True)
-            
+            standardized = standardized.dropna(subset=["yoy_growth_rate"]).reset_index(drop=True)
+
             # Filter by date range
-            mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
+            mask = (standardized["date"] >= start_date) & (standardized["date"] <= end_date)
             result = standardized[mask].reset_index(drop=True)
-            
+
             # Ensure JSON compatibility
             return self.ensure_json_compatible(result)
-            
+
         except Exception as e:
             raise RuntimeError(f"Failed to fetch M2 supply data: {e}") from e
-    
-    def get_shibor_rate(
-        self,
-        start_date: str,
-        end_date: str
-    ) -> pd.DataFrame:
+
+    def get_shibor_rate(self, start_date: str, end_date: str) -> pd.DataFrame:
         """
         Get Shibor (Shanghai Interbank Offered Rate) interest rate data.
-        
+
         Args:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
-        
+
         Returns:
             pd.DataFrame: Standardized Shibor rate data with columns:
                 - date: Date (YYYY-MM-DD)
@@ -432,68 +394,63 @@ class OfficialMacroProvider(MacroProvider):
                 - year_1: 1-year rate (%)
         """
         self.validate_date_range(start_date, end_date)
-        
+
         try:
             import akshare as ak
-            
+
             # Call akshare function
             raw_df = ak.macro_china_shibor_all()
-            
+
             if raw_df.empty:
-                return self.create_empty_dataframe([
-                    'date', 'overnight', 'week_1', 'week_2', 'month_1',
-                    'month_3', 'month_6', 'month_9', 'year_1'
-                ])
-            
+                return self.create_empty_dataframe(
+                    ["date", "overnight", "week_1", "week_2", "month_1", "month_3", "month_6", "month_9", "year_1"]
+                )
+
             # Standardize the data
             # Note: akshare column names changed from '隔夜', '1周' to 'O/N-定价', '1W-定价'
             standardized = pd.DataFrame()
-            standardized['date'] = pd.to_datetime(raw_df['日期']).dt.strftime('%Y-%m-%d')
-            
+            standardized["date"] = pd.to_datetime(raw_df["日期"]).dt.strftime("%Y-%m-%d")
+
             # Try new format first, fall back to old format
-            if 'O/N-定价' in raw_df.columns:
+            if "O/N-定价" in raw_df.columns:
                 # New format (as of 2025)
-                standardized['overnight'] = raw_df['O/N-定价'].astype(float)
-                standardized['week_1'] = raw_df['1W-定价'].astype(float)
-                standardized['week_2'] = raw_df['2W-定价'].astype(float)
-                standardized['month_1'] = raw_df['1M-定价'].astype(float)
-                standardized['month_3'] = raw_df['3M-定价'].astype(float)
-                standardized['month_6'] = raw_df['6M-定价'].astype(float)
-                standardized['month_9'] = raw_df['9M-定价'].astype(float)
-                standardized['year_1'] = raw_df['1Y-定价'].astype(float)
+                standardized["overnight"] = raw_df["O/N-定价"].astype(float)
+                standardized["week_1"] = raw_df["1W-定价"].astype(float)
+                standardized["week_2"] = raw_df["2W-定价"].astype(float)
+                standardized["month_1"] = raw_df["1M-定价"].astype(float)
+                standardized["month_3"] = raw_df["3M-定价"].astype(float)
+                standardized["month_6"] = raw_df["6M-定价"].astype(float)
+                standardized["month_9"] = raw_df["9M-定价"].astype(float)
+                standardized["year_1"] = raw_df["1Y-定价"].astype(float)
             else:
                 # Old format (before 2025)
-                standardized['overnight'] = raw_df['隔夜'].astype(float)
-                standardized['week_1'] = raw_df['1周'].astype(float)
-                standardized['week_2'] = raw_df['2周'].astype(float)
-                standardized['month_1'] = raw_df['1月'].astype(float)
-                standardized['month_3'] = raw_df['3月'].astype(float)
-                standardized['month_6'] = raw_df['6月'].astype(float)
-                standardized['month_9'] = raw_df['9月'].astype(float)
-                standardized['year_1'] = raw_df['1年'].astype(float)
-            
+                standardized["overnight"] = raw_df["隔夜"].astype(float)
+                standardized["week_1"] = raw_df["1周"].astype(float)
+                standardized["week_2"] = raw_df["2周"].astype(float)
+                standardized["month_1"] = raw_df["1月"].astype(float)
+                standardized["month_3"] = raw_df["3月"].astype(float)
+                standardized["month_6"] = raw_df["6月"].astype(float)
+                standardized["month_9"] = raw_df["9月"].astype(float)
+                standardized["year_1"] = raw_df["1年"].astype(float)
+
             # Filter by date range
-            mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
+            mask = (standardized["date"] >= start_date) & (standardized["date"] <= end_date)
             result = standardized[mask].reset_index(drop=True)
-            
+
             # Ensure JSON compatibility
             return self.ensure_json_compatible(result)
-            
+
         except Exception as e:
             raise RuntimeError(f"Failed to fetch Shibor rate data: {e}") from e
-    
-    def get_social_financing(
-        self,
-        start_date: str,
-        end_date: str
-    ) -> pd.DataFrame:
+
+    def get_social_financing(self, start_date: str, end_date: str) -> pd.DataFrame:
         """
         Get social financing scale data.
-        
+
         Args:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
-        
+
         Returns:
             pd.DataFrame: Standardized social financing data with columns:
                 - date: Date (YYYY-MM-DD)
@@ -503,35 +460,33 @@ class OfficialMacroProvider(MacroProvider):
                 - new_rmb_loans: New RMB loans (billion yuan)
         """
         self.validate_date_range(start_date, end_date)
-        
+
         try:
             import akshare as ak
-            
+
             # Call akshare function
             raw_df = ak.macro_china_shrzgm()
-            
+
             if raw_df.empty:
-                return self.create_empty_dataframe([
-                    'date', 'total_scale', 'yoy', 'mom', 'new_rmb_loans'
-                ])
-            
+                return self.create_empty_dataframe(["date", "total_scale", "yoy", "mom", "new_rmb_loans"])
+
             # Standardize the data
             standardized = pd.DataFrame()
-            standardized['date'] = pd.to_datetime(raw_df['月份']).dt.strftime('%Y-%m-%d')
-            standardized['total_scale'] = raw_df['社会融资规模增量(亿元)'].astype(float)
+            standardized["date"] = pd.to_datetime(raw_df["月份"]).dt.strftime("%Y-%m-%d")
+            standardized["total_scale"] = raw_df["社会融资规模增量(亿元)"].astype(float)
             # YoY and MoM are typically not provided in raw data, set to None
-            standardized['yoy'] = None
-            standardized['mom'] = None
+            standardized["yoy"] = None
+            standardized["mom"] = None
             # Handle new_rmb_loans column - use pd.to_numeric for safe conversion
-            new_loans_col = raw_df.get('新增人民币贷款(亿元)', 0.0)
-            standardized['new_rmb_loans'] = pd.to_numeric(new_loans_col, errors='coerce')
-            
+            new_loans_col = raw_df.get("新增人民币贷款(亿元)", 0.0)
+            standardized["new_rmb_loans"] = pd.to_numeric(new_loans_col, errors="coerce")
+
             # Filter by date range
-            mask = (standardized['date'] >= start_date) & (standardized['date'] <= end_date)
+            mask = (standardized["date"] >= start_date) & (standardized["date"] <= end_date)
             result = standardized[mask].reset_index(drop=True)
-            
+
             # Ensure JSON compatibility
             return self.ensure_json_compatible(result)
-            
+
         except Exception as e:
             raise RuntimeError(f"Failed to fetch social financing data: {e}") from e

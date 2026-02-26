@@ -242,9 +242,7 @@ def get_aroon(df: pd.DataFrame, window: int = 14, calculator_type: str = "talib"
     return calculator.calculate_aroon(df, window)
 
 
-def get_aroonosc(
-    df: pd.DataFrame, window: int = 14, calculator_type: str = "talib"
-) -> pd.DataFrame:
+def get_aroonosc(df: pd.DataFrame, window: int = 14, calculator_type: str = "talib") -> pd.DataFrame:
     """Calculate Aroon Oscillator"""
     calculator = IndicatorFactory.get_calculator(calculator_type)
     return calculator.calculate_aroonosc(df, window)
@@ -274,17 +272,13 @@ def get_mfi(df: pd.DataFrame, window: int = 14, calculator_type: str = "talib") 
     return calculator.calculate_mfi(df, window)
 
 
-def get_minus_di(
-    df: pd.DataFrame, window: int = 14, calculator_type: str = "talib"
-) -> pd.DataFrame:
+def get_minus_di(df: pd.DataFrame, window: int = 14, calculator_type: str = "talib") -> pd.DataFrame:
     """Calculate Minus Directional Indicator"""
     calculator = IndicatorFactory.get_calculator(calculator_type)
     return calculator.calculate_minus_di(df, window)
 
 
-def get_minus_dm(
-    df: pd.DataFrame, window: int = 14, calculator_type: str = "talib"
-) -> pd.DataFrame:
+def get_minus_dm(df: pd.DataFrame, window: int = 14, calculator_type: str = "talib") -> pd.DataFrame:
     """Calculate Minus Directional Movement"""
     calculator = IndicatorFactory.get_calculator(calculator_type)
     return calculator.calculate_minus_dm(df, window)

@@ -1,0 +1,70 @@
+{
+  "source": "eastmoney",
+  "module": "disclosure",
+  "version": "1.0",
+  "last_updated": "2024-02-23",
+  "mappings": [
+    {
+      "source_field": "公告日期",
+      "standard_field": "announcement_date",
+      "field_type": "date",
+      "description": "公告发布日期"
+    },
+    {
+      "source_field": "股票代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "股票简称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票简称"
+    },
+    {
+      "source_field": "公告标题",
+      "standard_field": "announcement_title",
+      "field_type": "name",
+      "description": "公告标题"
+    },
+    {
+      "source_field": "公告类型",
+      "standard_field": "announcement_type",
+      "field_type": "type",
+      "description": "公告类型"
+    },
+    {
+      "source_field": "公告内容",
+      "standard_field": "announcement_content",
+      "field_type": "text",
+      "description": "公告内容摘要"
+    },
+    {
+      "source_field": "公告链接",
+      "standard_field": "announcement_url",
+      "field_type": "url",
+      "description": "公告原文链接"
+    },
+    {
+      "source_field": "分红金额",
+      "standard_field": "dividend_amount",
+      "field_type": "amount",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "分红金额（元/股）"
+    },
+    {
+      "source_field": "股权登记日",
+      "standard_field": "record_date",
+      "field_type": "date",
+      "description": "股权登记日"
+    },
+    {
+      "source_field": "除权除息日",
+      "standard_field": "ex_dividend_date",
+      "field_type": "date",
+      "description": "除权除息日"
+    }
+  ]
+}

@@ -53,8 +53,8 @@ class DynamicMappingManager:
 
                 # 尝试从指数成分股中提取更多信息
                 for _, row in index_info.head(20).iterrows():  # 只取前20个以避免过多数据
-                    idx_code = row['index_code']
-                    display_name = row['display_name']
+                    idx_code = row["index_code"]
+                    display_name = row["display_name"]
                     if idx_code not in mapping:
                         mapping[idx_code] = [display_name]
                     else:
@@ -100,13 +100,12 @@ class DynamicMappingManager:
         """获取底层资产模式映射，带缓存"""
         cache_file = os.path.join(self.cache_dir, "underlying_patterns.json")
 
-        if (self._underlying_patterns is None or
-            self.is_cache_expired(cache_file)):
+        if self._underlying_patterns is None or self.is_cache_expired(cache_file):
             print("Updating underlying patterns cache...")
             self._underlying_patterns = self.generate_underlying_patterns()
 
             # 保存到缓存
-            with open(cache_file, 'w', encoding='utf-8') as f:
+            with open(cache_file, "w", encoding="utf-8") as f:
                 json.dump(self._underlying_patterns, f, ensure_ascii=False, indent=2)
 
             self._last_update = datetime.now()
@@ -114,12 +113,12 @@ class DynamicMappingManager:
         elif self._underlying_patterns is None:
             # 尝试从缓存加载
             try:
-                with open(cache_file, encoding='utf-8') as f:
+                with open(cache_file, encoding="utf-8") as f:
                     self._underlying_patterns = json.load(f)
             except FileNotFoundError:
                 # 如果缓存不存在，生成新的
                 self._underlying_patterns = self.generate_underlying_patterns()
-                with open(cache_file, 'w', encoding='utf-8') as f:
+                with open(cache_file, "w", encoding="utf-8") as f:
                     json.dump(self._underlying_patterns, f, ensure_ascii=False, indent=2)
 
         return self._underlying_patterns

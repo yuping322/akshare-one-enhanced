@@ -17,9 +17,7 @@ class SinaHistorical(HistoricalDataProvider):
 
     @cache(
         "hist_data_cache",
-        key=lambda self: (
-            f"sina_hist_{self.symbol}_{self.interval}_{self.interval_multiplier}_{self.adjust}"
-        ),
+        key=lambda self: (f"sina_hist_{self.symbol}_{self.interval}_{self.interval_multiplier}_{self.adjust}"),
     )
     def get_hist_data(self) -> pd.DataFrame:
         """Fetches Sina historical market data
@@ -55,11 +53,7 @@ class SinaHistorical(HistoricalDataProvider):
                 },
             )
 
-            stock = (
-                f"sh{self.symbol}"
-                if not self.symbol.startswith(("sh", "sz", "bj"))
-                else self.symbol
-            )
+            stock = f"sh{self.symbol}" if not self.symbol.startswith(("sh", "sz", "bj")) else self.symbol
 
             if self.interval == "minute":
                 df = self._get_minute_data(stock)

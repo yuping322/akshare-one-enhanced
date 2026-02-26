@@ -1,0 +1,82 @@
+{
+  "source": "eastmoney",
+  "module": "lhb",
+  "version": "1.0",
+  "last_updated": "2024-02-23",
+  "mappings": [
+    {
+      "source_field": "日期",
+      "standard_field": "date",
+      "field_type": "date",
+      "description": "交易日期"
+    },
+    {
+      "source_field": "股票代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "股票简称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票简称"
+    },
+    {
+      "source_field": "收盘价",
+      "standard_field": "close_price",
+      "field_type": "value",
+      "description": "收盘价"
+    },
+    {
+      "source_field": "涨跌幅",
+      "standard_field": "pct_change",
+      "field_type": "rate",
+      "description": "涨跌幅（%）"
+    },
+    {
+      "source_field": "成交额",
+      "standard_field": "trade_amount",
+      "field_type": "amount",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "当日成交额（元）"
+    },
+    {
+      "source_field": "净买入额",
+      "standard_field": "net_buy_amount",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "龙虎榜净买入额（元）"
+    },
+    {
+      "source_field": "买入金额",
+      "standard_field": "buy_amount",
+      "field_type": "amount",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "总买入金额（元）"
+    },
+    {
+      "source_field": "卖出金额",
+      "standard_field": "sell_amount",
+      "field_type": "amount",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "总卖出金额（元）"
+    },
+    {
+      "source_field": "上榜原因",
+      "standard_field": "listing_reason",
+      "field_type": "type",
+      "description": "上榜原因"
+    },
+    {
+      "source_field": "营业部名称",
+      "standard_field": "broker_name",
+      "field_type": "name",
+      "description": "营业部名称"
+    }
+  ]
+}

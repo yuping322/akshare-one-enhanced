@@ -505,7 +505,7 @@ pytest tests/ -v --cov=akshare_one --cov-report=html
 - [ ] 添加更多数据源（tencent、ths、cninfo）
 - [ ] 实现分布式缓存（Redis）
 - [ ] 增强监控和告警
-- [ ] 完善性能基准测试
+- ✅ 性能基准测试已包含在 [性能优化指南](../advanced/performance.md)
 
 ### 中期（3-6个月）
 

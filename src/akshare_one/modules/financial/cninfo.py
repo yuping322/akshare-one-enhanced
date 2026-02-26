@@ -18,14 +18,14 @@ class CninfoFinancialReport(FinancialDataProvider):
 
     def _normalize_symbol(self) -> str:
         """Normalize symbol for Cninfo API"""
-        if self.symbol.startswith(('sh', 'sz', 'bj')):
+        if self.symbol.startswith(("sh", "sz", "bj")):
             return self.symbol
         # Add market prefix based on stock code
-        if self.symbol.startswith(('00', '20', '30')):  # Shenzhen market
+        if self.symbol.startswith(("00", "20", "30")):  # Shenzhen market
             return f"sz{self.symbol}"
-        elif self.symbol.startswith(('60', '68')):  # Shanghai market
+        elif self.symbol.startswith(("60", "68")):  # Shanghai market
             return f"sh{self.symbol}"
-        elif self.symbol.startswith('43'):  # Beijing market
+        elif self.symbol.startswith("43"):  # Beijing market
             return f"bj{self.symbol}"
         else:
             # Default to shanghai for unknown codes
@@ -42,7 +42,7 @@ class CninfoFinancialReport(FinancialDataProvider):
             # In a real implementation, this would fetch data from Cninfo API
             # For now, return an empty DataFrame with the expected structure
             # since we may have network issues or need to implement the actual API call
-            
+
             # Define expected columns for balance sheet
             columns = [
                 "report_date",
@@ -56,7 +56,7 @@ class CninfoFinancialReport(FinancialDataProvider):
                 "equity_attributable_to_parent",
                 "minority_interests",
             ]
-            
+
             return pd.DataFrame(columns=columns)
         except Exception as e:
             raise ValueError(f"Failed to get balance sheet for symbol {self.symbol}: {str(e)}") from e
@@ -96,7 +96,7 @@ class CninfoFinancialReport(FinancialDataProvider):
                 "other_comprehensive_income",
                 "total_comprehensive_income",
             ]
-            
+
             return pd.DataFrame(columns=columns)
         except Exception as e:
             raise ValueError(f"Failed to get income statement for symbol {self.symbol}: {str(e)}") from e
@@ -122,7 +122,7 @@ class CninfoFinancialReport(FinancialDataProvider):
                 "fx_translation_effects",
                 "other_financing_changes",
             ]
-            
+
             return pd.DataFrame(columns=columns)
         except Exception as e:
             raise ValueError(f"Failed to get cash flow statement for symbol {self.symbol}: {str(e)}") from e
@@ -159,7 +159,7 @@ class CninfoFinancialReport(FinancialDataProvider):
                 "ps_ttm",
                 "pcf_ttm",
             ]
-            
+
             return pd.DataFrame(columns=columns)
         except Exception as e:
             raise ValueError(f"Failed to get financial metrics for symbol {self.symbol}: {str(e)}") from e

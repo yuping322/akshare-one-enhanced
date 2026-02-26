@@ -54,9 +54,7 @@ class BaseFactory(Generic[T]):
         """
         if source not in cls._providers:
             available = ", ".join(cls._providers.keys())
-            raise InvalidParameterError(
-                f"Unsupported data source: '{source}'. Available sources: {available}"
-            )
+            raise InvalidParameterError(f"Unsupported data source: '{source}'. Available sources: {available}")
 
         provider_class = cls._providers[source]
         return provider_class(**kwargs)

@@ -2,7 +2,6 @@
 Factory for creating concept sector data providers.
 """
 
-
 from .base import ConceptProvider
 from .eastmoney import EastmoneyConceptProvider
 

@@ -39,9 +39,7 @@ class EastmoneyIndexProvider(IndexProvider):
         """
         return pd.DataFrame()
 
-    def get_index_hist(
-        self, symbol: str, start_date: str, end_date: str, interval: str = "daily"
-    ) -> pd.DataFrame:
+    def get_index_hist(self, symbol: str, start_date: str, end_date: str, interval: str = "daily") -> pd.DataFrame:
         """
         Get index historical data from Eastmoney.
 
@@ -63,9 +61,7 @@ class EastmoneyIndexProvider(IndexProvider):
         start_date_fmt = start_date.replace("-", "")
         end_date_fmt = end_date.replace("-", "")
 
-        df = ak.index_zh_a_hist(
-            symbol=symbol, period=period, start_date=start_date_fmt, end_date=end_date_fmt
-        )
+        df = ak.index_zh_a_hist(symbol=symbol, period=period, start_date=start_date_fmt, end_date=end_date_fmt)
 
         if df.empty:
             return pd.DataFrame()

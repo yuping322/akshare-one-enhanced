@@ -251,9 +251,7 @@ class StatsCollector:
             "uptime": str(uptime),
             "uptime_seconds": int(uptime.total_seconds()),
             "start_time": self._start_time.isoformat(),
-            "sources": {
-                name: stats.to_dict() for name, stats in sorted(self._source_stats.items())
-            },
+            "sources": {name: stats.to_dict() for name, stats in sorted(self._source_stats.items())},
             "cache": {name: stats.to_dict() for name, stats in sorted(self._cache_stats.items())},
         }
 
@@ -334,9 +332,7 @@ class StatsCollector:
         summary_text = self.get_summary_text()
         stats = self.get_all_stats()
 
-        self.logger.info(
-            "Daily Statistics Summary", extra={"context": {"type": "daily_summary", "data": stats}}
-        )
+        self.logger.info("Daily Statistics Summary", extra={"context": {"type": "daily_summary", "data": stats}})
 
         # Also print to stdout for visibility
         print(summary_text)

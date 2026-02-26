@@ -14,8 +14,7 @@ class SimpleIndicatorCalculator(BaseIndicatorCalculator):
             return series.ewm(span=window, adjust=False, min_periods=window).mean()
         else:
             raise ValueError(
-                f"Unsupported ma_type: {ma_type} in simple calculator. "
-                f"Only SMA (0) and EMA (1) are supported."
+                f"Unsupported ma_type: {ma_type} in simple calculator. Only SMA (0) and EMA (1) are supported."
             )
 
     def _wilder_smooth(self, series: pd.Series, window: int) -> pd.Series:
@@ -62,13 +61,9 @@ class SimpleIndicatorCalculator(BaseIndicatorCalculator):
         rolling_std = close.rolling(window=window, min_periods=window).std()
         upper_band = sma + (rolling_std * std)
         lower_band = sma - (rolling_std * std)
-        return pd.DataFrame(
-            {"upper_band": upper_band, "middle_band": sma, "lower_band": lower_band}
-        )
+        return pd.DataFrame({"upper_band": upper_band, "middle_band": sma, "lower_band": lower_band})
 
-    def calculate_stoch(
-        self, df: pd.DataFrame, window: int, smooth_d: int, smooth_k: int
-    ) -> pd.DataFrame:
+    def calculate_stoch(self, df: pd.DataFrame, window: int, smooth_d: int, smooth_k: int) -> pd.DataFrame:
         high = df["high"]
         low = df["low"]
         close = df["close"]
@@ -102,9 +97,7 @@ class SimpleIndicatorCalculator(BaseIndicatorCalculator):
 
         tp = (high + low + close) / 3
         tp_sma = tp.rolling(window=window, min_periods=window).mean()
-        mean_dev = tp.rolling(window=window, min_periods=window).apply(
-            lambda x: (x - x.mean()).abs().mean()
-        )
+        mean_dev = tp.rolling(window=window, min_periods=window).apply(lambda x: (x - x.mean()).abs().mean())
 
         cci = (tp - tp_sma) / (0.015 * mean_dev)
         return cci.to_frame("cci")
@@ -212,9 +205,7 @@ class SimpleIndicatorCalculator(BaseIndicatorCalculator):
         tsf = close.rolling(window=window, min_periods=window).apply(linear_reg_forecast, raw=True)
         return tsf.to_frame("tsf")
 
-    def calculate_apo(
-        self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int
-    ) -> pd.DataFrame:
+    def calculate_apo(self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int) -> pd.DataFrame:
         close = df["close"]
         fast_ma = self._get_ma(close, fast_period, ma_type)
         slow_ma = self._get_ma(close, slow_period, ma_type)
@@ -302,9 +293,7 @@ class SimpleIndicatorCalculator(BaseIndicatorCalculator):
         smoothed_plus_dm = self._wilder_smooth(plus_dm, window)
         return smoothed_plus_dm.to_frame("plus_dm")
 
-    def calculate_ppo(
-        self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int
-    ) -> pd.DataFrame:
+    def calculate_ppo(self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int) -> pd.DataFrame:
         close = df["close"]
         fast_ma = self._get_ma(close, fast_period, ma_type)
         slow_ma = self._get_ma(close, slow_period, ma_type)
@@ -339,9 +328,7 @@ class SimpleIndicatorCalculator(BaseIndicatorCalculator):
         trix = 100 * ema3.diff(1) / ema3.shift(1)
         return pd.DataFrame({"trix": trix}, index=df.index)
 
-    def calculate_ultosc(
-        self, df: pd.DataFrame, window1: int, window2: int, window3: int
-    ) -> pd.DataFrame:
+    def calculate_ultosc(self, df: pd.DataFrame, window1: int, window2: int, window3: int) -> pd.DataFrame:
         low = df["low"]
         high = df["high"]
         close = df["close"]

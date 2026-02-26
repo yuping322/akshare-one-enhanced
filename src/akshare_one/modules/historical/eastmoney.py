@@ -17,9 +17,7 @@ class EastMoneyHistorical(HistoricalDataProvider):
 
     @cache(
         "hist_data_cache",
-        key=lambda self: (
-            f"eastmoney_hist_{self.symbol}_{self.interval}_{self.interval_multiplier}_{self.adjust}"
-        ),
+        key=lambda self: (f"eastmoney_hist_{self.symbol}_{self.interval}_{self.interval_multiplier}_{self.adjust}"),
     )
     def get_hist_data(self) -> pd.DataFrame:
         """Fetches EastMoney historical market data
@@ -107,9 +105,7 @@ class EastMoneyHistorical(HistoricalDataProvider):
         # Process data
         resampled = self._resample_intraday_data(
             raw_df,
-            f"{self.interval_multiplier}min"
-            if self.interval == "minute"
-            else f"{self.interval_multiplier}h",
+            f"{self.interval_multiplier}min" if self.interval == "minute" else f"{self.interval_multiplier}h",
         )
         return self._clean_minute_data(resampled, str(self.interval_multiplier))
 
@@ -261,9 +257,7 @@ class EastMoneyHistorical(HistoricalDataProvider):
             "volume": "volume",
         }
 
-        available_columns = {
-            src: target for src, target in column_map.items() if src in raw_df.columns
-        }
+        available_columns = {src: target for src, target in column_map.items() if src in raw_df.columns}
 
         if not available_columns:
             raise ValueError("Expected columns not found in raw data")
@@ -320,10 +314,7 @@ class EastMoneyHistorical(HistoricalDataProvider):
         if start_date and end_date:
             start_dt = pd.to_datetime(start_date, format="%Y%m%d")
             end_dt = pd.to_datetime(end_date, format="%Y%m%d")
-            raw_df = raw_df[
-                (pd.to_datetime(raw_df["date"]) >= start_dt)
-                & (pd.to_datetime(raw_df["date"]) <= end_dt)
-            ]
+            raw_df = raw_df[(pd.to_datetime(raw_df["date"]) >= start_dt) & (pd.to_datetime(raw_df["date"]) <= end_dt)]
 
         return raw_df
 

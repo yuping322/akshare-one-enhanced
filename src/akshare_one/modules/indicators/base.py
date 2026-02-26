@@ -27,9 +27,7 @@ class BaseIndicatorCalculator(ABC):
         pass
 
     @abstractmethod
-    def calculate_stoch(
-        self, df: pd.DataFrame, window: int, smooth_d: int, smooth_k: int
-    ) -> pd.DataFrame:
+    def calculate_stoch(self, df: pd.DataFrame, window: int, smooth_d: int, smooth_k: int) -> pd.DataFrame:
         pass
 
     @abstractmethod
@@ -73,9 +71,7 @@ class BaseIndicatorCalculator(ABC):
         pass
 
     @abstractmethod
-    def calculate_apo(
-        self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int
-    ) -> pd.DataFrame:
+    def calculate_apo(self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int) -> pd.DataFrame:
         pass
 
     @abstractmethod
@@ -119,9 +115,7 @@ class BaseIndicatorCalculator(ABC):
         pass
 
     @abstractmethod
-    def calculate_ppo(
-        self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int
-    ) -> pd.DataFrame:
+    def calculate_ppo(self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int) -> pd.DataFrame:
         pass
 
     @abstractmethod
@@ -145,7 +139,5 @@ class BaseIndicatorCalculator(ABC):
         pass
 
     @abstractmethod
-    def calculate_ultosc(
-        self, df: pd.DataFrame, window1: int, window2: int, window3: int
-    ) -> pd.DataFrame:
+    def calculate_ultosc(self, df: pd.DataFrame, window1: int, window2: int, window3: int) -> pd.DataFrame:
         pass

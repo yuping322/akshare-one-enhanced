@@ -132,9 +132,7 @@ class FieldFormatter:
                         elif numeric_part.startswith("0") or numeric_part.startswith("3"):
                             market = "sz"
                         elif (
-                            numeric_part.startswith("8")
-                            or numeric_part.startswith("4")
-                            or numeric_part.startswith("9")
+                            numeric_part.startswith("8") or numeric_part.startswith("4") or numeric_part.startswith("9")
                         ):
                             market = "bj"
                 else:
@@ -165,9 +163,7 @@ class FieldFormatter:
         return numeric_part
 
     @staticmethod
-    def normalize_date(
-        date_str: str | int | None, target_format: DateFormat = DateFormat.YYYY_MM_DD
-    ) -> str | None:
+    def normalize_date(date_str: str | int | None, target_format: DateFormat = DateFormat.YYYY_MM_DD) -> str | None:
         """
         标准化日期格式
 

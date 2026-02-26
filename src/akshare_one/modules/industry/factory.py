@@ -2,7 +2,6 @@
 Factory for creating industry sector data providers.
 """
 
-
 from .base import IndustryProvider
 from .eastmoney import EastmoneyIndustryProvider
 

@@ -18,8 +18,7 @@ class SinaFuturesHistorical(HistoricalFuturesDataProvider):
     @cache(
         "futures_hist_cache",
         key=lambda self: (
-            f"sina_futures_hist_{self.symbol}_{self.contract}_{self.interval}_"
-            f"{self.interval_multiplier}"
+            f"sina_futures_hist_{self.symbol}_{self.contract}_{self.interval}_{self.interval_multiplier}"
         ),
     )
     def get_hist_data(self) -> pd.DataFrame:
@@ -67,11 +66,7 @@ class SinaFuturesHistorical(HistoricalFuturesDataProvider):
                 raw_df = raw_df[(raw_df.index >= start_dt) & (raw_df.index <= end_dt)]
 
         if self.interval_multiplier > 1:
-            freq = (
-                f"{self.interval_multiplier}min"
-                if self.interval == "minute"
-                else f"{self.interval_multiplier}h"
-            )
+            freq = f"{self.interval_multiplier}min" if self.interval == "minute" else f"{self.interval_multiplier}h"
             resampled = self._resample_intraday_data(raw_df, freq)
             return self._clean_intraday_data(resampled)
 
@@ -468,11 +463,7 @@ class SinaFuturesRealtime(RealtimeFuturesDataProvider):
             df["change"] = df["price"] - df["prev_settlement"]
 
         # Calculate pct_change if not present
-        if (
-            "pct_change" not in df.columns
-            and "change" in df.columns
-            and "prev_settlement" in df.columns
-        ):
+        if "pct_change" not in df.columns and "change" in df.columns and "prev_settlement" in df.columns:
             df["pct_change"] = (df["change"] / df["prev_settlement"] * 100).round(2)
 
         df = df.assign(

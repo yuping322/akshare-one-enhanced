@@ -137,9 +137,7 @@ class BaseProvider(ABC):
 
         # Chinese A-share symbols are 6 digits
         if not re.match(r"^\d{6}$", symbol):
-            raise ValueError(
-                f"Invalid symbol format: {symbol}. Expected 6-digit stock code (e.g., '600000')"
-            )
+            raise ValueError(f"Invalid symbol format: {symbol}. Expected 6-digit stock code (e.g., '600000')")
 
     @staticmethod
     def validate_date(date_str: str, param_name: str = "date") -> None:
@@ -232,11 +230,7 @@ class BaseProvider(ABC):
         # 2. Convert datetime columns to strings
         for col in df.select_dtypes(include=["datetime64"]).columns:
             # Check if the datetime has non-zero time component
-            has_time = (
-                (df[col].dt.hour != 0).any()
-                or (df[col].dt.minute != 0).any()
-                or (df[col].dt.second != 0).any()
-            )
+            has_time = (df[col].dt.hour != 0).any() or (df[col].dt.minute != 0).any() or (df[col].dt.second != 0).any()
             if has_time:
                 # Has time component, use full format
                 df[col] = df[col].dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -346,9 +340,7 @@ class BaseProvider(ABC):
 
     # Field Naming Standardization Methods
 
-    def standardize_field_names(
-        self, df: pd.DataFrame, field_types: dict[str, FieldType]
-    ) -> pd.DataFrame:
+    def standardize_field_names(self, df: pd.DataFrame, field_types: dict[str, FieldType]) -> pd.DataFrame:
         """
         Standardize DataFrame field names according to naming conventions.
 
@@ -418,9 +410,7 @@ class BaseProvider(ABC):
         """
         return pd.to_datetime(series).dt.strftime(format)
 
-    def standardize_timestamp_field(
-        self, series: pd.Series, timezone: str = "Asia/Shanghai"
-    ) -> pd.Series:
+    def standardize_timestamp_field(self, series: pd.Series, timezone: str = "Asia/Shanghai") -> pd.Series:
         """
         Standardize timestamp field with timezone awareness.
 
@@ -466,9 +456,7 @@ class BaseProvider(ABC):
 
         self.logger.debug(
             f"Starting data fetch from {source_name}",
-            extra={
-                "context": {"source": source_name, "data_type": data_type, "action": "fetch_start"}
-            },
+            extra={"context": {"source": source_name, "data_type": data_type, "action": "fetch_start"}},
         )
 
         try:
@@ -540,9 +528,7 @@ class BaseProvider(ABC):
         # Default implementation - subclasses should override with specific field types
         return df
 
-    def apply_field_standardization(
-        self, df: pd.DataFrame, field_types: dict[str, FieldType]
-    ) -> pd.DataFrame:
+    def apply_field_standardization(self, df: pd.DataFrame, field_types: dict[str, FieldType]) -> pd.DataFrame:
         """
         Apply field name standardization based on field types.
 
@@ -555,9 +541,7 @@ class BaseProvider(ABC):
         """
         return self.field_standardizer.standardize_dataframe(df, field_types)
 
-    def apply_amount_conversion(
-        self, df: pd.DataFrame, amount_fields: dict[str, str]
-    ) -> pd.DataFrame:
+    def apply_amount_conversion(self, df: pd.DataFrame, amount_fields: dict[str, str]) -> pd.DataFrame:
         """
         Apply amount unit conversion.
 
@@ -637,10 +621,7 @@ class BaseProvider(ABC):
         for col in df.columns:
             col_lower = col.lower()
 
-            if any(
-                kw in col_lower
-                for kw in ["amount", "额", "金额", "value", "市值", "balance", "余额"]
-            ):
+            if any(kw in col_lower for kw in ["amount", "额", "金额", "value", "市值", "balance", "余额"]):
                 unit = self._infer_unit_from_name(col)
                 if unit:
                     amount_fields[col] = unit
@@ -721,9 +702,7 @@ class BaseProvider(ABC):
         if any(kw in name_lower for kw in ["rate", "ratio", "pct", "percent", "率", "比"]):
             return FieldType.RATE
 
-        if any(
-            kw in name_lower for kw in ["amount", "额", "金额", "value", "市值", "balance", "余额"]
-        ):
+        if any(kw in name_lower for kw in ["amount", "额", "金额", "value", "市值", "balance", "余额"]):
             return FieldType.AMOUNT
 
         if any(kw in name_lower for kw in ["volume", "量", "shares", "股", "count", "数"]):

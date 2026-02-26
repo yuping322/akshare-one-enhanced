@@ -2,7 +2,6 @@
 Factory for creating HK/US stock data providers.
 """
 
-
 from .base import HKUSProvider
 from .eastmoney import EastmoneyHKUSProvider
 

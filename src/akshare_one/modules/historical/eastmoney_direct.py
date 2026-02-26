@@ -43,9 +43,7 @@ class EastMoneyDirectHistorical(HistoricalDataProvider):
             )
 
             if raw_data.get("rc") != 0:
-                raise ValueError(
-                    f"API returned error: {raw_data.get('msg')}, rc: {raw_data.get('rc')}"
-                )
+                raise ValueError(f"API returned error: {raw_data.get('msg')}, rc: {raw_data.get('rc')}")
 
             df = parse_kline_data(raw_data)
 

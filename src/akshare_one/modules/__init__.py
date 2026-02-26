@@ -17,13 +17,13 @@ from .exceptions import (
 )
 
 __all__ = [
-    'BaseProvider',
-    'MarketDataError',
-    'InvalidParameterError',
-    'DataSourceUnavailableError',
-    'NoDataError',
-    'UpstreamChangedError',
-    'RateLimitError',
-    'DataValidationError',
-    'handle_upstream_error',
+    "BaseProvider",
+    "MarketDataError",
+    "InvalidParameterError",
+    "DataSourceUnavailableError",
+    "NoDataError",
+    "UpstreamChangedError",
+    "RateLimitError",
+    "DataValidationError",
+    "handle_upstream_error",
 ]

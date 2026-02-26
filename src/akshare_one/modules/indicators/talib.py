@@ -39,9 +39,7 @@ class TalibIndicatorCalculator(BaseIndicatorCalculator):
 
     def calculate_macd(self, df: pd.DataFrame, fast: int, slow: int, signal: int) -> pd.DataFrame:
         close = df["close"].values.astype(np.float64)
-        macd, signal_line, histogram = talib.MACD(
-            close, fastperiod=fast, slowperiod=slow, signalperiod=signal
-        )
+        macd, signal_line, histogram = talib.MACD(close, fastperiod=fast, slowperiod=slow, signalperiod=signal)
         return pd.DataFrame(
             {"macd": macd, "signal": signal_line, "histogram": histogram},
             index=df.index,
@@ -49,17 +47,13 @@ class TalibIndicatorCalculator(BaseIndicatorCalculator):
 
     def calculate_bollinger_bands(self, df: pd.DataFrame, window: int, std: int) -> pd.DataFrame:
         close = df["close"].values.astype(np.float64)
-        upper, middle, lower = talib.BBANDS(
-            close, timeperiod=window, nbdevup=std, nbdevdn=std, matype=MA_Type.SMA
-        )
+        upper, middle, lower = talib.BBANDS(close, timeperiod=window, nbdevup=std, nbdevdn=std, matype=MA_Type.SMA)
         return pd.DataFrame(
             {"upper_band": upper, "middle_band": middle, "lower_band": lower},
             index=df.index,
         )
 
-    def calculate_stoch(
-        self, df: pd.DataFrame, window: int, smooth_d: int, smooth_k: int
-    ) -> pd.DataFrame:
+    def calculate_stoch(self, df: pd.DataFrame, window: int, smooth_d: int, smooth_k: int) -> pd.DataFrame:
         high = df["high"].values.astype(np.float64)
         low = df["low"].values.astype(np.float64)
         close = df["close"].values.astype(np.float64)
@@ -116,9 +110,7 @@ class TalibIndicatorCalculator(BaseIndicatorCalculator):
         low = df["low"].values.astype(np.float64)
         close = df["close"].values.astype(np.float64)
         volume = df["volume"].values.astype(np.float64)
-        adosc = talib.ADOSC(
-            high, low, close, volume, fastperiod=fast_period, slowperiod=slow_period
-        )
+        adosc = talib.ADOSC(high, low, close, volume, fastperiod=fast_period, slowperiod=slow_period)
         return pd.DataFrame({"adosc": adosc}, index=df.index)
 
     def calculate_obv(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -143,9 +135,7 @@ class TalibIndicatorCalculator(BaseIndicatorCalculator):
         tsf = talib.TSF(close, timeperiod=window)
         return pd.DataFrame({"tsf": tsf}, index=df.index)
 
-    def calculate_apo(
-        self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int
-    ) -> pd.DataFrame:
+    def calculate_apo(self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int) -> pd.DataFrame:
         close = df["close"].values.astype(np.float64)
         # Convert integer to MA_Type enum value
         ma_type_enum = MA_TYPE_MAPPING.get(ma_type, MA_Type.SMA)
@@ -218,9 +208,7 @@ class TalibIndicatorCalculator(BaseIndicatorCalculator):
         plus_dm = talib.PLUS_DM(high, low, timeperiod=window)
         return pd.DataFrame({"plus_dm": plus_dm}, index=df.index)
 
-    def calculate_ppo(
-        self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int
-    ) -> pd.DataFrame:
+    def calculate_ppo(self, df: pd.DataFrame, fast_period: int, slow_period: int, ma_type: int) -> pd.DataFrame:
         close = df["close"].values.astype(np.float64)
         # Convert integer to MA_Type enum value
         ma_type_enum = MA_TYPE_MAPPING.get(ma_type, MA_Type.SMA)
@@ -252,9 +240,7 @@ class TalibIndicatorCalculator(BaseIndicatorCalculator):
         trix = talib.TRIX(close, timeperiod=window)
         return pd.DataFrame({"trix": trix}, index=df.index)
 
-    def calculate_ultosc(
-        self, df: pd.DataFrame, window1: int, window2: int, window3: int
-    ) -> pd.DataFrame:
+    def calculate_ultosc(self, df: pd.DataFrame, window1: int, window2: int, window3: int) -> pd.DataFrame:
         high = df["high"].values.astype(np.float64)
         low = df["low"].values.astype(np.float64)
         close = df["close"].values.astype(np.float64)

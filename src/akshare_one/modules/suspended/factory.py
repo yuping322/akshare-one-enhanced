@@ -2,7 +2,6 @@
 Factory for creating suspended stocks data providers.
 """
 
-
 from .base import SuspendedProvider
 from .eastmoney import EastmoneySuspendedProvider
 

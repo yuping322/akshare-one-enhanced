@@ -90,10 +90,7 @@ def configure_ssl_verification(verify: bool | None = None) -> bool:
 
     if not verify_setting:
         warnings.warn(
-            (
-                "SSL verification is disabled. This is insecure and should only "
-                "be used in development environments."
-            ),
+            ("SSL verification is disabled. This is insecure and should only be used in development environments."),
             SecurityWarning,
             stacklevel=2,
         )
@@ -103,4 +100,5 @@ def configure_ssl_verification(verify: bool | None = None) -> bool:
 
 class SecurityWarning(UserWarning):
     """Warning for security-related issues."""
+
     pass

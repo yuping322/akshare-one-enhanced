@@ -4,7 +4,6 @@ Sina ESG rating data provider.
 This module implements the ESG rating data provider using Sina as the data source.
 """
 
-
 import pandas as pd
 
 from .base import ESGProvider
@@ -20,7 +19,7 @@ class SinaESGProvider(ESGProvider):
 
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return 'sina'
+        return "sina"
 
     def fetch_data(self) -> pd.DataFrame:
         """
@@ -31,12 +30,7 @@ class SinaESGProvider(ESGProvider):
         """
         return pd.DataFrame()
 
-    def get_esg_rating(
-        self,
-        symbol: str | None,
-        start_date: str,
-        end_date: str
-    ) -> pd.DataFrame:
+    def get_esg_rating(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
         """
         Get ESG rating data from Sina.
 
@@ -53,17 +47,11 @@ class SinaESGProvider(ESGProvider):
         self.validate_date_range(start_date, end_date)
 
         # Return empty DataFrame with proper structure
-        return self.create_empty_dataframe([
-            'symbol', 'name', 'date', 'esg_score', 'environmental_score',
-            'social_score', 'governance_score', 'rating'
-        ])
+        return self.create_empty_dataframe(
+            ["symbol", "name", "date", "esg_score", "environmental_score", "social_score", "governance_score", "rating"]
+        )
 
-    def get_esg_rating_rank(
-        self,
-        date: str,
-        industry: str | None,
-        top_n: int
-    ) -> pd.DataFrame:
+    def get_esg_rating_rank(self, date: str, industry: str | None, top_n: int) -> pd.DataFrame:
         """
         Get ESG rating rankings from Sina.
 
@@ -79,6 +67,4 @@ class SinaESGProvider(ESGProvider):
             raise ValueError("top_n must be a positive integer")
 
         # Return empty DataFrame with proper structure
-        return self.create_empty_dataframe([
-            'rank', 'symbol', 'name', 'esg_score', 'industry'
-        ])
+        return self.create_empty_dataframe(["rank", "symbol", "name", "esg_score", "industry"])

@@ -35,9 +35,7 @@ class IndexProvider(BaseProvider):
         return 0
 
     @abstractmethod
-    def get_index_hist(
-        self, symbol: str, start_date: str, end_date: str, interval: str = "daily"
-    ) -> pd.DataFrame:
+    def get_index_hist(self, symbol: str, start_date: str, end_date: str, interval: str = "daily") -> pd.DataFrame:
         """
         Get index historical data.
 

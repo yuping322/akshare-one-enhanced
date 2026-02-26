@@ -30,7 +30,7 @@ class XueQiuRealtime(RealtimeDataProvider):
             - high: 最高
             - low: 最低
             - prev_close: 昨收
-        
+
         Raises:
             RuntimeError: When the upstream API returns unexpected format
         """
@@ -43,8 +43,7 @@ class XueQiuRealtime(RealtimeDataProvider):
             ) from e
         except Exception as e:
             raise RuntimeError(
-                f"Failed to fetch data from Xueqiu API. "
-                f"The service may be unavailable. Error: {e}"
+                f"Failed to fetch data from Xueqiu API. The service may be unavailable. Error: {e}"
             ) from e
 
         # Check if DataFrame is empty or has unexpected structure
@@ -53,7 +52,7 @@ class XueQiuRealtime(RealtimeDataProvider):
                 f"Xueqiu API returned empty data for symbol {self.symbol}. "
                 f"The stock may not exist or data is temporarily unavailable."
             )
-        
+
         # Validate expected columns exist
         if "item" not in raw_df.columns or "value" not in raw_df.columns:
             raise RuntimeError(
@@ -65,9 +64,7 @@ class XueQiuRealtime(RealtimeDataProvider):
         try:
             data_map = dict(zip(raw_df["item"], raw_df["value"], strict=True))
         except Exception as e:
-            raise RuntimeError(
-                f"Failed to parse Xueqiu data structure: {e}"
-            ) from e
+            raise RuntimeError(f"Failed to parse Xueqiu data structure: {e}") from e
 
         def _get_value(key: str, type_func: type = float) -> float | str:
             val = data_map.get(key)
@@ -97,8 +94,6 @@ class XueQiuRealtime(RealtimeDataProvider):
                 "prev_close": _get_value("昨收"),
             }
         except Exception as e:
-            raise RuntimeError(
-                f"Failed to transform Xueqiu data to standard format: {e}"
-            ) from e
+            raise RuntimeError(f"Failed to transform Xueqiu data to standard format: {e}") from e
 
         return pd.DataFrame([data])

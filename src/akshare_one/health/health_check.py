@@ -165,9 +165,7 @@ class HealthChecker:
             if len(self._results[source]) > self._max_history:
                 self._results[source] = self._results[source][-self._max_history :]
 
-            self.logger.info(
-                f"Health check completed for {source}", extra={"context": result.to_dict()}
-            )
+            self.logger.info(f"Health check completed for {source}", extra={"context": result.to_dict()})
 
             return result
 
@@ -315,11 +313,7 @@ def create_eastmoney_health_check() -> Callable[[], HealthResult]:
                 status=status,
                 latency_ms=latency_ms,
                 rows_returned=len(raw_df),
-                details={
-                    "sample_symbols": list(raw_df["代码"].head(5))
-                    if "代码" in raw_df.columns
-                    else []
-                },
+                details={"sample_symbols": list(raw_df["代码"].head(5)) if "代码" in raw_df.columns else []},
             )
 
         except Exception as e:
@@ -374,15 +368,11 @@ def create_sina_health_check() -> Callable[[], HealthResult]:
             else:
                 status = HealthStatus.UNHEALTHY
 
-            return HealthResult(
-                source="sina", status=status, latency_ms=latency_ms, rows_returned=len(raw_df)
-            )
+            return HealthResult(source="sina", status=status, latency_ms=latency_ms, rows_returned=len(raw_df))
 
         except Exception as e:
             latency_ms = (time.time() - start_time) * 1000
-            return HealthResult(
-                source="sina", status=HealthStatus.UNHEALTHY, latency_ms=latency_ms, error=str(e)
-            )
+            return HealthResult(source="sina", status=HealthStatus.UNHEALTHY, latency_ms=latency_ms, error=str(e))
 
     return check
 

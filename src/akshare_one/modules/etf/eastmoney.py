@@ -40,9 +40,7 @@ class EastmoneyETFProvider(ETFProvider):
         """
         return pd.DataFrame()
 
-    def get_etf_hist(
-        self, symbol: str, start_date: str, end_date: str, interval: str = "daily"
-    ) -> pd.DataFrame:
+    def get_etf_hist(self, symbol: str, start_date: str, end_date: str, interval: str = "daily") -> pd.DataFrame:
         """
         Get ETF historical data from Eastmoney.
 

@@ -16,22 +16,42 @@ class EastmoneyOptionsProvider(OptionsDataProvider):
 
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return 'eastmoney'
+        return "eastmoney"
 
     def get_options_chain(self) -> pd.DataFrame:
         """Get options chain data from Eastmoney."""
-        return pd.DataFrame(columns=[
-            'underlying', 'symbol', 'name', 'option_type', 'strike',
-            'expiration', 'price', 'change', 'pct_change', 'volume',
-            'open_interest', 'implied_volatility'
-        ])
+        return pd.DataFrame(
+            columns=[
+                "underlying",
+                "symbol",
+                "name",
+                "option_type",
+                "strike",
+                "expiration",
+                "price",
+                "change",
+                "pct_change",
+                "volume",
+                "open_interest",
+                "implied_volatility",
+            ]
+        )
 
     def get_options_realtime(self, symbol: str) -> pd.DataFrame:
         """Get realtime options quote from Eastmoney."""
-        return pd.DataFrame(columns=[
-            'symbol', 'underlying', 'price', 'change', 'pct_change',
-            'timestamp', 'volume', 'open_interest', 'iv'
-        ])
+        return pd.DataFrame(
+            columns=[
+                "symbol",
+                "underlying",
+                "price",
+                "change",
+                "pct_change",
+                "timestamp",
+                "volume",
+                "open_interest",
+                "iv",
+            ]
+        )
 
     def get_options_expirations(self, underlying_symbol: str) -> list[str]:
         """Get available expiration dates from Eastmoney."""
@@ -44,7 +64,6 @@ class EastmoneyOptionsProvider(OptionsDataProvider):
         end_date: str = "2030-12-31",
     ) -> pd.DataFrame:
         """Get options historical data from Eastmoney."""
-        return pd.DataFrame(columns=[
-            'timestamp', 'symbol', 'open', 'high', 'low', 'close',
-            'volume', 'open_interest', 'settlement'
-        ])
+        return pd.DataFrame(
+            columns=["timestamp", "symbol", "open", "high", "low", "close", "volume", "open_interest", "settlement"]
+        )

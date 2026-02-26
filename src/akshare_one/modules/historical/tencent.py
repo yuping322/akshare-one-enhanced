@@ -9,9 +9,7 @@ class TencentHistorical(HistoricalDataProvider):
 
     @cache(
         "hist_data_cache",
-        key=lambda self: (
-            f"tencent_hist_{self.symbol}_{self.interval}_{self.interval_multiplier}_{self.adjust}"
-        ),
+        key=lambda self: (f"tencent_hist_{self.symbol}_{self.interval}_{self.interval_multiplier}_{self.adjust}"),
     )
     def get_hist_data(self) -> pd.DataFrame:
         """Fetches Tencent historical market data
@@ -32,10 +30,10 @@ class TencentHistorical(HistoricalDataProvider):
             # In a real implementation, this would fetch data from Tencent Finance API
             # For now, return an empty DataFrame with the expected structure
             # since we may have network issues or need to implement the actual API call
-            
+
             # Expected columns according to the base class
             result = pd.DataFrame(columns=["timestamp", "open", "high", "low", "close", "volume"])
-            
+
             return result
         except Exception as e:
             raise ValueError(f"Failed to fetch historical data: {str(e)}") from e

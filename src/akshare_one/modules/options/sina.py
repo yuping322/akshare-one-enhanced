@@ -29,9 +29,9 @@ class SinaOptionsProvider(OptionsDataProvider):
         """Ensure DataFrame is JSON compatible by replacing NaN/Infinity with None."""
         df = df.copy()
         for col in df.columns:
-            if df[col].dtype in ['float64', 'float32', 'int64', 'int32']:
+            if df[col].dtype in ["float64", "float32", "int64", "int32"]:
                 df[col] = df[col].replace({np.nan: None, np.inf: None, -np.inf: None})
-            elif df[col].dtype == 'object':
+            elif df[col].dtype == "object":
                 df[col] = df[col].replace({np.nan: None})
         return df
 
@@ -62,45 +62,52 @@ class SinaOptionsProvider(OptionsDataProvider):
             raw_df = ak.option_current_em()
 
             if raw_df.empty:
-                raise ValueError(
-                    "No options data available"
-                )
+                raise ValueError("No options data available")
 
             # Filter by underlying symbol
             patterns = get_option_underlying_patterns(self.underlying_symbol)
             pattern_regex = "|".join(patterns)
-            df = raw_df[raw_df['名称'].str.contains(pattern_regex, na=False, regex=True)].copy()
+            df = raw_df[raw_df["名称"].str.contains(pattern_regex, na=False, regex=True)].copy()
 
             if df.empty:
-                raise ValueError(
-                    f"No options found for underlying symbol: {self.underlying_symbol}"
-                )
+                raise ValueError(f"No options found for underlying symbol: {self.underlying_symbol}")
 
             # Parse option info from names
-            df['option_type'] = df['名称'].apply(self._parse_option_type)
-            df['expiration'] = df['名称'].apply(self._parse_expiration)
-            df['underlying'] = self.underlying_symbol
+            df["option_type"] = df["名称"].apply(self._parse_option_type)
+            df["expiration"] = df["名称"].apply(self._parse_expiration)
+            df["underlying"] = self.underlying_symbol
 
             # Rename columns
-            df = df.rename(columns={
-                '代码': 'symbol',
-                '名称': 'name',
-                '最新价': 'price',
-                '涨跌额': 'change',
-                '涨跌幅': 'pct_change',
-                '成交量': 'volume',
-                '持仓量': 'open_interest',
-                '行权价': 'strike',
-            })
+            df = df.rename(
+                columns={
+                    "代码": "symbol",
+                    "名称": "name",
+                    "最新价": "price",
+                    "涨跌额": "change",
+                    "涨跌幅": "pct_change",
+                    "成交量": "volume",
+                    "持仓量": "open_interest",
+                    "行权价": "strike",
+                }
+            )
 
             # Add placeholder for implied volatility
-            df['implied_volatility'] = None
+            df["implied_volatility"] = None
 
             # Select and order columns
             standard_columns = [
-                'underlying', 'symbol', 'name', 'option_type', 'strike',
-                'expiration', 'price', 'change', 'pct_change', 'volume',
-                'open_interest', 'implied_volatility'
+                "underlying",
+                "symbol",
+                "name",
+                "option_type",
+                "strike",
+                "expiration",
+                "price",
+                "change",
+                "pct_change",
+                "volume",
+                "open_interest",
+                "implied_volatility",
             ]
 
             result = df[[col for col in standard_columns if col in df.columns]].copy()
@@ -138,10 +145,10 @@ class SinaOptionsProvider(OptionsDataProvider):
                 # Get all options for the underlying
                 patterns = get_option_underlying_patterns(self.underlying_symbol)
                 pattern_regex = "|".join(patterns)
-                df = raw_df[raw_df['名称'].str.contains(pattern_regex, na=False, regex=True)].copy()
+                df = raw_df[raw_df["名称"].str.contains(pattern_regex, na=False, regex=True)].copy()
             else:
                 # Get specific option by symbol
-                df = raw_df[raw_df['代码'] == symbol].copy()
+                df = raw_df[raw_df["代码"] == symbol].copy()
 
             if df.empty:
                 return pd.DataFrame(
@@ -159,23 +166,32 @@ class SinaOptionsProvider(OptionsDataProvider):
                 )
 
             # Rename columns
-            df = df.rename(columns={
-                '代码': 'symbol',
-                '最新价': 'price',
-                '涨跌额': 'change',
-                '涨跌幅': 'pct_change',
-                '成交量': 'volume',
-                '持仓量': 'open_interest',
-            })
+            df = df.rename(
+                columns={
+                    "代码": "symbol",
+                    "最新价": "price",
+                    "涨跌额": "change",
+                    "涨跌幅": "pct_change",
+                    "成交量": "volume",
+                    "持仓量": "open_interest",
+                }
+            )
 
-            df['underlying'] = self.underlying_symbol
-            df['timestamp'] = datetime.now()
-            df['iv'] = None
+            df["underlying"] = self.underlying_symbol
+            df["timestamp"] = datetime.now()
+            df["iv"] = None
 
             # Select columns
             standard_columns = [
-                'symbol', 'underlying', 'price', 'change', 'pct_change',
-                'timestamp', 'volume', 'open_interest', 'iv'
+                "symbol",
+                "underlying",
+                "price",
+                "change",
+                "pct_change",
+                "timestamp",
+                "volume",
+                "open_interest",
+                "iv",
             ]
 
             result = df[[col for col in standard_columns if col in df.columns]].copy()
@@ -199,13 +215,13 @@ class SinaOptionsProvider(OptionsDataProvider):
             # Filter by underlying symbol
             patterns = get_option_underlying_patterns(underlying_symbol)
             pattern_regex = "|".join(patterns)
-            df = raw_df[raw_df['名称'].str.contains(pattern_regex, na=False, regex=True)].copy()
+            df = raw_df[raw_df["名称"].str.contains(pattern_regex, na=False, regex=True)].copy()
 
             if df.empty:
                 raise ValueError(f"No options found for underlying symbol: {underlying_symbol}")
 
             # Extract unique expirations
-            expirations = df['名称'].apply(self._parse_expiration).dropna().unique().tolist()
+            expirations = df["名称"].apply(self._parse_expiration).dropna().unique().tolist()
             return sorted(expirations)
         except ValueError:
             raise
@@ -267,15 +283,15 @@ class SinaOptionsProvider(OptionsDataProvider):
 
     def _parse_option_type(self, name: str) -> str | None:
         """Parse option type (call/put) from name."""
-        if '购' in name:
-            return 'call'
-        elif '沽' in name:
-            return 'put'
+        if "购" in name:
+            return "call"
+        elif "沽" in name:
+            return "put"
         return None
 
     def _parse_expiration(self, name: str) -> str | None:
         """Parse expiration from name (e.g., '300ETF沽2月4288A' -> '2月')."""
-        match = re.search(r'(\d+月)', name)
+        match = re.search(r"(\d+月)", name)
         if match:
             return match.group(1)
         return None
@@ -291,9 +307,7 @@ class SinaOptionsProvider(OptionsDataProvider):
             "成交量": "volume",
         }
 
-        available_columns = {
-            src: target for src, target in column_map.items() if src in raw_df.columns
-        }
+        available_columns = {src: target for src, target in column_map.items() if src in raw_df.columns}
 
         if not available_columns:
             raise ValueError("Expected columns not found in options history data")

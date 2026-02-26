@@ -39,16 +39,12 @@ class FuturesDataFactory:
         return cls._realtime_providers[source](**kwargs)
 
     @classmethod
-    def register_historical_provider(
-        cls, name: str, provider_class: type[HistoricalFuturesDataProvider]
-    ) -> None:
+    def register_historical_provider(cls, name: str, provider_class: type[HistoricalFuturesDataProvider]) -> None:
         """Register a new historical futures data provider."""
         cls._historical_providers[name] = provider_class
 
     @classmethod
-    def register_realtime_provider(
-        cls, name: str, provider_class: type[RealtimeFuturesDataProvider]
-    ) -> None:
+    def register_realtime_provider(cls, name: str, provider_class: type[RealtimeFuturesDataProvider]) -> None:
         """Register a new realtime futures data provider."""
         cls._realtime_providers[name] = provider_class
 

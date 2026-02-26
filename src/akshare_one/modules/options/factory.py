@@ -2,7 +2,6 @@
 Factory for creating options data providers.
 """
 
-
 from ..factory_base import BaseFactory
 from .base import OptionsDataProvider
 from .eastmoney import EastmoneyOptionsProvider

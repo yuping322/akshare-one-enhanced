@@ -32,9 +32,7 @@ class SinaFinancialReport(FinancialDataProvider):
                 raise ValueError(f"Invalid stock symbol: {self.symbol}")
             return self._clean_balance_data(raw_df)
         except Exception as e:
-            raise ValueError(
-                f"Failed to get balance sheet for symbol {self.symbol}: {str(e)}"
-            ) from e
+            raise ValueError(f"Failed to get balance sheet for symbol {self.symbol}: {str(e)}") from e
 
     @cache("financial_cache", key=lambda self: f"sina_income_{self.symbol}")
     def get_income_statement(self) -> pd.DataFrame:
@@ -52,9 +50,7 @@ class SinaFinancialReport(FinancialDataProvider):
                 raise ValueError(f"Invalid stock symbol: {self.symbol}")
             return self._clean_income_data(raw_df)
         except Exception as e:
-            raise ValueError(
-                f"Failed to get income statement for symbol {self.symbol}: {str(e)}"
-            ) from e
+            raise ValueError(f"Failed to get income statement for symbol {self.symbol}: {str(e)}") from e
 
     @cache("financial_cache", key=lambda self: f"sina_cash_{self.symbol}")
     def get_cash_flow(self) -> pd.DataFrame:
@@ -72,9 +68,7 @@ class SinaFinancialReport(FinancialDataProvider):
                 raise ValueError(f"Invalid stock symbol: {self.symbol}")
             return self._clean_cash_data(raw_df)
         except Exception as e:
-            raise ValueError(
-                f"Failed to get cash flow statement for symbol {self.symbol}: {str(e)}"
-            ) from e
+            raise ValueError(f"Failed to get cash flow statement for symbol {self.symbol}: {str(e)}") from e
 
     def _clean_cash_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
         """清理和标准化现金流量表数据

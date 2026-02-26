@@ -73,15 +73,11 @@ class XueQiuInsider(InsiderDataProvider):
 
         # Add shares_owned_before_transaction if possible
         if "shares_owned_after_transaction" in df.columns and "transaction_shares" in df.columns:
-            df["shares_owned_before_transaction"] = (
-                df["shares_owned_after_transaction"] - df["transaction_shares"]
-            )
+            df["shares_owned_before_transaction"] = df["shares_owned_after_transaction"] - df["transaction_shares"]
 
         # Convert date format
         if "transaction_date" in df.columns:
-            df["transaction_date"] = pd.to_datetime(df["transaction_date"]).dt.tz_localize(
-                "Asia/Shanghai"
-            )
+            df["transaction_date"] = pd.to_datetime(df["transaction_date"]).dt.tz_localize("Asia/Shanghai")
 
         if "filing_date" in df.columns:
             df["filing_date"] = pd.to_datetime(df["filing_date"]).dt.tz_localize("Asia/Shanghai")
