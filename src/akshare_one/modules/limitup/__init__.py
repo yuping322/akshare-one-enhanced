@@ -16,7 +16,7 @@ from .factory import LimitUpDownFactory
 
 def get_limit_up_pool(
     date: str,
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -25,35 +25,28 @@ def get_limit_up_pool(
 
     Args:
         date: Date in YYYY-MM-DD format
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        source: Data source
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Standardized limit up pool data with columns:
-            - date: Date (YYYY-MM-DD)
-            - symbol: Stock symbol
-            - name: Stock name
-            - close_price: Closing price
-            - limit_up_time: Time when limit up occurred
-            - open_count: Number of times limit up was broken
-            - seal_amount: Sealing order amount
-            - consecutive_days: Number of consecutive limit up days
-            - reason: Reason for limit up
-            - turnover_rate: Turnover rate
-
-    Example:
-        >>> df = get_limit_up_pool("2024-01-01")
-        >>> print(df.head())
+        pd.DataFrame: Standardized limit up pool data
     """
-    provider = LimitUpDownFactory.get_provider(source=source)
-    df = provider.get_limit_up_pool(date)
-    return provider.apply_data_filter(df, columns, row_filter)
+    from ...client import apply_data_filter
+
+    if isinstance(source, list) or source is None:
+        router = LimitUpDownFactory.create_router(sources=source)
+        df = router.execute("get_limit_up_pool", date)
+    else:
+        provider = LimitUpDownFactory.get_provider(source=source)
+        df = provider.get_limit_up_pool(date)
+
+    return apply_data_filter(df, columns, row_filter)
 
 
 def get_limit_down_pool(
     date: str,
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -62,33 +55,29 @@ def get_limit_down_pool(
 
     Args:
         date: Date in YYYY-MM-DD format
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        source: Data source
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Standardized limit down pool data with columns:
-            - date: Date (YYYY-MM-DD)
-            - symbol: Stock symbol
-            - name: Stock name
-            - close_price: Closing price
-            - limit_down_time: Time when limit down occurred
-            - open_count: Number of times limit down was broken
-            - turnover_rate: Turnover rate
-
-    Example:
-        >>> df = get_limit_down_pool("2024-01-01")
-        >>> print(df.head())
+        pd.DataFrame: Standardized limit down pool data
     """
-    provider = LimitUpDownFactory.get_provider(source=source)
-    df = provider.get_limit_down_pool(date)
-    return provider.apply_data_filter(df, columns, row_filter)
+    from ...client import apply_data_filter
+
+    if isinstance(source, list) or source is None:
+        router = LimitUpDownFactory.create_router(sources=source)
+        df = router.execute("get_limit_down_pool", date)
+    else:
+        provider = LimitUpDownFactory.get_provider(source=source)
+        df = provider.get_limit_down_pool(date)
+
+    return apply_data_filter(df, columns, row_filter)
 
 
 def get_limit_up_stats(
     start_date: str,
     end_date: str,
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -98,24 +87,23 @@ def get_limit_up_stats(
     Args:
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        source: Data source
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Statistics with columns:
-            - date: Date (YYYY-MM-DD)
-            - limit_up_count: Number of limit up stocks
-            - limit_down_count: Number of limit down stocks
-            - broken_rate: Rate of broken limit ups (%)
-
-    Example:
-        >>> df = get_limit_up_stats("2024-01-01", "2024-01-31")
-        >>> print(df.head())
+        pd.DataFrame: Statistics
     """
-    provider = LimitUpDownFactory.get_provider(source=source)
-    df = provider.get_limit_up_stats(start_date, end_date)
-    return provider.apply_data_filter(df, columns, row_filter)
+    from ...client import apply_data_filter
+
+    if isinstance(source, list) or source is None:
+        router = LimitUpDownFactory.create_router(sources=source)
+        df = router.execute("get_limit_up_stats", start_date, end_date)
+    else:
+        provider = LimitUpDownFactory.get_provider(source=source)
+        df = provider.get_limit_up_stats(start_date, end_date)
+
+    return apply_data_filter(df, columns, row_filter)
 
 
 __all__ = [

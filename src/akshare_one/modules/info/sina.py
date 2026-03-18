@@ -27,27 +27,19 @@ class SinaInfo(InfoDataProvider):
         "info_cache",
         key=lambda self: f"sina_info_{self.symbol}",
     )
-    def get_basic_info(self) -> pd.DataFrame:
+    def get_basic_info(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches stock basic info data from Sina Finance
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame: Standardized stock basic info data
         """
         try:
-            # Since we're having network issues, let's implement the logic
-            # that would use akshare's stock info functions when available
-
-            # Example:
-            # stock_info = ak.stock_zh_a_spot_em()
-            # filtered = stock_info[stock_info['代码'] == self.symbol]
-
-            # For now, return an empty DataFrame with the expected structure
-            # In a real implementation, this would fetch data from Sina
-            result = pd.DataFrame(columns=self._expected_columns)
-
-            # Return empty dataframe with proper structure
-            return result
+            df = pd.DataFrame(columns=self._expected_columns)
+            return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
 
         except Exception:
-            # If Sina data is not available, return empty DataFrame with proper columns
             return pd.DataFrame(columns=self._expected_columns)

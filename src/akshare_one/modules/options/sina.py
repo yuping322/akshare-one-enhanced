@@ -12,7 +12,7 @@ import akshare as ak
 import numpy as np
 import pandas as pd
 
-from mappings.mapping_utils import get_option_underlying_patterns
+from akshare_one.mappings.mapping_utils import get_option_underlying_patterns
 
 from ..cache import cache
 from .base import OptionsDataProvider
@@ -39,8 +39,12 @@ class SinaOptionsProvider(OptionsDataProvider):
         "options_chain_cache",
         key=lambda self: f"sina_options_chain_{self.underlying_symbol}",
     )
-    def get_options_chain(self) -> pd.DataFrame:
+    def get_options_chain(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches options chain data
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
@@ -111,6 +115,7 @@ class SinaOptionsProvider(OptionsDataProvider):
             ]
 
             result = df[[col for col in standard_columns if col in df.columns]].copy()
+            result = self.apply_data_filter(result, columns=columns, row_filter=row_filter)
             return self.ensure_json_compatible(result)
         except Exception as e:
             raise ValueError(f"Failed to fetch options chain: {str(e)}") from e
@@ -119,11 +124,13 @@ class SinaOptionsProvider(OptionsDataProvider):
         "options_realtime_cache",
         key=lambda self, symbol: f"sina_options_realtime_{symbol}",
     )
-    def get_options_realtime(self, symbol: str) -> pd.DataFrame:
+    def get_options_realtime(self, symbol: str, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches realtime options quote data
 
         Args:
             symbol: 期权代码 (e.g., '10010459'), 传空字符串则获取该标的下的所有期权
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
@@ -195,6 +202,7 @@ class SinaOptionsProvider(OptionsDataProvider):
             ]
 
             result = df[[col for col in standard_columns if col in df.columns]].copy()
+            result = self.apply_data_filter(result, columns=columns, row_filter=row_filter)
             return self.ensure_json_compatible(result)
         except Exception as e:
             raise ValueError(f"Failed to fetch options realtime data: {str(e)}") from e

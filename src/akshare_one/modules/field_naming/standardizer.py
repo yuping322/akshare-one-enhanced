@@ -52,6 +52,8 @@ class FieldStandardizer:
             FieldType.CODE: self.naming_rules.code_field_pattern,
             FieldType.MARKET: f"^{self.naming_rules.market_field_name}$",
             FieldType.RANK: f"^{self.naming_rules.rank_field_name}$",
+            FieldType.ANALYST: f"^{self.naming_rules.analyst_field_name}$",
+            FieldType.INSTITUTION: f"^{self.naming_rules.institution_field_name}$",
             # 数量类型
             FieldType.COUNT: self.naming_rules.count_field_pattern,
             FieldType.VOLUME: f"^{self.naming_rules.volume_field_name}$",
@@ -80,10 +82,7 @@ class FieldStandardizer:
         is_valid, error_message = self.validate_field_name(field_name, field_type)
 
         if not is_valid:
-            raise ValueError(
-                f"Field name '{field_name}' does not conform to naming rules for type {field_type.value}. "
-                f"{error_message}"
-            )
+            raise ValueError(error_message)
 
         # 如果验证通过，返回字段名（已经是标准格式）
         return field_name
@@ -110,38 +109,33 @@ class FieldStandardizer:
                 is_valid, error_message = self.validate_field_name(field_name, field_type)
 
                 if not is_valid:
-                    raise ValueError(
-                        f"Field '{field_name}' does not conform to naming rules for type {field_type.value}. "
-                        f"{error_message}"
-                    )
+                    raise ValueError(error_message)
 
         # 如果所有字段名都有效，返回DataFrame
         return result_df
 
     def validate_field_name(self, field_name: str, field_type: FieldType) -> tuple[bool, str | None]:
         """
-        验证字段名是否符合规范
+        验证字段名是否符合其类型的命名规范
 
         Args:
-            field_name: 待验证的字段名
+            field_name: 字段名
             field_type: 字段类型
 
         Returns:
             (是否有效, 错误消息)
         """
-        # 获取字段类型对应的命名模式
         pattern = self._field_type_patterns.get(field_type)
 
-        if pattern is None:
-            return False, f"Unknown field type: {field_type}"
-
-        # 验证字段名是否匹配模式
-        if re.match(pattern, field_name):
+        if not pattern:
             return True, None
 
-        # 生成错误消息
-        error_message = self._generate_error_message(field_name, field_type, pattern)
-        return False, error_message
+        if not re.match(pattern, field_name):
+            # 获取推荐的命名规范说明
+            error_message = self._generate_error_message(field_name, field_type, pattern)
+            return False, f"Field '{field_name}' does not conform to naming rules for type {field_type.value}. {error_message}"
+
+        return True, None
 
     def _generate_error_message(self, field_name: str, field_type: FieldType, pattern: str) -> str:
         """
@@ -173,6 +167,8 @@ class FieldStandardizer:
             FieldType.CODE: "Use pattern '{entity}_code' (e.g., 'sector_code', 'industry_code')",
             FieldType.MARKET: "Use 'market' for market identifier field",
             FieldType.RANK: "Use 'rank' for ranking field",
+            FieldType.ANALYST: "Use 'analyst' for analyst name field",
+            FieldType.INSTITUTION: "Use 'institution' for institution name field",
             FieldType.COUNT: "Use pattern '{metric}_count' (e.g., 'constituent_count', 'open_count')",
             FieldType.VOLUME: "Use 'volume' for trading volume field",
             FieldType.SHARES: "Use pattern '{category}_shares' (e.g., 'holdings_shares', 'pledge_shares')",

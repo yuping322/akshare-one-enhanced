@@ -17,7 +17,7 @@ from .factory import DragonTigerFactory
 def get_dragon_tiger_list(
     date: str,
     symbol: str | None = None,
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -27,38 +27,30 @@ def get_dragon_tiger_list(
     Args:
         date: Date in YYYY-MM-DD format
         symbol: Stock symbol (optional, if None returns all stocks)
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        source: Data source
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Standardized dragon tiger list data with columns:
-            - date: Date (YYYY-MM-DD)
-            - symbol: Stock symbol
-            - name: Stock name
-            - close_price: Closing price
-            - pct_change: Price change percentage
-            - reason: Reason for being on the list
-            - buy_amount: Dragon tiger list buy amount
-            - sell_amount: Dragon tiger list sell amount
-            - net_amount: Dragon tiger list net amount
-            - total_amount: Dragon tiger list total transaction amount
-            - turnover_rate: Turnover rate
-
-    Example:
-        >>> df = get_dragon_tiger_list("2024-01-01")
-        >>> print(df.head())
+        pd.DataFrame: Standardized dragon tiger list data
     """
-    provider = DragonTigerFactory.get_provider(source=source)
-    df = provider.get_dragon_tiger_list(date, symbol)
-    return provider.apply_data_filter(df, columns, row_filter)
+    from ...client import apply_data_filter
+
+    if isinstance(source, list) or source is None:
+        router = DragonTigerFactory.create_router(sources=source)
+        df = router.execute("get_dragon_tiger_list", date, symbol)
+    else:
+        provider = DragonTigerFactory.get_provider(source=source)
+        df = provider.get_dragon_tiger_list(date, symbol)
+
+    return apply_data_filter(df, columns, row_filter)
 
 
 def get_dragon_tiger_summary(
     start_date: str,
     end_date: str,
     group_by: Literal["stock", "broker", "reason"] = "stock",
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -69,27 +61,30 @@ def get_dragon_tiger_summary(
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
         group_by: Grouping dimension ('stock', 'broker', or 'reason')
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        source: Data source
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Summary statistics grouped by specified dimension
-
-    Example:
-        >>> df = get_dragon_tiger_summary("2024-01-01", "2024-01-31", group_by="stock")
-        >>> print(df.head())
+        pd.DataFrame: Summary statistics
     """
-    provider = DragonTigerFactory.get_provider(source=source)
-    df = provider.get_dragon_tiger_summary(start_date, end_date, group_by)
-    return provider.apply_data_filter(df, columns, row_filter)
+    from ...client import apply_data_filter
+
+    if isinstance(source, list) or source is None:
+        router = DragonTigerFactory.create_router(sources=source)
+        df = router.execute("get_dragon_tiger_summary", start_date, end_date, group_by)
+    else:
+        provider = DragonTigerFactory.get_provider(source=source)
+        df = provider.get_dragon_tiger_summary(start_date, end_date, group_by)
+
+    return apply_data_filter(df, columns, row_filter)
 
 
 def get_dragon_tiger_broker_stats(
     start_date: str,
     end_date: str,
     top_n: int = 50,
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -100,29 +95,23 @@ def get_dragon_tiger_broker_stats(
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
         top_n: Number of top brokers to return
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        source: Data source
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Broker statistics with columns:
-            - rank: Ranking position
-            - broker_name: Broker name
-            - list_count: Number of times on the list
-            - buy_amount: Total buy amount
-            - buy_count: Number of buy transactions
-            - sell_amount: Total sell amount
-            - sell_count: Number of sell transactions
-            - net_amount: Net amount (buy - sell)
-            - total_amount: Total transaction amount
-
-    Example:
-        >>> df = get_dragon_tiger_broker_stats("2024-01-01", "2024-01-31", top_n=20)
-        >>> print(df.head())
+        pd.DataFrame: Broker statistics
     """
-    provider = DragonTigerFactory.get_provider(source=source)
-    df = provider.get_dragon_tiger_broker_stats(start_date, end_date, top_n)
-    return provider.apply_data_filter(df, columns, row_filter)
+    from ...client import apply_data_filter
+
+    if isinstance(source, list) or source is None:
+        router = DragonTigerFactory.create_router(sources=source)
+        df = router.execute("get_dragon_tiger_broker_stats", start_date, end_date, top_n)
+    else:
+        provider = DragonTigerFactory.get_provider(source=source)
+        df = provider.get_dragon_tiger_broker_stats(start_date, end_date, top_n)
+
+    return apply_data_filter(df, columns, row_filter)
 
 
 __all__ = [

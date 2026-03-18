@@ -69,16 +69,22 @@ def scenario_1_analyze_northbound_flow_trend():
 
         # 结果展示：显示最近10天的数据
         print("\n最近10天北向资金流向数据：")
-        display_df = df.head(10)[['date', 'market', 'net_buy']]
+        # Ensure we drop rows with None/NaN values for statistics
+        df_valid = df.dropna(subset=['net_buy'])
+        if df_valid.empty:
+            print("无有效数据返回")
+            return
+            
+        display_df = df_valid.head(10)[['date', 'market', 'net_buy']]
         print(display_df.to_string(index=False))
 
         # 统计分析
-        total_net_buy = df['net_buy'].sum()
-        avg_net_buy = df['net_buy'].mean()
-        max_inflow_day = df.loc[df['net_buy'].idxmax()]
-        min_inflow_day = df.loc[df['net_buy'].idxmin()]
-        inflow_days = len(df[df['net_buy'] > 0])
-        outflow_days = len(df[df['net_buy'] < 0])
+        total_net_buy = df_valid['net_buy'].sum()
+        avg_net_buy = df_valid['net_buy'].mean()
+        max_inflow_day = df_valid.loc[df_valid['net_buy'].idxmax()]
+        min_inflow_day = df_valid.loc[df_valid['net_buy'].idxmin()]
+        inflow_days = len(df_valid[df_valid['net_buy'] > 0])
+        outflow_days = len(df_valid[df_valid['net_buy'] < 0])
 
         print("\n统计分析：")
         print(f"北向资金净流入总额：{total_net_buy:,.2f} 亿元")

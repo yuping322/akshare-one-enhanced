@@ -6,7 +6,7 @@
     },
     {
       "check": "config_modules_count",
-      "message": "已配置模块数: 31"
+      "message": "已配置模块数: 36"
     },
     {
       "check": "module_standardization",
@@ -16,6 +16,11 @@
     {
       "check": "module_standardization",
       "module": "options",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "ipo",
       "message": "模块已完成标准化配置"
     },
     {
@@ -36,6 +41,11 @@
     {
       "check": "module_standardization",
       "module": "financial",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "board",
       "message": "模块已完成标准化配置"
     },
     {
@@ -80,6 +90,11 @@
     },
     {
       "check": "module_standardization",
+      "module": "st",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
       "module": "info",
       "message": "模块已完成标准化配置"
     },
@@ -110,12 +125,22 @@
     },
     {
       "check": "module_standardization",
+      "module": "hkus",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
       "module": "esg",
       "message": "模块已完成标准化配置"
     },
     {
       "check": "module_standardization",
       "module": "industry",
+      "message": "模块已完成标准化配置"
+    },
+    {
+      "check": "module_standardization",
+      "module": "suspended",
       "message": "模块已完成标准化配置"
     },
     {
@@ -167,9 +192,9 @@
   "warnings": [],
   "errors": [],
   "summary": {
-    "total_modules": 31,
-    "modules_with_config": 31,
-    "modules_using_standardization": 31,
+    "total_modules": 36,
+    "modules_with_config": 36,
+    "modules_using_standardization": 36,
     "modules_needing_attention": 0
   }
 }

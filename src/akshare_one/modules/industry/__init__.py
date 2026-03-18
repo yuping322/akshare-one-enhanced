@@ -10,7 +10,7 @@ from .factory import IndustryFactory
 
 
 def get_industry_list(
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -22,14 +22,19 @@ def get_industry_list(
     """
     from ...client import apply_data_filter
 
-    provider = IndustryFactory.get_provider(source=source)
-    df = provider.get_industry_list()
+    if isinstance(source, list) or source is None:
+        router = IndustryFactory.create_router(sources=source)
+        df = router.execute("get_industry_list")
+    else:
+        provider = IndustryFactory.get_provider(source=source)
+        df = provider.get_industry_list()
+
     return apply_data_filter(df, columns, row_filter)
 
 
 def get_industry_stocks(
     industry: str,
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -44,8 +49,13 @@ def get_industry_stocks(
     """
     from ...client import apply_data_filter
 
-    provider = IndustryFactory.get_provider(source=source)
-    df = provider.get_industry_stocks(industry)
+    if isinstance(source, list) or source is None:
+        router = IndustryFactory.create_router(sources=source)
+        df = router.execute("get_industry_stocks", industry)
+    else:
+        provider = IndustryFactory.get_provider(source=source)
+        df = provider.get_industry_stocks(industry)
+
     return apply_data_filter(df, columns, row_filter)
 
 

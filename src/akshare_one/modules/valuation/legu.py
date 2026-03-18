@@ -30,7 +30,14 @@ class LeguValuationProvider(ValuationProvider):
         """Fetch raw data. Not used directly."""
         return pd.DataFrame()
 
-    def get_stock_valuation(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_stock_valuation(
+        self,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
         """
         Get stock valuation data.
 
@@ -41,11 +48,13 @@ class LeguValuationProvider(ValuationProvider):
             symbol: Stock symbol
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame: Empty DataFrame
         """
-        return pd.DataFrame(
+        df = pd.DataFrame(
             columns=[
                 "date",
                 "symbol",
@@ -60,10 +69,19 @@ class LeguValuationProvider(ValuationProvider):
                 "float_market_cap",
             ]
         )
+        return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
 
-    def get_market_valuation(self) -> pd.DataFrame:
+    def get_market_valuation(
+        self,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
         """
         Get market-wide valuation data from Legu.
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame: Market valuation data
@@ -72,16 +90,10 @@ class LeguValuationProvider(ValuationProvider):
 
         try:
             df = ak.stock_a_pe_and_pb_em(symbol="上证指数")
-
-            if df.empty:
-                return pd.DataFrame()
-
-            df = df.rename(columns={"date": "date", "pe": "pe", "pb": "pb"})
-
-            df["index_name"] = "上证指数"
-
-            cols = ["date", "index_name", "pe", "pb"]
-
-            return df[[c for c in cols if c in df.columns]]
-        except Exception:
+            df = self.standardize_and_filter(df, "legu", columns=columns, row_filter=row_filter)
+            if not df.empty:
+                df["index_name"] = "上证指数"
+            return df
+        except Exception as e:
+            self.logger.error(f"Failed to fetch market valuation: {e}")
             return pd.DataFrame()

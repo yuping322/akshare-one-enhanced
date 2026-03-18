@@ -17,58 +17,38 @@ class SinaFinancialReport(FinancialDataProvider):
         self.stock = f"sh{symbol}" if not symbol.startswith(("sh", "sz", "bj")) else symbol
 
     @cache("financial_cache", key=lambda self: f"sina_balance_{self.symbol}")
-    def get_balance_sheet(self) -> pd.DataFrame:
-        """获取资产负债表数据
-
-        Args:
-            symbol: 股票代码 (如 "600600")
-
-        Returns:
-            Standardized DataFrame with balance sheet data
-        """
+    def get_balance_sheet(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+        """获取资产负债表数据"""
         try:
             raw_df = ak.stock_financial_report_sina(stock=self.stock, symbol="资产负债表")
-            if raw_df is None or raw_df.empty:
-                raise ValueError(f"Invalid stock symbol: {self.symbol}")
-            return self._clean_balance_data(raw_df)
+            df = self._clean_balance_data(raw_df)
+            return self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
         except Exception as e:
             raise ValueError(f"Failed to get balance sheet for symbol {self.symbol}: {str(e)}") from e
 
     @cache("financial_cache", key=lambda self: f"sina_income_{self.symbol}")
-    def get_income_statement(self) -> pd.DataFrame:
-        """获取利润表数据
-
-        Args:
-            symbol: 股票代码 (如 "600600")
-
-        Returns:
-            Standardized DataFrame with income statement data
-        """
+    def get_income_statement(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+        """获取利润表数据"""
         try:
             raw_df = ak.stock_financial_report_sina(stock=self.stock, symbol="利润表")
-            if raw_df is None or raw_df.empty:
-                raise ValueError(f"Invalid stock symbol: {self.symbol}")
-            return self._clean_income_data(raw_df)
+            df = self._clean_income_data(raw_df)
+            return self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
         except Exception as e:
             raise ValueError(f"Failed to get income statement for symbol {self.symbol}: {str(e)}") from e
 
     @cache("financial_cache", key=lambda self: f"sina_cash_{self.symbol}")
-    def get_cash_flow(self) -> pd.DataFrame:
-        """获取现金流量表数据
-
-        Args:
-            symbol: 股票代码 (如 "600600")
-
-        Returns:
-            Standardized DataFrame with cash flow data
-        """
+    def get_cash_flow(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+        """获取现金流量表数据"""
         try:
             raw_df = ak.stock_financial_report_sina(stock=self.stock, symbol="现金流量表")
-            if raw_df is None or raw_df.empty:
-                raise ValueError(f"Invalid stock symbol: {self.symbol}")
-            return self._clean_cash_data(raw_df)
+            df = self._clean_cash_data(raw_df)
+            return self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
         except Exception as e:
             raise ValueError(f"Failed to get cash flow statement for symbol {self.symbol}: {str(e)}") from e
+
+    def get_financial_metrics(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+        """Fetch financial metrics (falls back to balance sheet for Sina)"""
+        return self.get_balance_sheet(columns=columns, row_filter=row_filter)
 
     def _clean_cash_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
         """清理和标准化现金流量表数据
@@ -81,44 +61,44 @@ class SinaFinancialReport(FinancialDataProvider):
         """
         # Convert timestamp columns if exists
         if "报告日" in raw_df.columns:
-            raw_df = raw_df.rename(columns={"报告日": "report_date"})
+            raw_df = self.map_source_fields(raw_df, "sina")
             raw_df["report_date"] = pd.to_datetime(raw_df["report_date"], format="%Y%m%d")
 
         # Define column mappings and required columns
         column_mapping = {
-            "币种": "currency",
-            "经营活动产生的现金流量净额": "net_cash_flow_from_operations",
-            "购建固定资产、无形资产和其他长期资产支付的现金": ("capital_expenditure"),
-            "取得子公司及其他营业单位支付的现金净额": ("business_acquisitions_and_disposals"),
-            "投资活动产生的现金流量净额": "net_cash_flow_from_investing",
-            "取得借款收到的现金": "issuance_or_repayment_of_debt_securities",
-            "吸收投资收到的现金": "issuance_or_purchase_of_equity_shares",
-            "筹资活动产生的现金流量净额": "net_cash_flow_from_financing",
-            "现金及现金等价物净增加额": "change_in_cash_and_equivalents",
-            "汇率变动对现金及现金等价物的影响": "effect_of_exchange_rate_changes",
-            "期末现金及现金等价物余额": "ending_cash_balance",
-            "销售商品、提供劳务收到的现金": "cash_from_sales",
-            "收到的税费返还": "tax_refunds_received",
-            "支付给职工以及为职工支付的现金": "cash_paid_to_employees",
-            "支付的各项税费": "taxes_paid",
-            "经营活动现金流入小计": "total_cash_inflow_from_operations",
-            "经营活动现金流出小计": "total_cash_outflow_from_operations",
-            "收回投资所收到的现金": "cash_from_investment_recovery",
-            "取得投资收益收到的现金": "cash_from_investment_income",
-            "处置固定资产、无形资产收回的现金": "cash_from_asset_sales",
-            "投资活动现金流入小计": "total_cash_inflow_from_investing",
-            "投资活动现金流出小计": "total_cash_outflow_from_investing",
-            "分配股利、利润或偿付利息所支付的现金": ("cash_paid_for_dividends_and_interest"),
-            "偿还债务支付的现金": "cash_paid_for_debt_repayment",
-            "筹资活动现金流入小计": "total_cash_inflow_from_financing",
-            "筹资活动现金流出小计": "total_cash_outflow_from_financing",
-            "期初现金及现金等价物余额": "beginning_cash_balance",
-            "现金的期末余额": "ending_cash",
-            "现金等价物的期末余额": "ending_cash_equivalents",
+            "currency": "currency",
+            "net_cash_flow_from_operations": "net_cash_flow_from_operations",
+            "capital_expenditure": "capital_expenditure",
+            "business_acquisitions_and_disposals": "business_acquisitions_and_disposals",
+            "net_cash_flow_from_investing": "net_cash_flow_from_investing",
+            "issuance_or_repayment_of_debt_securities": "issuance_or_repayment_of_debt_securities",
+            "issuance_or_purchase_of_equity_shares": "issuance_or_purchase_of_equity_shares",
+            "net_cash_flow_from_financing": "net_cash_flow_from_financing",
+            "change_in_cash_and_equivalents": "change_in_cash_and_equivalents",
+            "effect_of_exchange_rate_changes": "effect_of_exchange_rate_changes",
+            "ending_cash_balance": "ending_cash_balance",
+            "cash_from_sales": "cash_from_sales",
+            "tax_refunds_received": "tax_refunds_received",
+            "cash_paid_to_employees": "cash_paid_to_employees",
+            "taxes_paid": "taxes_paid",
+            "total_cash_inflow_from_operations": "total_cash_inflow_from_operations",
+            "total_cash_outflow_from_operations": "total_cash_outflow_from_operations",
+            "cash_from_investment_recovery": "cash_from_investment_recovery",
+            "cash_from_investment_income": "cash_from_investment_income",
+            "cash_from_asset_sales": "cash_from_asset_sales",
+            "total_cash_inflow_from_investing": "total_cash_inflow_from_investing",
+            "total_cash_outflow_from_investing": "total_cash_outflow_from_investing",
+            "cash_paid_for_dividends_and_interest": "cash_paid_for_dividends_and_interest",
+            "cash_paid_for_debt_repayment": "cash_paid_for_debt_repayment",
+            "total_cash_inflow_from_financing": "total_cash_inflow_from_financing",
+            "total_cash_outflow_from_financing": "total_cash_outflow_from_financing",
+            "beginning_cash_balance": "beginning_cash_balance",
+            "ending_cash": "ending_cash",
+            "ending_cash_equivalents": "ending_cash_equivalents",
         }
 
         required_columns = ["report_date"] + list(column_mapping.values())
-        return raw_df.rename(columns=column_mapping).reindex(columns=required_columns)
+        return raw_df.reindex(columns=required_columns)
 
     def _clean_balance_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
         """清理和标准化资产负债表数据
@@ -131,47 +111,11 @@ class SinaFinancialReport(FinancialDataProvider):
         """
         # Convert timestamp columns if exists
         if "报告日" in raw_df.columns:
-            raw_df = raw_df.rename(columns={"报告日": "report_date"})
+            raw_df = self.map_source_fields(raw_df, "sina")
             raw_df["report_date"] = pd.to_datetime(raw_df["report_date"], format="%Y%m%d")
 
         # Define and apply column mappings in one optimized operation
-        raw_df = raw_df.rename(
-            columns={
-                "币种": "currency",
-                "资产总计": "total_assets",
-                "流动资产合计": "current_assets",
-                "货币资金": "cash_and_equivalents",
-                "存货": "inventory",
-                "交易性金融资产": "current_investments",
-                "应收票据及应收账款": "trade_and_non_trade_receivables",
-                "非流动资产合计": "non_current_assets",
-                "固定资产": "property_plant_and_equipment",
-                "商誉": "goodwill_and_intangible_assets",
-                "长期股权投资": "investments",
-                "其他非流动金融资产": "non_current_investments",
-                "实收资本(或股本)": "outstanding_shares",
-                "递延所得税资产": "tax_assets",
-                "负债合计": "total_liabilities",
-                "流动负债合计": "current_liabilities",
-                "短期借款": "current_debt",
-                "应付票据及应付账款": "trade_and_non_trade_payables",
-                "合同负债": "deferred_revenue",
-                "吸收存款及同业存放": "deposit_liabilities",
-                "非流动负债合计": "non_current_liabilities",
-                "长期借款": "non_current_debt",
-                "递延所得税负债": "tax_liabilities",
-                "所有者权益(或股东权益)合计": "shareholders_equity",
-                "未分配利润": "retained_earnings",
-                "其他综合收益": "accumulated_other_comprehensive_income",
-                "应收账款": "accounts_receivable",
-                "预付款项": "prepayments",
-                "其他应收款": "other_receivables",
-                "固定资产净值": "fixed_assets_net",
-                "在建工程": "construction_in_progress",
-                "资本公积": "capital_reserve",
-                "少数股东权益": "minority_interest",
-            }
-        )
+        raw_df = self.map_source_fields(raw_df, "sina")
 
         # Select only required columns
         required_columns = [
@@ -255,39 +199,39 @@ class SinaFinancialReport(FinancialDataProvider):
         """
         # Convert timestamp columns if exists
         if "报告日" in raw_df.columns:
-            raw_df = raw_df.rename(columns={"报告日": "report_date"})
+            raw_df = self.map_source_fields(raw_df, "sina")
             raw_df["report_date"] = pd.to_datetime(raw_df["report_date"], format="%Y%m%d")
 
         # Define column mappings and required columns
         column_mapping = {
-            "币种": "currency",
-            "营业总收入": "revenue",
-            "营业收入": "operating_revenue",
-            "营业总成本": "total_operating_costs",
-            "营业成本": "cost_of_revenue",
-            "营业利润": "operating_profit",
-            "销售费用": "selling_general_and_administrative_expenses",
-            "管理费用": "operating_expense",
-            "研发费用": "research_and_development",
-            "利息支出": "interest_expense",
-            "利润总额": "ebit",
-            "所得税费用": "income_tax_expense",
-            "净利润": "net_income",
-            "归属于母公司所有者的净利润": "net_income_common_stock",
-            "少数股东损益": "net_income_non_controlling_interests",
-            "基本每股收益": "earnings_per_share",
-            "稀释每股收益": "earnings_per_share_diluted",
-            "投资收益": "investment_income",
-            "公允价值变动收益": "fair_value_adjustments",
-            "资产减值损失": "asset_impairment_loss",
-            "财务费用": "financial_expenses",
-            "营业税金及附加": "taxes_and_surcharges",
-            "其他综合收益": "other_comprehensive_income",
-            "综合收益总额": "total_comprehensive_income",
+            "currency": "currency",
+            "revenue": "revenue",
+            "operating_revenue": "operating_revenue",
+            "total_operating_costs": "total_operating_costs",
+            "cost_of_revenue": "cost_of_revenue",
+            "operating_profit": "operating_profit",
+            "selling_general_and_administrative_expenses": "selling_general_and_administrative_expenses",
+            "operating_expense": "operating_expense",
+            "research_and_development": "research_and_development",
+            "interest_expense": "interest_expense",
+            "ebit": "ebit",
+            "income_tax_expense": "income_tax_expense",
+            "net_income": "net_income",
+            "net_income_common_stock": "net_income_common_stock",
+            "net_income_non_controlling_interests": "net_income_non_controlling_interests",
+            "earnings_per_share": "earnings_per_share",
+            "earnings_per_share_diluted": "earnings_per_share_diluted",
+            "investment_income": "investment_income",
+            "fair_value_adjustments": "fair_value_adjustments",
+            "asset_impairment_loss": "asset_impairment_loss",
+            "financial_expenses": "financial_expenses",
+            "taxes_and_surcharges": "taxes_and_surcharges",
+            "other_comprehensive_income": "other_comprehensive_income",
+            "total_comprehensive_income": "total_comprehensive_income",
         }
 
         required_columns = ["report_date"] + list(column_mapping.values())
-        return raw_df.rename(columns=column_mapping).reindex(columns=required_columns)
+        return raw_df.reindex(columns=required_columns)
 
     @cache("financial_cache", key=lambda self: f"sina_metrics_{self.symbol}")
     def get_financial_metrics(self) -> pd.DataFrame:

@@ -22,28 +22,9 @@ class EastmoneyInfo(InfoDataProvider):
         "info_cache",
         key=lambda self: f"eastmoney_{self.symbol}",
     )
-    def get_basic_info(self) -> pd.DataFrame:
+    def get_basic_info(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """获取东方财富个股信息"""
         info_df = ak.stock_individual_info_em(symbol=self.symbol)
         info_df = info_df.set_index("item").T
         info_df.reset_index(drop=True, inplace=True)
-        info_df.rename(columns=self._basic_info_rename_map, inplace=True)
-
-        if "symbol" in info_df.columns:
-            info_df["symbol"] = info_df["symbol"].astype(str)
-
-        if "listing_date" in info_df.columns:
-            info_df["listing_date"] = pd.to_datetime(info_df["listing_date"], format="%Y%m%d")
-
-        numeric_cols = [
-            "price",
-            "total_shares",
-            "float_shares",
-            "total_market_cap",
-            "float_market_cap",
-        ]
-        for col in numeric_cols:
-            if col in info_df.columns:
-                info_df[col] = pd.to_numeric(info_df[col], errors="coerce")
-
-        return info_df
+        return self.standardize_and_filter(info_df, "eastmoney", columns=columns, row_filter=row_filter)

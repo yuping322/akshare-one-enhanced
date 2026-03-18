@@ -34,8 +34,12 @@ class OptionsDataProvider(BaseProvider):
         return self.get_options_chain()
 
     @abstractmethod
-    def get_options_chain(self) -> pd.DataFrame:
+    def get_options_chain(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches options chain data
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
@@ -55,11 +59,13 @@ class OptionsDataProvider(BaseProvider):
         pass
 
     @abstractmethod
-    def get_options_realtime(self, symbol: str) -> pd.DataFrame:
+    def get_options_realtime(self, symbol: str, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches realtime options quote data
 
         Args:
             symbol: 期权代码 (e.g., '10004005')
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
@@ -93,6 +99,8 @@ class OptionsDataProvider(BaseProvider):
         symbol: str,
         start_date: str = "1970-01-01",
         end_date: str = "2030-12-31",
+        columns: list | None = None,
+        row_filter: dict | None = None,
     ) -> pd.DataFrame:
         """Fetches options historical data
 
@@ -100,6 +108,8 @@ class OptionsDataProvider(BaseProvider):
             symbol: 期权代码
             start_date: 开始日期
             end_date: 结束日期
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:

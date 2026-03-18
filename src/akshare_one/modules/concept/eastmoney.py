@@ -17,72 +17,52 @@ class EastmoneyConceptProvider(ConceptProvider):
     def fetch_data(self) -> pd.DataFrame:
         return pd.DataFrame()
 
-    def get_concept_list(self) -> pd.DataFrame:
+    def get_concept_list(
+        self,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get concept sector list from Eastmoney.
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
+
+        Returns:
+            pd.DataFrame: Concept sectors with quotes.
+        """
         import akshare as ak
 
         try:
             df = ak.stock_board_concept_name_em()
-            if df.empty:
-                return pd.DataFrame()
-            df = df.rename(
-                columns={
-                    "排名": "rank",
-                    "板块名称": "name",
-                    "板块代码": "code",
-                    "最新价": "price",
-                    "涨跌幅": "pct_change",
-                    "换手率": "turnover",
-                    "上涨家数": "up_count",
-                    "下跌家数": "down_count",
-                    "领涨股票": "leading_stock",
-                }
-            )
-            cols = [
-                "rank",
-                "name",
-                "code",
-                "price",
-                "pct_change",
-                "turnover",
-                "up_count",
-                "down_count",
-                "leading_stock",
-            ]
-            return df[[c for c in cols if c in df.columns]]
-        except Exception:
+            return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
+        except Exception as e:
+            self.logger.error(f"Failed to fetch concept list: {e}")
             return pd.DataFrame()
 
-    def get_concept_stocks(self, concept: str) -> pd.DataFrame:
+    def get_concept_stocks(
+        self,
+        concept: str,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get stocks in a specific concept sector.
+
+        Args:
+            concept: Concept sector name or code.
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
+
+        Returns:
+            pd.DataFrame: Stocks with quotes.
+        """
         import akshare as ak
 
         try:
             df = ak.stock_board_concept_cons_em(symbol=concept)
-            if df.empty:
-                return pd.DataFrame()
-            df = df.rename(
-                columns={
-                    "代码": "symbol",
-                    "名称": "name",
-                    "最新价": "price",
-                    "涨跌幅": "pct_change",
-                    "成交量": "volume",
-                    "成交额": "amount",
-                    "换手率": "turnover",
-                    "市盈率-动态": "pe_ttm",
-                    "市净率": "pb",
-                }
-            )
-            cols = [
-                "symbol",
-                "name",
-                "price",
-                "pct_change",
-                "volume",
-                "amount",
-                "turnover",
-                "pe_ttm",
-                "pb",
-            ]
-            return df[[c for c in cols if c in df.columns]]
-        except Exception:
+            return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
+        except Exception as e:
+            self.logger.error(f"Failed to fetch concept stocks for {concept}: {e}")
             return pd.DataFrame()

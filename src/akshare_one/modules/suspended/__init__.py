@@ -10,7 +10,7 @@ from .factory import SuspendedFactory
 
 
 def get_suspended_stocks(
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -18,12 +18,17 @@ def get_suspended_stocks(
     Get suspended/halted stocks.
 
     Returns:
-        pd.DataFrame: Suspended stocks with symbol, name, suspend_date, reason, etc.
+        pd.DataFrame: Suspended stocks
     """
     from ...client import apply_data_filter
 
-    provider = SuspendedFactory.get_provider(source=source)
-    df = provider.get_suspended_stocks()
+    if isinstance(source, list) or source is None:
+        router = SuspendedFactory.create_router(sources=source)
+        df = router.execute("get_suspended_stocks")
+    else:
+        provider = SuspendedFactory.get_provider(source=source)
+        df = provider.get_suspended_stocks()
+
     return apply_data_filter(df, columns, row_filter)
 
 

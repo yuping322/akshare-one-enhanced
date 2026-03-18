@@ -18,7 +18,7 @@ def get_stock_valuation(
     symbol: str,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -29,37 +29,27 @@ def get_stock_valuation(
         symbol: Stock symbol (e.g., '600000')
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
-        source: Data source ('eastmoney' recommended)
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sort_by": "pe_ttm"}
+        source: Data source(s)
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Valuation data with columns:
-            - date: Date
-            - symbol: Stock symbol
-            - close: Closing price
-            - pe_ttm: PE (TTM)
-            - pe_static: PE (Static)
-            - pb: Price to Book
-            - ps: Price to Sales
-            - pcf: Price to Cash Flow
-            - peg: PEG ratio
-            - market_cap: Total market cap
-            - float_market_cap: Float market cap
-
-    Example:
-        >>> df = get_stock_valuation("600000", start_date="2024-01-01")
-        >>> print(df.head())
+        pd.DataFrame: Valuation data
     """
-    from akshare_one.client import apply_data_filter
+    from ...client import apply_data_filter
 
-    provider = ValuationFactory.get_provider(source=source)
-    df = provider.get_stock_valuation(symbol, start_date, end_date)
+    if isinstance(source, list) or source is None:
+        router = ValuationFactory.create_router(sources=source)
+        df = router.execute("get_stock_valuation", symbol, start_date, end_date)
+    else:
+        provider = ValuationFactory.get_provider(source=source)
+        df = provider.get_stock_valuation(symbol, start_date, end_date)
+
     return apply_data_filter(df, columns, row_filter)
 
 
 def get_market_valuation(
-    source: Literal["eastmoney", "legu"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -67,25 +57,22 @@ def get_market_valuation(
     Get market-wide valuation data.
 
     Args:
-        source: Data source ('eastmoney' or 'legu')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}
+        source: Data source(s)
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Market valuation data with columns:
-            - date: Date
-            - index_name: Index name
-            - pe: PE ratio
-            - pb: PB ratio
-
-    Example:
-        >>> df = get_market_valuation()
-        >>> print(df.head())
+        pd.DataFrame: Market valuation data
     """
-    from akshare_one.client import apply_data_filter
+    from ...client import apply_data_filter
 
-    provider = ValuationFactory.get_provider(source=source)
-    df = provider.get_market_valuation()
+    if isinstance(source, list) or source is None:
+        router = ValuationFactory.create_router(sources=source)
+        df = router.execute("get_market_valuation")
+    else:
+        provider = ValuationFactory.get_provider(source=source)
+        df = provider.get_market_valuation()
+
     return apply_data_filter(df, columns, row_filter)
 
 

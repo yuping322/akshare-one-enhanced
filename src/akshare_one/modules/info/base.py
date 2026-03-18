@@ -20,19 +20,22 @@ class InfoDataProvider(BaseProvider):
         return self.get_basic_info()
 
     @abstractmethod
-    def get_basic_info(self) -> pd.DataFrame:
-        """Fetches stock basic info data
+    def get_basic_info(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+        """Fetches basic information
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
-            - price: 最新价
             - symbol: 股票代码
-            - name: 股票简称
+            - name: 股票名称
+            - industry: 所属行业
+            - listing_date: 上市日期
             - total_shares: 总股本
             - float_shares: 流通股
             - total_market_cap: 总市值
             - float_market_cap: 流通市值
-            - industry: 行业
-            - listing_date: 上市时间
         """
         pass

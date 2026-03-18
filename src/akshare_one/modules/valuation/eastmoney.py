@@ -30,7 +30,14 @@ class EastmoneyValuationProvider(ValuationProvider):
         """Fetch raw data. Not used directly."""
         return pd.DataFrame()
 
-    def get_stock_valuation(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_stock_valuation(
+        self,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
         """
         Get stock valuation data from Eastmoney.
 
@@ -38,6 +45,8 @@ class EastmoneyValuationProvider(ValuationProvider):
             symbol: Stock symbol (e.g., '600000')
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame: Valuation data
@@ -46,58 +55,43 @@ class EastmoneyValuationProvider(ValuationProvider):
 
         try:
             df = ak.stock_value_em()
+            df = self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
 
-            if df.empty:
-                return pd.DataFrame()
+            if not df.empty:
+                df["symbol"] = symbol
+                df["date"] = pd.to_datetime(df["date"])
+                start = pd.to_datetime(start_date)
+                end = pd.to_datetime(end_date)
+                df = df[(df["date"] >= start) & (df["date"] <= end)]
 
-            df = df.rename(
-                columns={
-                    "数据日期": "date",
-                    "当日收盘价": "close",
-                    "当日涨跌幅": "pct_change",
-                    "总市值": "market_cap",
-                    "流通市值": "float_market_cap",
-                    "总股本": "total_shares",
-                    "流通股本": "float_shares",
-                    "PE(TTM)": "pe_ttm",
-                    "PE(静)": "pe_static",
-                    "市净率": "pb",
-                    "PEG值": "peg",
-                    "市现率": "pcf",
-                    "市销率": "ps",
-                }
-            )
-
-            df["symbol"] = symbol
-
-            df["date"] = pd.to_datetime(df["date"])
-            start = pd.to_datetime(start_date)
-            end = pd.to_datetime(end_date)
-
-            df = df[(df["date"] >= start) & (df["date"] <= end)]
-
-            cols = [
-                "date",
-                "symbol",
-                "close",
-                "pct_change",
-                "pe_ttm",
-                "pe_static",
-                "pb",
-                "ps",
-                "pcf",
-                "peg",
-                "market_cap",
-                "float_market_cap",
-                "total_shares",
-                "float_shares",
-            ]
-
-            return df[[c for c in cols if c in df.columns]]
-        except Exception:
+            return df
+        except Exception as e:
+            self.logger.error(f"Failed to fetch stock valuation: {e}")
             return pd.DataFrame()
 
-    def get_market_valuation(self) -> pd.DataFrame:
+    def get_market_valuation(
+        self,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get market-wide valuation summary.
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
+
+        Returns:
+            pd.DataFrame: Market valuation summary
+        """
+        import akshare as ak
+
+        try:
+            df = ak.stock_a_ttm_lyr()
+            return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
+        except Exception as e:
+            self.logger.error(f"Failed to fetch market valuation: {e}")
+            return pd.DataFrame()
         """
         Get market-wide valuation data from Eastmoney.
 

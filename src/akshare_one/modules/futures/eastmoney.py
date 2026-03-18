@@ -18,9 +18,9 @@ class EastmoneyFuturesHistoricalProvider(HistoricalFuturesDataProvider):
         """Return the data source name."""
         return "eastmoney"
 
-    def get_hist_data(self) -> pd.DataFrame:
+    def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Get historical futures data from Eastmoney."""
-        return pd.DataFrame(
+        df = pd.DataFrame(
             columns=[
                 "timestamp",
                 "symbol",
@@ -34,10 +34,12 @@ class EastmoneyFuturesHistoricalProvider(HistoricalFuturesDataProvider):
                 "settlement",
             ]
         )
+        return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
 
-    def get_main_contracts(self) -> pd.DataFrame:
+    def get_main_contracts(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Get main contract list from Eastmoney."""
-        return pd.DataFrame(columns=["symbol", "name", "contract", "exchange"])
+        df = pd.DataFrame(columns=["symbol", "name", "contract", "exchange"])
+        return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
 
 
 class EastmoneyFuturesRealtimeProvider(RealtimeFuturesDataProvider):
@@ -49,9 +51,9 @@ class EastmoneyFuturesRealtimeProvider(RealtimeFuturesDataProvider):
         """Return the data source name."""
         return "eastmoney"
 
-    def get_current_data(self) -> pd.DataFrame:
+    def get_current_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Get realtime futures data from Eastmoney."""
-        return pd.DataFrame(
+        df = pd.DataFrame(
             columns=[
                 "symbol",
                 "contract",
@@ -68,7 +70,9 @@ class EastmoneyFuturesRealtimeProvider(RealtimeFuturesDataProvider):
                 "settlement",
             ]
         )
+        return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
 
-    def get_all_quotes(self) -> pd.DataFrame:
+    def get_all_quotes(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Get all futures quotes from Eastmoney."""
-        return pd.DataFrame(columns=["symbol", "contract", "price", "change", "pct_change", "volume", "open_interest"])
+        df = pd.DataFrame(columns=["symbol", "contract", "price", "change", "pct_change", "volume", "open_interest"])
+        return self.apply_data_filter(df, columns=columns, row_filter=row_filter)

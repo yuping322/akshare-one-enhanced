@@ -20,8 +20,12 @@ class NewsDataProvider(BaseProvider):
         return self.get_news_data()
 
     @abstractmethod
-    def get_news_data(self) -> pd.DataFrame:
-        """Fetches news data for given symbol
+    def get_news_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+        """Fetches news data
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
@@ -29,7 +33,7 @@ class NewsDataProvider(BaseProvider):
             - title: 新闻标题
             - content: 新闻内容
             - publish_time: 发布时间
-            - source: 来源
+            - source: 文章来源
             - url: 新闻链接
         """
         pass

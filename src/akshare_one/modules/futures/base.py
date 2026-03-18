@@ -99,8 +99,12 @@ class HistoricalFuturesDataProvider(BaseProvider):
         return ["minute", "hour", "day", "week", "month"]
 
     @abstractmethod
-    def get_hist_data(self) -> pd.DataFrame:
+    def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches historical futures market data
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
@@ -118,8 +122,12 @@ class HistoricalFuturesDataProvider(BaseProvider):
         pass
 
     @abstractmethod
-    def get_main_contracts(self) -> pd.DataFrame:
+    def get_main_contracts(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches main contract list
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
@@ -158,8 +166,12 @@ class RealtimeFuturesDataProvider(BaseProvider):
         return self.get_current_data()
 
     @abstractmethod
-    def get_current_data(self) -> pd.DataFrame:
+    def get_current_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches realtime futures market data
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
@@ -180,8 +192,12 @@ class RealtimeFuturesDataProvider(BaseProvider):
         pass
 
     @abstractmethod
-    def get_all_quotes(self) -> pd.DataFrame:
+    def get_all_quotes(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches all futures quotes
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame: All futures market quotes

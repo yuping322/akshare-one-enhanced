@@ -37,12 +37,12 @@ def scenario_1_monitor_pledge_risk():
     print("=" * 80)
 
     try:
-        # 参数设置：查询浦发银行的股权质押数据
-        symbol = "600000"
-        end_date = datetime.now().strftime("%Y-%m-%d")
+        # 参数设置：查询平安银行的股权质押数据
+        symbol = "000001"
         start_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+        end_date = datetime.now().strftime("%Y-%m-%d")
 
-        print(f"\n查询股票：{symbol}（浦发银行）")
+        print(f"\n查询股票：{symbol}")
         print(f"时间范围：{start_date} 至 {end_date}")
 
         # 接口调用 - 修复参数不匹配问题

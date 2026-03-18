@@ -2,58 +2,37 @@
 Factory for creating futures data providers.
 """
 
-from typing import Any
-
+from ..factory_base import BaseFactory
 from .base import HistoricalFuturesDataProvider, RealtimeFuturesDataProvider
 from .eastmoney import EastmoneyFuturesHistoricalProvider, EastmoneyFuturesRealtimeProvider
 from .sina import SinaFuturesHistorical, SinaFuturesRealtime
 
 
-class FuturesDataFactory:
-    """Factory class for creating futures data providers."""
-
-    _historical_providers: dict[str, type[HistoricalFuturesDataProvider]] = {
+class FuturesHistoricalFactory(BaseFactory[HistoricalFuturesDataProvider]):
+    """Factory for historical futures data providers."""
+    _providers = {
         "sina": SinaFuturesHistorical,
         "eastmoney": EastmoneyFuturesHistoricalProvider,
     }
 
-    _realtime_providers: dict[str, type[RealtimeFuturesDataProvider]] = {
+
+class FuturesRealtimeFactory(BaseFactory[RealtimeFuturesDataProvider]):
+    """Factory for realtime futures data providers."""
+    _providers = {
         "sina": SinaFuturesRealtime,
         "eastmoney": EastmoneyFuturesRealtimeProvider,
     }
 
-    @classmethod
-    def get_historical_provider(cls, source: str, **kwargs: Any) -> HistoricalFuturesDataProvider:
-        """Get a historical futures data provider by name."""
-        if source not in cls._historical_providers:
-            available = ", ".join(cls._historical_providers.keys())
-            raise ValueError(f"Unsupported source: {source}. Available: {available}")
-        return cls._historical_providers[source](**kwargs)
 
-    @classmethod
-    def get_realtime_provider(cls, source: str, **kwargs: Any) -> RealtimeFuturesDataProvider:
-        """Get a realtime futures data provider by name."""
-        if source not in cls._realtime_providers:
-            available = ", ".join(cls._realtime_providers.keys())
-            raise ValueError(f"Unsupported source: {source}. Available: {available}")
-        return cls._realtime_providers[source](**kwargs)
+class FuturesDataFactory:
+    """Factory for creating futures data providers (for backward compatibility)."""
 
-    @classmethod
-    def register_historical_provider(cls, name: str, provider_class: type[HistoricalFuturesDataProvider]) -> None:
-        """Register a new historical futures data provider."""
-        cls._historical_providers[name] = provider_class
+    @staticmethod
+    def get_historical_provider(source: str, **kwargs) -> HistoricalFuturesDataProvider:
+        """Get a historical futures data provider."""
+        return FuturesHistoricalFactory.get_provider(source, **kwargs)
 
-    @classmethod
-    def register_realtime_provider(cls, name: str, provider_class: type[RealtimeFuturesDataProvider]) -> None:
-        """Register a new realtime futures data provider."""
-        cls._realtime_providers[name] = provider_class
-
-    @classmethod
-    def list_historical_sources(cls) -> list[str]:
-        """List all available historical data sources."""
-        return list(cls._historical_providers.keys())
-
-    @classmethod
-    def list_realtime_sources(cls) -> list[str]:
-        """List all available realtime data sources."""
-        return list(cls._realtime_providers.keys())
+    @staticmethod
+    def get_realtime_provider(source: str, **kwargs) -> RealtimeFuturesDataProvider:
+        """Get a realtime futures data provider."""
+        return FuturesRealtimeFactory.get_provider(source, **kwargs)

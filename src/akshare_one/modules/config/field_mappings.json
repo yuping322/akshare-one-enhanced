@@ -200,8 +200,8 @@
         "analyst_rating": "TYPE",
         "target_price": "AMOUNT",
         "rating_date": "DATE",
-        "analyst_name": "NAME",
-        "institution": "NAME"
+        "analyst": "ANALYST",
+        "institution": "INSTITUTION"
       },
       "amount_fields": {
         "target_price": "yuan"
@@ -298,6 +298,93 @@
       "amount_fields": {
         "turnover": "yi_yuan"
       }
+    },
+    "ipo": {
+      "description": "IPO data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "price": "AMOUNT",
+        "pct_change": "RATE",
+        "change": "AMOUNT",
+        "volume": "VOLUME",
+        "amount": "AMOUNT",
+        "list_date": "DATE",
+        "issue_price": "AMOUNT",
+        "subscription_date": "DATE"
+      },
+      "amount_fields": {
+        "amount": "wan_yuan",
+        "price": "yuan",
+        "issue_price": "yuan"
+      }
+    },
+    "board": {
+      "description": "Board (KCB/CYB) data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "price": "AMOUNT",
+        "pct_change": "RATE",
+        "change": "AMOUNT",
+        "volume": "VOLUME",
+        "amount": "AMOUNT",
+        "turnover": "RATE"
+      },
+      "amount_fields": {
+        "amount": "wan_yuan",
+        "price": "yuan"
+      }
+    },
+    "st": {
+      "description": "ST stocks data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "price": "AMOUNT",
+        "pct_change": "RATE",
+        "change": "AMOUNT",
+        "volume": "VOLUME",
+        "amount": "AMOUNT",
+        "turnover": "RATE"
+      },
+      "amount_fields": {
+        "amount": "wan_yuan",
+        "price": "yuan"
+      }
+    },
+    "hkus": {
+      "description": "HK/US stock data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "price": "AMOUNT",
+        "pct_change": "RATE",
+        "change": "AMOUNT",
+        "volume": "VOLUME",
+        "amount": "AMOUNT",
+        "high": "AMOUNT",
+        "low": "AMOUNT",
+        "open": "AMOUNT"
+      },
+      "amount_fields": {
+        "amount": "yuan",
+        "price": "yuan",
+        "high": "yuan",
+        "low": "yuan",
+        "open": "yuan"
+      }
+    },
+    "suspended": {
+      "description": "Suspended stocks data module",
+      "field_types": {
+        "symbol": "SYMBOL",
+        "name": "NAME",
+        "suspend_date": "DATE",
+        "expected_resume_date": "DATE",
+        "reason": "TYPE"
+      },
+      "amount_fields": {}
     },
     "valuation": {
       "description": "Valuation data module",

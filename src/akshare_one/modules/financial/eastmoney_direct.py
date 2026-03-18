@@ -43,20 +43,23 @@ class EastMoneyDirectFinancialReport(FinancialDataProvider):
     def __init__(self, symbol: str) -> None:
         super().__init__(symbol)
 
-    def get_income_statement(self) -> pd.DataFrame:
-        return self._fetch_income_statement()
+    def get_income_statement(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+        df = self._fetch_income_statement()
+        return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
 
-    def get_balance_sheet(self) -> pd.DataFrame:
-        return self._fetch_balance_sheet()
+    def get_balance_sheet(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+        df = self._fetch_balance_sheet()
+        return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
 
-    def get_cash_flow(self) -> pd.DataFrame:
-        return self._fetch_cash_flow()
+    def get_cash_flow(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+        df = self._fetch_cash_flow()
+        return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
 
     @cache(
         "financial_cache",
         key=lambda self: f"eastmoney_financial_metrics_{self.symbol}",
     )
-    def get_financial_metrics(self) -> pd.DataFrame:
+    def get_financial_metrics(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """获取三大财务报表关键指标"""
         balance_sheet = self._fetch_balance_sheet()
         income_statement = self._fetch_income_statement()
@@ -86,7 +89,7 @@ class EastMoneyDirectFinancialReport(FinancialDataProvider):
         # Sort by report_date in descending order (most recent first)
         merged = merged.sort_values("report_date", ascending=False).reset_index(drop=True)
 
-        return merged
+        return self.standardize_and_filter(merged, "eastmoney", columns=columns, row_filter=row_filter)
 
     def _fetch_balance_sheet(self) -> pd.DataFrame:
         """

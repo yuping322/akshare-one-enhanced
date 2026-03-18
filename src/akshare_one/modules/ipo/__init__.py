@@ -10,7 +10,7 @@ from .factory import IPOFactory
 
 
 def get_new_stocks(
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -18,17 +18,22 @@ def get_new_stocks(
     Get newly listed stocks.
 
     Returns:
-        pd.DataFrame: New stocks with symbol, name, price, change_pct, etc.
+        pd.DataFrame: New stocks
     """
-    from ...__init__ import apply_data_filter
+    from ...client import apply_data_filter
 
-    provider = IPOFactory.get_provider(source=source)
-    df = provider.get_new_stocks()
+    if isinstance(source, list) or source is None:
+        router = IPOFactory.create_router(sources=source)
+        df = router.execute("get_new_stocks")
+    else:
+        provider = IPOFactory.get_provider(source=source)
+        df = provider.get_new_stocks()
+
     return apply_data_filter(df, columns, row_filter)
 
 
 def get_ipo_info(
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -36,12 +41,17 @@ def get_ipo_info(
     Get IPO information.
 
     Returns:
-        pd.DataFrame: IPO info with symbol, name, issue_price, subscription_date, etc.
+        pd.DataFrame: IPO info
     """
-    from ...__init__ import apply_data_filter
+    from ...client import apply_data_filter
 
-    provider = IPOFactory.get_provider(source=source)
-    df = provider.get_ipo_info()
+    if isinstance(source, list) or source is None:
+        router = IPOFactory.create_router(sources=source)
+        df = router.execute("get_ipo_info")
+    else:
+        provider = IPOFactory.get_provider(source=source)
+        df = provider.get_ipo_info()
+
     return apply_data_filter(df, columns, row_filter)
 
 

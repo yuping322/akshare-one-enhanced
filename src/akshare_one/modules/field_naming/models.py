@@ -37,6 +37,8 @@ class FieldType(Enum):
     CODE = "code"  # 代码
     MARKET = "market"  # 市场
     RANK = "rank"  # 排名
+    ANALYST = "analyst"  # 分析师
+    INSTITUTION = "institution"  # 机构
 
     # 数量类型
     COUNT = "count"  # 计数
@@ -61,7 +63,7 @@ class NamingRules:
     duration_field_pattern: str = r"^[a-z_]+_(days|duration)$"
 
     # 金额字段规则
-    amount_field_pattern: str = r"^[a-z_]+_amount$"
+    amount_field_pattern: str = r"^([a-z_]+_amount|price|close|open|high|low|last|bid|ask)$"
     balance_field_pattern: str = r"^[a-z_]+_balance$"
     value_field_pattern: str = r"^[a-z_]+_value$"
     net_flow_pattern: str = r"^[a-z_]+_net_(inflow|outflow|buy|sell)$"
@@ -76,6 +78,8 @@ class NamingRules:
     code_field_pattern: str = r"^[a-z_]+_code$"
     market_field_name: str = "market"
     rank_field_name: str = "rank"
+    analyst_field_name: str = "analyst"
+    institution_field_name: str = "institution"
 
     # 计数字段规则
     count_field_pattern: str = r"^[a-z_]+_count$"
@@ -107,6 +111,8 @@ class NamingRules:
             FieldType.CODE: self.code_field_pattern,
             FieldType.MARKET: f"^{self.market_field_name}$",
             FieldType.RANK: f"^{self.rank_field_name}$",
+            FieldType.ANALYST: f"^{self.analyst_field_name}$",
+            FieldType.INSTITUTION: f"^{self.institution_field_name}$",
             FieldType.COUNT: self.count_field_pattern,
             FieldType.VOLUME: f"^{self.volume_field_name}$",
             FieldType.SHARES: self.shares_field_pattern,
@@ -204,17 +210,29 @@ class MappingConfig:
         Returns:
             MappingConfig 实例
         """
-        mappings = [
-            FieldMapping(
-                source_field=m["source_field"],
-                standard_field=m["standard_field"],
-                field_type=FieldType(m["field_type"]),
-                source_unit=m.get("source_unit"),
-                target_unit=m.get("target_unit", "yuan"),
-                description=m.get("description", ""),
-            )
-            for m in data.get("mappings", [])
-        ]
+        mappings = []
+        for m in data.get("mappings", []):
+            try:
+                raw_type = m.get("field_type", "other")
+                try:
+                    field_type = FieldType(raw_type.lower())
+                except ValueError:
+                    field_type = FieldType.OTHER
+                
+                mappings.append(
+                    FieldMapping(
+                        source_field=m["source_field"],
+                        standard_field=m["standard_field"],
+                        field_type=field_type,
+                        source_unit=m.get("source_unit"),
+                        target_unit=m.get("target_unit", "yuan"),
+                        description=m.get("description", ""),
+                    )
+                )
+            except KeyError as e:
+                # 记录日志或跳过缺失必填字段的映射
+                continue
+
         return cls(
             source=data["source"],
             module=data["module"],
@@ -243,6 +261,12 @@ FIELD_EQUIVALENTS = {
         "统计时间",
         "发布时间",
         "更新时间",
+        "停牌日期",
+        "预计复牌日期",
+        "申购日期",
+        "更新日期",
+        "公告日期",
+        "日期",
         "start_date",
         "end_date",
         "trade_date",
@@ -258,12 +282,6 @@ FIELD_EQUIVALENTS = {
         "STD_REPORT_DATE",
         "update_time",
         "year",
-        "quarter_name",
-        "metric_name",
-        "SECURITY_NAME_ABBR",
-        "STD_ITEM_NAME",
-        "ITEM_NAME",
-        "REPORT_DATE_NAME",
     ],
     # 代码相关
     "symbol": [
@@ -279,6 +297,7 @@ FIELD_EQUIVALENTS = {
         "fund_code",
         "证券代码",
         "stock",
+        "公司代码",
         "bond_code",
         "bond_name",
         "bond_code",
@@ -301,6 +320,8 @@ FIELD_EQUIVALENTS = {
         "债券简称",
         "证券简称",
         "简称",
+        "公司简称",
+        "报告名称",
         "report_name",
         "quarter_name",
         "metric_name",
@@ -308,10 +329,11 @@ FIELD_EQUIVALENTS = {
         "STD_ITEM_NAME",
         "ITEM_NAME",
         "REPORT_DATE_NAME",
-        "机构名称",
         "营业部名称",
         "股东名称",
     ],
+    "analyst": ["分析师名称", "分析师", "analyst", "analyst_name"],
+    "institution": ["分析师单位", "机构", "机构名称", "institution", "agency", "research_institute"],
     # 价格相关
     "close": [
         "收盘价",
@@ -347,6 +369,10 @@ FIELD_EQUIVALENTS = {
         "change_rate",
     ],
     "change_amount": ["涨跌额", "变化值", "change_amount", "涨跌金额"],
+    # 评级与机构相关
+    "rating": ["评级", "东财评级", "rating", "rating_name", "RESEARCH_RATING"],
+    "industry": ["行业", "所属行业", "industry", "sector", "INDUSTRY"],
+    "report_title": ["报告名称", "研报标题", "report_title", "RESEARCH_TITLE"],
     #  amplitudes
     "amplitude": ["振幅", "amplitude", "振幅(%)"],
     # 金融指标
@@ -407,8 +433,8 @@ FIELD_EQUIVALENTS = {
     "equity": ["所有者权益", "股东权益", "equity", "shareholders_equity"],
     # 龙虎榜相关
     "department": ["营业部", "买卖营业部", "department", "sales_department"],
-    "buy_amount": ["买入金额", "净买入金额", "buy_amount", "purchase_amount"],
-    "sell_amount": ["卖出金额", "sell_amount", "sales_amount"],
+    "buy_amount": ["买入金额", "净买入金额", "buy_amount", "purchase_amount", "买入成交额"],
+    "sell_amount": ["卖出金额", "sell_amount", "sales_amount", "卖出成交额"],
     # 限价相关
     "limit_up": ["涨停价", "最高限价", "limit_up", "upper_limit"],
     "limit_down": ["跌停价", "最低限价", "limit_down", "lower_limit"],
@@ -422,8 +448,6 @@ FIELD_EQUIVALENTS = {
     "pledge_date": ["质押日期", "质押时间", "pledge_date", "pledged_date"],
     # 北上资金相关
     "net_buy": ["净买入", "净买额", "net_buy", "net_purchase", "净流入"],
-    "buy_amount": ["买入成交额", "buy_amount", "purchase_amount"],
-    "sell_amount": ["卖出成交额", "sell_amount", "sales_amount"],
     # 涨跌停相关
     "limit_up_price": ["涨停价", "upper_limit_price"],
     "limit_down_price": ["跌停价", "lower_limit_price"],

@@ -17,50 +17,50 @@ class EastmoneyBoardProvider(BoardProvider):
     def fetch_data(self) -> pd.DataFrame:
         return pd.DataFrame()
 
-    def get_kcb_stocks(self) -> pd.DataFrame:
+    def get_kcb_stocks(
+        self,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get Kechuang Board (Star Market) spot stock quotes.
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
+
+        Returns:
+            pd.DataFrame: KCB stocks with price and change data.
+        """
         import akshare as ak
 
         try:
             df = ak.stock_kcb_spot_em()
-            if df.empty:
-                return pd.DataFrame()
-            df = df.rename(
-                columns={
-                    "代码": "symbol",
-                    "名称": "name",
-                    "最新价": "price",
-                    "涨跌幅": "pct_change",
-                    "涨跌额": "change",
-                    "成交量": "volume",
-                    "成交额": "amount",
-                    "换手率": "turnover",
-                }
-            )
-            cols = ["symbol", "name", "price", "pct_change", "change", "volume", "amount", "turnover"]
-            return df[[c for c in cols if c in df.columns]]
-        except Exception:
+            return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
+        except Exception as e:
+            self.logger.error(f"Failed to fetch KCB stocks: {e}")
             return pd.DataFrame()
 
-    def get_cyb_stocks(self) -> pd.DataFrame:
+    def get_cyb_stocks(
+        self,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get ChiNext (Growth Enterprise Market) spot stock quotes.
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
+
+        Returns:
+            pd.DataFrame: CYB stocks with price and change data.
+        """
         import akshare as ak
 
         try:
             df = ak.stock_cyb_spot_em()
-            if df.empty:
-                return pd.DataFrame()
-            df = df.rename(
-                columns={
-                    "代码": "symbol",
-                    "名称": "name",
-                    "最新价": "price",
-                    "涨跌幅": "pct_change",
-                    "涨跌额": "change",
-                    "成交量": "volume",
-                    "成交额": "amount",
-                    "换手率": "turnover",
-                }
-            )
-            cols = ["symbol", "name", "price", "pct_change", "change", "volume", "amount", "turnover"]
-            return df[[c for c in cols if c in df.columns]]
-        except Exception:
+            return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
+        except Exception as e:
+            self.logger.error(f"Failed to fetch CYB stocks: {e}")
             return pd.DataFrame()

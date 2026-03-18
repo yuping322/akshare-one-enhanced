@@ -17,62 +17,50 @@ class EastmoneyHKUSProvider(HKUSProvider):
     def fetch_data(self) -> pd.DataFrame:
         return pd.DataFrame()
 
-    def get_hk_stocks(self) -> pd.DataFrame:
+    def get_hk_stocks(
+        self,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get spot quotes for Hong Kong listed stocks.
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
+
+        Returns:
+            pd.DataFrame: HK stocks with price and change data.
+        """
         import akshare as ak
 
         try:
             df = ak.stock_hk_spot_em()
-            if df.empty:
-                return pd.DataFrame()
-            df = df.rename(
-                columns={
-                    "代码": "symbol",
-                    "名称": "name",
-                    "最新价": "price",
-                    "涨跌幅": "pct_change",
-                    "涨跌额": "change",
-                    "成交量": "volume",
-                    "成交额": "amount",
-                    "最高": "high",
-                    "最低": "low",
-                    "今开": "open",
-                }
-            )
-            cols = [
-                "symbol",
-                "name",
-                "price",
-                "pct_change",
-                "change",
-                "volume",
-                "amount",
-                "high",
-                "low",
-                "open",
-            ]
-            return df[[c for c in cols if c in df.columns]]
-        except Exception:
+            return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
+        except Exception as e:
+            self.logger.error(f"Failed to fetch HK stocks: {e}")
             return pd.DataFrame()
 
-    def get_us_stocks(self) -> pd.DataFrame:
+    def get_us_stocks(
+        self,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get spot quotes for US listed stocks.
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
+
+        Returns:
+            pd.DataFrame: US stocks with price and change data.
+        """
         import akshare as ak
 
         try:
             df = ak.stock_us_spot_em()
-            if df.empty:
-                return pd.DataFrame()
-            df = df.rename(
-                columns={
-                    "代码": "symbol",
-                    "名称": "name",
-                    "最新价": "price",
-                    "涨跌幅": "pct_change",
-                    "涨跌额": "change",
-                    "成交量": "volume",
-                    "成交额": "amount",
-                }
-            )
-            cols = ["symbol", "name", "price", "pct_change", "change", "volume", "amount"]
-            return df[[c for c in cols if c in df.columns]]
-        except Exception:
+            return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
+        except Exception as e:
+            self.logger.error(f"Failed to fetch US stocks: {e}")
             return pd.DataFrame()

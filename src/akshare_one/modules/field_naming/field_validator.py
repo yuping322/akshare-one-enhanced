@@ -67,6 +67,8 @@ class FieldValidator:
             FieldType.CODE: self.naming_rules.code_field_pattern,
             FieldType.MARKET: f"^{self.naming_rules.market_field_name}$",
             FieldType.RANK: f"^{self.naming_rules.rank_field_name}$",
+            FieldType.ANALYST: f"^{self.naming_rules.analyst_field_name}$",
+            FieldType.INSTITUTION: f"^{self.naming_rules.institution_field_name}$",
             # 数量类型
             FieldType.COUNT: self.naming_rules.count_field_pattern,
             FieldType.VOLUME: f"^{self.naming_rules.volume_field_name}$",

@@ -101,12 +101,13 @@ class MultiSourceRouter:
 
         return True
 
-    def _update_stats(self, source: str, success: bool) -> None:
+    def _update_stats(self, source: str, success: bool, duration_ms: float = 0.0) -> None:
         """Update execution statistics for a source.
 
         Args:
             source: Source name
             success: Whether execution was successful
+            duration_ms: Duration of the request in milliseconds
         """
         if source not in self.execution_stats:
             self.execution_stats[source] = {"success": 0, "failure": 0}
@@ -115,6 +116,15 @@ class MultiSourceRouter:
             self.execution_stats[source]["success"] += 1
         else:
             self.execution_stats[source]["failure"] += 1
+
+        # Integrate with global StatsCollector
+        try:
+            from ..metrics import get_stats_collector
+
+            stats_collector = get_stats_collector()
+            stats_collector.record_request(source, duration_ms, success)
+        except (ImportError, AttributeError):
+            pass
 
     def get_stats(self) -> dict[str, dict[str, int]]:
         """Get execution statistics.
@@ -144,15 +154,18 @@ class MultiSourceRouter:
             ValueError: If all providers fail
         """
         error_details: list[tuple[str, str]] = []
+        import time
 
         for name, provider in self.providers:
+            start_time = time.time()
             try:
                 method = getattr(provider, method_name)
                 result = method(*args, **kwargs)
+                duration_ms = (time.time() - start_time) * 1000
 
                 # Validate result
                 if self._validate_result(result):
-                    self._update_stats(name, True)
+                    self._update_stats(name, True, duration_ms)
                     if self.enable_logging and error_details:
                         logger.info(
                             f"Successfully fetched data from '{name}' after {len(error_details)} failed attempt(s)"
@@ -164,16 +177,13 @@ class MultiSourceRouter:
                         f"Provider '{name}' returned invalid result for '{method_name}' "
                         f"(empty or missing required columns)"
                     )
-                error_details.append((name, "Invalid result (empty or missing columns)"))
-                self._update_stats(name, False)
+                self._update_stats(name, False, duration_ms)
+                error_details.append((name, "Empty or invalid result"))
 
             except Exception as e:
-                error_msg = f"{type(e).__name__}: {str(e)[:100]}"
-                error_details.append((name, error_msg))
-                self._update_stats(name, False)
-                if self.enable_logging:
-                    logger.warning(f"Provider '{name}' failed for '{method_name}': {error_msg}")
-                continue
+                duration_ms = (time.time() - start_time) * 1000
+                self._update_stats(name, False, duration_ms)
+                error_details.append((name, str(e)))
 
         # All providers failed
         error_summary = "\n".join([f"  {source}: {error}" for source, error in error_details])

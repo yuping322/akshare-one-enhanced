@@ -14,24 +14,24 @@ class SinaNews(NewsDataProvider):
         "news_cache",
         key=lambda self: f"sina_news_{self.symbol}",
     )
-    def get_news_data(self) -> pd.DataFrame:
+    def get_news_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches news data from Sina Finance
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame: Standardized news data
         """
         try:
-            # In a real implementation, this would fetch news data from Sina Finance
-            # For now, return an empty DataFrame with the expected structure
-            # since we may have network issues or need to implement the actual API call
-
             # Expected columns according to the base class
-            columns = ["keyword", "title", "content", "publish_time", "source", "url"]
-            result = pd.DataFrame(columns=columns)
+            standard_columns = ["keyword", "title", "content", "publish_time", "source", "url"]
+            df = pd.DataFrame(columns=standard_columns)
 
-            return result
+            return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
 
         except Exception:
             # If Sina news data is not available, return empty DataFrame with proper columns
-            columns = ["keyword", "title", "content", "publish_time", "source", "url"]
-            return pd.DataFrame(columns=columns)
+            standard_columns = ["keyword", "title", "content", "publish_time", "source", "url"]
+            return pd.DataFrame(columns=standard_columns)

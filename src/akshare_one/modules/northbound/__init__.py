@@ -18,7 +18,7 @@ def get_northbound_flow(
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
     market: Literal["sh", "sz", "all"] = "all",
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -29,33 +29,30 @@ def get_northbound_flow(
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
         market: Market type ('sh' for Shanghai, 'sz' for Shenzhen, 'all' for both)
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        source: Data source
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Standardized northbound flow data with columns:
-            - date: Date (YYYY-MM-DD)
-            - market: Market ('sh', 'sz', or 'all')
-            - net_buy: Net buy amount (亿元)
-            - buy_amount: Buy amount (亿元)
-            - sell_amount: Sell amount (亿元)
-            - balance: Balance (亿元)
-
-    Example:
-        >>> df = get_northbound_flow(start_date="2024-01-01", market="all")
-        >>> print(df.head())
+        pd.DataFrame: Standardized northbound flow data
     """
-    provider = NorthboundFactory.get_provider(source=source)
-    df = provider.get_northbound_flow(start_date, end_date, market)
-    return provider.apply_data_filter(df, columns, row_filter)
+    from ...client import apply_data_filter
+
+    if isinstance(source, list) or source is None:
+        router = NorthboundFactory.create_router(sources=source)
+        df = router.execute("get_northbound_flow", start_date, end_date, market)
+    else:
+        provider = NorthboundFactory.get_provider(source=source)
+        df = provider.get_northbound_flow(start_date, end_date, market)
+
+    return apply_data_filter(df, columns, row_filter)
 
 
 def get_northbound_holdings(
     symbol: str | None = None,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -66,33 +63,30 @@ def get_northbound_holdings(
         symbol: Stock symbol (e.g., '600000'), None for all stocks
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        source: Data source
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Standardized northbound holdings data with columns:
-            - date: Date (YYYY-MM-DD)
-            - symbol: Stock symbol
-            - holdings_shares: Holdings in shares
-            - holdings_value: Holdings value (元)
-            - holdings_ratio: Holdings ratio (%)
-            - holdings_change: Holdings change in shares
-
-    Example:
-        >>> df = get_northbound_holdings("600000", start_date="2024-01-01")
-        >>> print(df.head())
+        pd.DataFrame: Standardized northbound holdings data
     """
-    provider = NorthboundFactory.get_provider(source=source)
-    df = provider.get_northbound_holdings(symbol, start_date, end_date)
-    return provider.apply_data_filter(df, columns, row_filter)
+    from ...client import apply_data_filter
+
+    if isinstance(source, list) or source is None:
+        router = NorthboundFactory.create_router(sources=source)
+        df = router.execute("get_northbound_holdings", symbol, start_date, end_date)
+    else:
+        provider = NorthboundFactory.get_provider(source=source)
+        df = provider.get_northbound_holdings(symbol, start_date, end_date)
+
+    return apply_data_filter(df, columns, row_filter)
 
 
 def get_northbound_top_stocks(
     date: str,
     market: Literal["sh", "sz", "all"] = "all",
     top_n: int = 100,
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -103,26 +97,23 @@ def get_northbound_top_stocks(
         date: Date in YYYY-MM-DD format
         market: Market type ('sh', 'sz', or 'all')
         top_n: Number of top stocks to return
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"sample": 0.3}, {"query": "..."}
+        source: Data source
+        columns: Columns to return
+        row_filter: Row filter config
 
     Returns:
-        pd.DataFrame: Ranked northbound holdings data with columns:
-            - rank: Ranking position
-            - symbol: Stock symbol
-            - name: Stock name
-            - net_buy: Net buy amount (元)
-            - holdings_shares: Holdings in shares
-            - holdings_ratio: Holdings ratio (%)
-
-    Example:
-        >>> df = get_northbound_top_stocks("2024-01-01", market="all", top_n=50)
-        >>> print(df.head())
+        pd.DataFrame: Standardized top stocks data
     """
-    provider = NorthboundFactory.get_provider(source=source)
-    df = provider.get_northbound_top_stocks(date, market, top_n)
-    return provider.apply_data_filter(df, columns, row_filter)
+    from ...client import apply_data_filter
+
+    if isinstance(source, list) or source is None:
+        router = NorthboundFactory.create_router(sources=source)
+        df = router.execute("get_northbound_top_stocks", date, market, top_n)
+    else:
+        provider = NorthboundFactory.get_provider(source=source)
+        df = provider.get_northbound_top_stocks(date, market, top_n)
+
+    return apply_data_filter(df, columns, row_filter)
 
 
 __all__ = [

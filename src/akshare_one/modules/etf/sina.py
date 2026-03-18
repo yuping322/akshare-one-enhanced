@@ -39,18 +39,25 @@ class SinaETFProvider(ETFProvider):
         """
         return pd.DataFrame()
 
-    def get_etf_hist(self, symbol: str, start_date: str, end_date: str, interval: str = "daily") -> pd.DataFrame:
+    def get_etf_hist(
+        self,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+        interval: str = "daily",
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
         """
         Get ETF historical data from Sina.
-
-        Note: Sina's historical data interface may be limited.
-        Falls back to category-based approach.
 
         Args:
             symbol: ETF symbol (6-digit code)
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
             interval: Data interval ('daily', 'weekly', 'monthly')
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame: Standardized historical data
@@ -59,22 +66,25 @@ class SinaETFProvider(ETFProvider):
 
         try:
             df = ak.fund_etf_hist_sina(symbol=symbol)
-            if df.empty:
-                return pd.DataFrame()
-
-            df = self._standardize_hist_data(df, symbol)
-            df = self._filter_by_date(df, start_date, end_date)
-
+            df = self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
+            if not df.empty:
+                df["symbol"] = symbol
+                df = self._filter_by_date(df, start_date, end_date)
             return df
         except Exception:
             return pd.DataFrame()
 
-    def get_etf_spot(self) -> pd.DataFrame:
+    def get_etf_spot(
+        self,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
         """
         Get ETF categories from Sina.
 
-        Note: Sina doesn't provide direct realtime quotes.
-        Returns ETF category information instead.
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame: ETF category data
@@ -83,20 +93,23 @@ class SinaETFProvider(ETFProvider):
 
         try:
             df = ak.fund_etf_category_sina()
-
-            if df.empty:
-                return pd.DataFrame()
-
-            return self._standardize_category_data(df)
+            return self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
         except Exception:
             return pd.DataFrame()
 
-    def get_etf_list(self, category: str = "all") -> pd.DataFrame:
+    def get_etf_list(
+        self,
+        category: str = "all",
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
         """
         Get ETF list from Sina.
 
         Args:
             category: ETF category ('all', 'stock', 'bond', 'cross', 'money')
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame: ETF list
@@ -105,15 +118,7 @@ class SinaETFProvider(ETFProvider):
 
         try:
             df = ak.fund_etf_category_sina()
-
-            if df.empty:
-                return pd.DataFrame()
-
-            df = df.rename(columns={"代码": "symbol", "名称": "name", "类型": "type"})
-
-            df = df[["symbol", "name", "type"]]
-
-            return df
+            return self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
         except Exception:
             return pd.DataFrame()
 
@@ -165,35 +170,7 @@ class SinaETFProvider(ETFProvider):
             ]
         )
 
-    def _standardize_hist_data(self, df: pd.DataFrame, symbol: str) -> pd.DataFrame:
-        """Standardize historical data columns."""
-        if df.empty:
-            return df
 
-        column_map = {
-            "日期": "date",
-            "开盘": "open",
-            "收盘": "close",
-            "最高": "high",
-            "最低": "low",
-            "成交量": "volume",
-            "成交额": "amount",
-        }
-
-        df = df.rename(columns=column_map)
-
-        df["symbol"] = symbol
-
-        return df
-
-    def _standardize_category_data(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Standardize category data columns."""
-        if df.empty:
-            return df
-
-        df = df.rename(columns={"代码": "symbol", "名称": "name", "类型": "type"})
-
-        return df
 
     def _filter_by_date(self, df: pd.DataFrame, start_date: str, end_date: str) -> pd.DataFrame:
         """Filter dataframe by date range."""

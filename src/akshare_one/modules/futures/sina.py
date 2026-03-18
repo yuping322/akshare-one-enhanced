@@ -172,24 +172,9 @@ class SinaFuturesHistorical(HistoricalFuturesDataProvider):
 
     def _clean_intraday_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
         """Cleans and standardizes intraday data"""
-        column_map = {
-            "datetime": "timestamp",
-            "date": "timestamp",
-            "open": "open",
-            "close": "close",
-            "high": "high",
-            "low": "low",
-            "volume": "volume",
-            "hold": "open_interest",
-        }
 
-        # Use raw column names, only map when key exists
-        df = raw_df.copy()
-
-        # Map columns if they exist
-        for src, target in column_map.items():
-            if src in df.columns and src != target:
-                df = df.rename(columns={src: target})
+        # Map columns using the mapping pipeline
+        df = self.map_source_fields(raw_df, "sina")
 
         # Handle timestamp column
         if "timestamp" not in df.columns and hasattr(df, "index"):
@@ -205,24 +190,9 @@ class SinaFuturesHistorical(HistoricalFuturesDataProvider):
 
     def _clean_daily_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
         """Cleans and standardizes daily data"""
-        column_map = {
-            "date": "timestamp",
-            "open": "open",
-            "close": "close",
-            "high": "high",
-            "low": "low",
-            "volume": "volume",
-            "hold": "open_interest",
-            "settle": "settlement",
-        }
 
-        # Use raw column names, only map when key exists
-        df = raw_df.copy()
-
-        # Map columns if they exist
-        for src, target in column_map.items():
-            if src in df.columns and src != target:
-                df = df.rename(columns={src: target})
+        # Map columns using the mapping pipeline
+        df = self.map_source_fields(raw_df, "sina")
 
         # Handle timestamp column
         if "timestamp" not in df.columns and hasattr(df, "index"):

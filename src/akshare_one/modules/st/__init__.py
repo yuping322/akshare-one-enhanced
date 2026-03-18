@@ -10,7 +10,7 @@ from .factory import STFactory
 
 
 def get_st_stocks(
-    source: Literal["eastmoney"] = "eastmoney",
+    source: str | list[str] | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -18,12 +18,17 @@ def get_st_stocks(
     Get ST (Special Treatment) stocks.
 
     Returns:
-        pd.DataFrame: ST stocks with symbol, name, price, change_pct, etc.
+        pd.DataFrame: ST stocks
     """
-    from ...__init__ import apply_data_filter
+    from ...client import apply_data_filter
 
-    provider = STFactory.get_provider(source=source)
-    df = provider.get_st_stocks()
+    if isinstance(source, list) or source is None:
+        router = STFactory.create_router(sources=source)
+        df = router.execute("get_st_stocks")
+    else:
+        provider = STFactory.get_provider(source=source)
+        df = provider.get_st_stocks()
+
     return apply_data_filter(df, columns, row_filter)
 
 

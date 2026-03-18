@@ -353,9 +353,17 @@ class BaseProvider(ABC):
         """
         return self.field_standardizer.standardize_dataframe(df, field_types)
 
+    def get_module_name(self) -> str:
+        """Get the module name from the class module path."""
+        module_parts = self.__class__.__module__.split(".")
+        return module_parts[-2] if len(module_parts) >= 2 else "base"
+
     def map_source_fields(self, df: pd.DataFrame, source: str) -> pd.DataFrame:
         """
         Map source data fields to standard fields.
+
+        Uses explicit mapping configuration from field_mappings.json if available,
+        otherwise falls back to FIELD_EQUIVALENTS for automatic mapping.
 
         Args:
             df: Original DataFrame with source field names
@@ -365,8 +373,36 @@ class BaseProvider(ABC):
             DataFrame with mapped field names
         """
         # Get module name from class module path
-        module_name = self.__class__.__module__.split(".")[-2]
-        return self.field_mapper.map_fields(df, source, module_name)
+        module_name = self.get_module_name()
+
+        # 1. Try explicit mapping first
+        df = self.field_mapper.map_fields(df, source, module_name)
+
+        # 2. For any remaining non-standard columns, try automatic mapping via FIELD_EQUIVALENTS
+        rename_dict = {}
+        standard_fields = list(FIELD_EQUIVALENTS.keys())
+
+        for col in df.columns:
+            # If column is already standard, skip
+            if col in standard_fields:
+                continue
+
+            # Try to find a standard name for this column
+            col_lower = col.lower()
+            for standard_field, equivalents in FIELD_EQUIVALENTS.items():
+                # If this standard field is already present in df, don't map another column to it
+                if standard_field in df.columns or standard_field in rename_dict.values():
+                    continue
+
+                if col in equivalents or col_lower in [e.lower() for e in equivalents]:
+                    rename_dict[col] = standard_field
+                    break
+
+        if rename_dict:
+            df = df.rename(columns=rename_dict)
+            self.logger.debug(f"Automatically mapped {len(rename_dict)} additional fields using FIELD_EQUIVALENTS")
+
+        return df
 
     def convert_amount_units(self, df: pd.DataFrame, amount_fields: dict[str, str]) -> pd.DataFrame:
         """
@@ -464,6 +500,15 @@ class BaseProvider(ABC):
 
             duration_ms = (time.time() - start_time) * 1000
 
+            # Record metrics to StatsCollector
+            try:
+                from ..metrics import get_stats_collector
+
+                stats_collector = get_stats_collector()
+                stats_collector.record_request(source_name, duration_ms, True)
+            except (ImportError, AttributeError):
+                pass
+
             log_api_request(
                 logger=self.logger,
                 source=source_name,
@@ -486,6 +531,15 @@ class BaseProvider(ABC):
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
+
+            # Record metrics to StatsCollector
+            try:
+                from ..metrics import get_stats_collector
+
+                stats_collector = get_stats_collector()
+                stats_collector.record_request(source_name, duration_ms, False)
+            except (ImportError, AttributeError):
+                pass
 
             log_api_request(
                 logger=self.logger,
@@ -516,8 +570,8 @@ class BaseProvider(ABC):
         """
         Standardize data format (field names, types, etc.).
 
-        This method should be overridden by subclasses to implement
-        specific standardization logic including field type mapping.
+        Default implementation automatically infers field types and amount units,
+        then applies field name validation and amount unit conversion.
 
         Args:
             df: Raw DataFrame (after field mapping)
@@ -525,8 +579,65 @@ class BaseProvider(ABC):
         Returns:
             pd.DataFrame: Standardized DataFrame
         """
-        # Default implementation - subclasses should override with specific field types
+        if df.empty:
+            return df
+
+        # 1. Infer field types and amount units
+        field_types = self.infer_field_types(df)
+        amount_fields = self.infer_amount_fields(df)
+
+        # 2. Apply amount unit conversion (all to yuan)
+        if amount_fields:
+            df = self.apply_amount_conversion(df, amount_fields)
+
+        # 3. Apply field name validation and standardization (snake_case, types)
+        if field_types:
+            df = self.apply_field_standardization(df, field_types)
+
+        # 4. Handle date formatting automatically
+        for col in df.columns:
+            if col in field_types and field_types[col] == FieldType.DATE:
+                try:
+                    df[col] = self.standardize_date_field(df[col])
+                except Exception:
+                    # Skip if date conversion fails for some reason
+                    pass
+
         return df
+
+    def standardize_and_filter(
+        self,
+        df: pd.DataFrame,
+        source: str,
+        columns: list | None = None,
+        row_filter: dict[str, Any] | None = None,
+    ) -> pd.DataFrame:
+        """
+        Convenience method to apply field mapping, standardization, and filtering.
+
+        Args:
+            df: Raw DataFrame from source
+            source: Source name for field mapping
+            columns: Columns to keep
+            row_filter: Row filter configuration
+
+        Returns:
+            pd.DataFrame: Processed DataFrame
+        """
+        if df.empty:
+            return df
+
+        # 1. Map fields
+        df = self.map_source_fields(df, source)
+
+        # 2. Apply full standardization (types, units, etc.)
+        df = self.standardize_data(df)
+
+        # 3. Filter data
+        df = self.apply_data_filter(df, columns=columns, row_filter=row_filter)
+
+        # 4. Ensure JSON compatibility
+        return self.ensure_json_compatible(df)
 
     def apply_field_standardization(self, df: pd.DataFrame, field_types: dict[str, FieldType]) -> pd.DataFrame:
         """
@@ -569,7 +680,7 @@ class BaseProvider(ABC):
         """
         from .config import get_field_mapping_config
 
-        module_name = self.__class__.__module__.split(".")[-2]
+        module_name = self.get_module_name()
 
         config_field_types = get_field_mapping_config().get_field_types(module_name)
 
@@ -609,7 +720,7 @@ class BaseProvider(ABC):
         """
         from .config import get_field_mapping_config
 
-        module_name = self.__class__.__module__.split(".")[-2]
+        module_name = self.get_module_name()
 
         config_amount_fields = get_field_mapping_config().get_amount_fields(module_name)
 
@@ -670,6 +781,8 @@ class BaseProvider(ABC):
             "market": FieldType.MARKET,
             "rank": FieldType.RANK,
             "industry": FieldType.TYPE,
+            "analyst": FieldType.ANALYST,
+            "institution": FieldType.INSTITUTION,
             "count": FieldType.COUNT,
             "volume": FieldType.VOLUME,
             "shares": FieldType.SHARES,
@@ -693,7 +806,7 @@ class BaseProvider(ABC):
         if any(kw in name_lower for kw in ["symbol", "code", "代码", "编号"]):
             return FieldType.SYMBOL
 
-        if any(kw in name_lower for kw in ["name", "名称", "标题", "title"]):
+        if any(kw in name_lower for kw in ["名称", "标题", "title"]):
             return FieldType.NAME
 
         if any(kw in name_lower for kw in ["price", "价", "close", "open", "high", "low"]):
@@ -716,6 +829,12 @@ class BaseProvider(ABC):
 
         if any(kw in name_lower for kw in ["rank", "排名", "排序"]):
             return FieldType.RANK
+
+        if any(kw in name_lower for kw in ["analyst", "分析师"]):
+            return FieldType.ANALYST
+
+        if any(kw in name_lower for kw in ["institution", "机构"]):
+            return FieldType.INSTITUTION
 
         return None
 
@@ -770,28 +889,37 @@ class BaseProvider(ABC):
 
         return df
 
-    def get_data(self, apply_standardization: bool = True) -> pd.DataFrame:
+    def get_data(
+        self,
+        apply_standardization: bool = True,
+        columns: list | None = None,
+        row_filter: dict[str, Any] | None = None,
+    ) -> pd.DataFrame:
         """
-        Main method to fetch and standardize data with logging.
+        Main method to fetch and standardize data with logging and filtering.
 
         This method orchestrates the data fetching and standardization process:
         1. Fetch raw data (with logging)
         2. Apply field mapping from source fields to standard fields
         3. Apply automatic field type inference and standardization
         4. Apply amount unit conversion
-        5. Ensure JSON compatibility
+        5. Apply data filtering (row/column)
+        6. Ensure JSON compatibility
 
         Args:
             apply_standardization: Whether to apply full standardization pipeline.
                                  Set to False to bypass standardization and return raw data.
+            columns: List of columns to keep (after standardization).
+            row_filter: Dictionary of row filter rules (top_n, query, etc.).
 
         Returns:
-            pd.DataFrame: Standardized, JSON-compatible data
+            pd.DataFrame: Standardized, filtered, JSON-compatible data
         """
         raw_df = self.fetch_data_with_logging()
 
         if not apply_standardization:
-            return self.ensure_json_compatible(raw_df)
+            df = self.apply_data_filter(raw_df, columns=columns, row_filter=row_filter)
+            return self.ensure_json_compatible(df)
 
         source_name = self.get_source_name()
 
@@ -801,7 +929,9 @@ class BaseProvider(ABC):
 
         standardized_df = self.standardize_data(standardized_df)
 
-        return self.ensure_json_compatible(standardized_df)
+        filtered_df = self.apply_data_filter(standardized_df, columns=columns, row_filter=row_filter)
+
+        return self.ensure_json_compatible(filtered_df)
 
     def apply_data_filter(
         self,

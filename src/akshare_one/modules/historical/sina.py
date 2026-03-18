@@ -19,8 +19,12 @@ class SinaHistorical(HistoricalDataProvider):
         "hist_data_cache",
         key=lambda self: (f"sina_hist_{self.symbol}_{self.interval}_{self.interval_multiplier}_{self.adjust}"),
     )
-    def get_hist_data(self) -> pd.DataFrame:
+    def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """Fetches Sina historical market data
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
 
         Returns:
             pd.DataFrame:
@@ -62,6 +66,8 @@ class SinaHistorical(HistoricalDataProvider):
             else:
                 df = self._get_daily_plus_data(stock)
 
+            df = self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
+
             duration_ms = (time.time() - start_time) * 1000
 
             log_api_request(
@@ -97,7 +103,7 @@ class SinaHistorical(HistoricalDataProvider):
             period="1",
             adjust=self._map_adjust_param(self.adjust),
         )
-        raw_df = raw_df.rename(columns={"day": "date"})
+        raw_df = self.map_source_fields(raw_df, "sina")
         raw_df["date"] = pd.to_datetime(raw_df["date"])
         raw_df = raw_df.set_index("date")
         raw_df = (
@@ -125,7 +131,7 @@ class SinaHistorical(HistoricalDataProvider):
             period="60",
             adjust=self._map_adjust_param(self.adjust),
         )
-        raw_df = raw_df.rename(columns={"day": "date"})
+        raw_df = self.map_source_fields(raw_df, "sina")
         raw_df["date"] = pd.to_datetime(raw_df["date"])
         raw_df = raw_df.set_index("date")
         raw_df = (
@@ -156,7 +162,7 @@ class SinaHistorical(HistoricalDataProvider):
                 adjust=self._map_adjust_param(self.adjust),
             )
             # Rename 'day' to 'date' for consistency
-            raw_df = raw_df.rename(columns={"day": "date"})
+            raw_df = self.map_source_fields(raw_df, "sina")
 
             if self.interval_multiplier > 1:
                 raw_df = self._resample_data(raw_df, self.interval, self.interval_multiplier)

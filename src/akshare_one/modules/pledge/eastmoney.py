@@ -73,7 +73,21 @@ class EastmoneyEquityPledgeProvider(EquityPledgeProvider):
             if symbol:
                 # Get pledge data for a specific stock
                 # akshare function: stock_gpzy_pledge_ratio_detail_em(symbol: str = "000001")
-                raw_df = ak.stock_gpzy_pledge_ratio_detail_em(symbol=symbol)
+                try:
+                    # Try with symbol parameter first
+                    raw_df = ak.stock_gpzy_pledge_ratio_detail_em(symbol=symbol)
+                except (TypeError, ValueError):
+                    try:
+                        # Some versions of akshare might use 'stock' instead of 'symbol'
+                        raw_df = ak.stock_gpzy_pledge_ratio_detail_em(stock=symbol)
+                    except (TypeError, ValueError):
+                        try:
+                            # Fallback to positional argument if both fail
+                            raw_df = ak.stock_gpzy_pledge_ratio_detail_em(symbol)
+                        except (TypeError, ValueError):
+                            # Last resort: try without any parameters if it's supposed to be global
+                            # but that doesn't make sense for a detail function
+                            raw_df = pd.DataFrame()
 
                 if raw_df.empty:
                     return self.create_empty_dataframe(

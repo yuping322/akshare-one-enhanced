@@ -17,26 +17,26 @@ class EastmoneySTProvider(STProvider):
     def fetch_data(self) -> pd.DataFrame:
         return pd.DataFrame()
 
-    def get_st_stocks(self) -> pd.DataFrame:
+    def get_st_stocks(
+        self,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get spot quotes for ST and *ST stocks.
+
+        Args:
+            columns: List of columns to keep.
+            row_filter: Dictionary of row filter rules.
+
+        Returns:
+            pd.DataFrame: Special treatment stocks with quotes.
+        """
         import akshare as ak
 
         try:
             df = ak.stock_zh_a_st_em()
-            if df.empty:
-                return pd.DataFrame()
-            df = df.rename(
-                columns={
-                    "代码": "symbol",
-                    "名称": "name",
-                    "最新价": "price",
-                    "涨跌幅": "pct_change",
-                    "涨跌额": "change",
-                    "成交量": "volume",
-                    "成交额": "amount",
-                    "换手率": "turnover",
-                }
-            )
-            cols = ["symbol", "name", "price", "pct_change", "change", "volume", "amount", "turnover"]
-            return df[[c for c in cols if c in df.columns]]
-        except Exception:
+            return self.standardize_and_filter(df, "eastmoney", columns=columns, row_filter=row_filter)
+        except Exception as e:
+            self.logger.error(f"Failed to fetch ST stocks: {e}")
             return pd.DataFrame()

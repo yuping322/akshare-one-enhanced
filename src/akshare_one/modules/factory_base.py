@@ -5,7 +5,7 @@ This module provides a generic factory base class that implements
 the common factory pattern used across all data provider modules.
 """
 
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from .exceptions import InvalidParameterError
 
@@ -101,6 +101,32 @@ class BaseFactory(Generic[T]):
             source: Data source name
 
         Returns:
-            True if the source is supported, False otherwise
+            True if supported, False otherwise
         """
         return source in cls._providers
+
+    @classmethod
+    def create_router(cls, sources: list[str] | None = None, **kwargs) -> Any:
+        """
+        Create a MultiSourceRouter for the specified sources.
+
+        Args:
+            sources: List of source names. If None, all available sources are used.
+            **kwargs: Additional parameters passed to the provider constructors
+
+        Returns:
+            MultiSourceRouter instance
+        """
+        from .multi_source import MultiSourceRouter
+
+        if sources is None:
+            sources = cls.list_sources()
+
+        providers = []
+        for s in sources:
+            try:
+                providers.append((s, cls.get_provider(s, **kwargs)))
+            except Exception:
+                continue
+
+        return MultiSourceRouter(providers)

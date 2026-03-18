@@ -11,7 +11,10 @@ from typing import Dict, List, Optional
 class MappingUtils:
     """映射工具类"""
 
-    def __init__(self, mappings_dir="mappings"):
+    def __init__(self, mappings_dir=None):
+        if mappings_dir is None:
+            # 获取当前文件所在目录作为默认映射目录
+            mappings_dir = os.path.dirname(os.path.abspath(__file__))
         self.mappings_dir = mappings_dir
         self._mappings = {}
 

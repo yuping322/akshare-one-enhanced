@@ -77,27 +77,28 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         # Convert from 亿元 to 元
         if "当日成交净买额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
-            standardized["net_buy"] = df["当日成交净买额"].astype(float) * 100000000
+            # Use pd.to_numeric to handle non-numeric values safely
+            standardized["net_buy"] = pd.to_numeric(df["当日成交净买额"], errors='coerce').astype(float) * 100000000
         else:
             standardized["net_buy"] = None
 
         # Buy and sell amounts
         if "买入成交额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
-            standardized["buy_amount"] = df["买入成交额"].astype(float) * 100000000
+            standardized["buy_amount"] = pd.to_numeric(df["买入成交额"], errors='coerce').astype(float) * 100000000
         else:
             standardized["buy_amount"] = None
 
         if "卖出成交额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
-            standardized["sell_amount"] = df["卖出成交额"].astype(float) * 100000000
+            standardized["sell_amount"] = pd.to_numeric(df["卖出成交额"], errors='coerce').astype(float) * 100000000
         else:
             standardized["sell_amount"] = None
 
         # Balance
         if "当日余额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
-            standardized["balance"] = df["当日余额"].astype(float) * 100000000
+            standardized["balance"] = pd.to_numeric(df["当日余额"], errors='coerce').astype(float) * 100000000
         else:
             standardized["balance"] = None
 
@@ -144,7 +145,11 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         try:
             if symbol:
                 # Fetch individual stock holdings
-                raw_df = ak.stock_hsgt_individual_em(symbol=symbol)
+                try:
+                    raw_df = ak.stock_hsgt_individual_em(symbol=symbol)
+                except TypeError:
+                    # Fallback to positional argument if keyword fails
+                    raw_df = ak.stock_hsgt_individual_em(symbol)
             else:
                 # Fetch all stocks holdings (use stock_hsgt_hold_stock_em)
                 raw_df = ak.stock_hsgt_hold_stock_em(market="北向")
@@ -269,7 +274,11 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         try:
             # Use stock_hsgt_hold_stock_em as the data source
             # This API returns current northbound holdings for all stocks
-            raw_df = ak.stock_hsgt_hold_stock_em(market="北向")
+            try:
+                raw_df = ak.stock_hsgt_hold_stock_em(market="北向")
+            except TypeError:
+                # Fallback to positional argument if keyword fails
+                raw_df = ak.stock_hsgt_hold_stock_em("北向")
 
             if raw_df.empty:
                 return self.create_empty_dataframe(
