@@ -305,6 +305,8 @@ FIELD_EQUIVALENTS = {
         "CODE",
         "标的证券代码",
     ],
+    "sector_code": ["板块代码", "板块ID", "行业代码", "概念代码", "sector_code", "board_code"],
+    "sector_name": ["板块名称", "板块", "行业名称", "概念名称", "sector_name", "board_name", "名称"],
     # 名称相关
     "name": [
         "名称",
@@ -332,6 +334,13 @@ FIELD_EQUIVALENTS = {
         "营业部名称",
         "股东名称",
     ],
+    # 计数/数量相关
+    "constituent_count": ["公司数量", "成分股数量", "股票数量", "constituent_count", "stock_count"],
+    # 资金流向相关
+    "main_net_inflow": ["今日主力净流入-净额", "主力净流入-净额", "net_inflow", "main_net_inflow"],
+    "main_net_inflow_rate": ["今日主力净流入-净占比", "主力净流入-净占比", "net_inflow_rate", "main_net_inflow_rate"],
+    "pct_change": ["今日涨跌幅", "涨跌幅", "pct_chg", "chg_pct", "percent", "涨跌幅(%)"],
+    "leading_stock": ["今日主力净流入最大股", "领涨股", "leading_stock"],
     "analyst": ["分析师名称", "分析师", "analyst", "analyst_name"],
     "institution": ["分析师单位", "机构", "机构名称", "institution", "agency", "research_institute"],
     # 价格相关

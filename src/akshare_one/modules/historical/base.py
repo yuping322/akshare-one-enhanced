@@ -3,6 +3,7 @@ from abc import abstractmethod
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class HistoricalDataProvider(BaseProvider):
@@ -23,7 +24,6 @@ class HistoricalDataProvider(BaseProvider):
         self.start_date = start_date
         self.end_date = end_date
         self.adjust = adjust
-        self._validate_dates()
 
     def get_source_name(self) -> str:
         return "historical"
@@ -34,32 +34,17 @@ class HistoricalDataProvider(BaseProvider):
     def fetch_data(self) -> pd.DataFrame:
         return self.get_hist_data()
 
-    def _validate_dates(self) -> None:
-        try:
-            pd.to_datetime(self.start_date)
-            pd.to_datetime(self.end_date)
-        except ValueError:
-            raise ValueError("Invalid date format. Please use YYYY-MM-DD.") from None
-
     @classmethod
     def get_supported_intervals(cls) -> list[str]:
         return ["minute", "hour", "day", "week", "month", "year"]
 
     @abstractmethod
-    def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
-        """Fetches historical market data
-
-        Args:
-            columns: List of columns to keep.
-            row_filter: Dictionary of row filter rules.
-
-        Returns:
-            pd.DataFrame:
-            - timestamp
-            - open
-            - high
-            - low
-            - close
-            - volume
-        """
+    def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
+        """Fetches historical market data"""
         pass
+
+
+class HistoricalDataFactory(BaseFactory["HistoricalDataProvider"]):
+    """Factory class for creating historical data providers."""
+
+    _providers: dict[str, type["HistoricalDataProvider"]] = {}

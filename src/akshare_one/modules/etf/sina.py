@@ -6,9 +6,10 @@ This module implements the ETF data provider using Sina Finance (新浪财经) a
 
 import pandas as pd
 
-from .base import ETFProvider
+from .base import ETFProvider, ETFFactory
 
 
+@ETFFactory.register("sina")
 class SinaETFProvider(ETFProvider):
     """
     ETF data provider using Sina Finance as the data source.

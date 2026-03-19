@@ -6,9 +6,10 @@ This module implements the northbound capital data provider using Sina as the da
 
 import pandas as pd
 
-from .base import NorthboundProvider
+from .base import NorthboundProvider, NorthboundFactory
 
 
+@NorthboundFactory.register("sina")
 class SinaNorthboundProvider(NorthboundProvider):
     """
     Northbound capital data provider using Sina as the data source.

@@ -6,9 +6,10 @@ This module implements the fund flow data provider using Sina as the data source
 
 import pandas as pd
 
-from .base import FundFlowProvider
+from .base import FundFlowProvider, FundFlowFactory
 
 
+@FundFlowFactory.register("sina")
 class SinaFundFlowProvider(FundFlowProvider):
     """
     Fund flow data provider using Sina as the data source.

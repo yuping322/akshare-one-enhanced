@@ -1,9 +1,10 @@
 import pandas as pd
 
 from ..cache import cache
-from .base import HistoricalDataProvider
+from .base import HistoricalDataProvider, HistoricalDataFactory
 
 
+@HistoricalDataFactory.register("tencent")
 class TencentHistorical(HistoricalDataProvider):
     """Adapter for Tencent Finance historical stock data API"""
 

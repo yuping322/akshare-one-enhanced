@@ -6,10 +6,11 @@ This module implements the bond data provider using JiSiLu as the data source.
 
 import pandas as pd
 
-from .base import BondProvider
+from .base import BondProvider, BondFactory
 
 
-class JSLBondProvider(BondProvider):
+@BondFactory.register("jsl")
+class JslBondProvider(BondProvider):
     """
     Bond data provider using JiSiLu (集思录) as the data source.
 

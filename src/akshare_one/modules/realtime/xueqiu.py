@@ -3,15 +3,16 @@ import pandas as pd
 
 from ..cache import cache
 from ..utils import convert_xieqiu_symbol
-from .base import RealtimeDataProvider
+from .base import RealtimeDataProvider, RealtimeDataFactory
 
 
+@RealtimeDataFactory.register("xueqiu")
 class XueQiuRealtime(RealtimeDataProvider):
     @cache(
         "realtime_cache",
         key=lambda self: f"xueqiu_{self.symbol}",
     )
-    def get_current_data(self) -> pd.DataFrame:
+    def get_current_data(self, **kwargs) -> pd.DataFrame:
         """获取雪球实时行情数据
 
         Args:

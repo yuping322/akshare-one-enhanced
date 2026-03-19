@@ -8,9 +8,10 @@ import akshare as ak
 import pandas as pd
 
 from ..field_naming import FieldType
-from .base import NorthboundProvider
+from .base import NorthboundProvider, NorthboundFactory
 
 
+@NorthboundFactory.register("eastmoney")
 class EastmoneyNorthboundProvider(NorthboundProvider):
     """
     Eastmoney implementation of northbound capital data provider.

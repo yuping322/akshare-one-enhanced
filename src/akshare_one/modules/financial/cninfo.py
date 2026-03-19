@@ -1,9 +1,10 @@
 import pandas as pd
 
 from ..cache import cache
-from .base import FinancialDataProvider
+from .base import FinancialDataProvider, FinancialDataFactory
 
 
+@FinancialDataFactory.register("cninfo")
 class CninfoFinancialReport(FinancialDataProvider):
     """Financial data provider for Cninfo (China Information) reports.
 
@@ -11,8 +12,8 @@ class CninfoFinancialReport(FinancialDataProvider):
     and cash flow data from Cninfo API.
     """
 
-    def __init__(self, symbol: str) -> None:
-        super().__init__(symbol)
+    def __init__(self, symbol: str, **kwargs) -> None:
+        super().__init__(symbol, **kwargs)
         # Normalize symbol for Cninfo API
         self.normalized_symbol = self._normalize_symbol()
 

@@ -9,16 +9,12 @@ from abc import abstractmethod
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class NorthboundProvider(BaseProvider):
     """
     Abstract base class for northbound capital data providers.
-
-    Defines the interface for fetching various types of northbound capital data:
-    - Northbound capital flow (Shanghai/Shenzhen Connect)
-    - Northbound holdings details
-    - Northbound capital rankings
     """
 
     def get_data_type(self) -> str:
@@ -34,46 +30,30 @@ class NorthboundProvider(BaseProvider):
         return 1440  # 24 hours
 
     @abstractmethod
-    def get_northbound_flow(self, start_date: str, end_date: str, market: str) -> pd.DataFrame:
+    def get_northbound_flow(self, start_date: str, end_date: str, market: str, **kwargs) -> pd.DataFrame:
         """
         Get northbound capital flow data.
-
-        Args:
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-            market: Market type ('sh', 'sz', or 'all')
-
-        Returns:
-            pd.DataFrame: Standardized northbound flow data
         """
         pass
 
     @abstractmethod
-    def get_northbound_holdings(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_northbound_holdings(self, symbol: str | None, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get northbound holdings details.
-
-        Args:
-            symbol: Stock symbol (6-digit code) or None for all stocks
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized northbound holdings data
         """
         pass
 
     @abstractmethod
-    def get_northbound_top_stocks(self, date: str, market: str, top_n: int) -> pd.DataFrame:
+    def get_northbound_top_stocks(self, date: str, market: str, top_n: int, **kwargs) -> pd.DataFrame:
         """
         Get northbound capital top stocks ranking.
-
-        Args:
-            date: Date (YYYY-MM-DD)
-            market: Market type ('sh', 'sz', or 'all')
-            top_n: Number of top stocks to return
-
-        Returns:
-            pd.DataFrame: Ranked northbound holdings data
         """
         pass
+
+
+class NorthboundFactory(BaseFactory["NorthboundProvider"]):
+    """
+    Factory class for creating northbound capital data providers.
+    """
+
+    _providers: dict[str, type["NorthboundProvider"]] = {}

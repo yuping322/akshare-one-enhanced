@@ -4,9 +4,10 @@ Eastmoney HK/US stock data provider.
 
 import pandas as pd
 
-from .base import HKUSProvider
+from .base import HKUSProvider, HKUSFactory
 
 
+@HKUSFactory.register("eastmoney")
 class EastmoneyHKUSProvider(HKUSProvider):
     def __init__(self):
         super().__init__()

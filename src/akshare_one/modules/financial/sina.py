@@ -2,9 +2,10 @@ import akshare as ak
 import pandas as pd
 
 from ..cache import cache
-from .base import FinancialDataProvider
+from .base import FinancialDataProvider, FinancialDataFactory
 
 
+@FinancialDataFactory.register("sina")
 class SinaFinancialReport(FinancialDataProvider):
     """Financial data provider for Sina finance reports.
 
@@ -12,8 +13,8 @@ class SinaFinancialReport(FinancialDataProvider):
     and cash flow data from Sina finance API.
     """
 
-    def __init__(self, symbol: str) -> None:
-        super().__init__(symbol)
+    def __init__(self, symbol: str, **kwargs) -> None:
+        super().__init__(symbol, **kwargs)
         self.stock = f"sh{symbol}" if not symbol.startswith(("sh", "sz", "bj")) else symbol
 
     @cache("financial_cache", key=lambda self: f"sina_balance_{self.symbol}")

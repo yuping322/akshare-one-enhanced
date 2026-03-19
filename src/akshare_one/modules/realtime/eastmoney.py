@@ -5,12 +5,13 @@ import pandas as pd
 
 from ...logging_config import get_logger, log_api_request
 from ..cache import cache
-from .base import RealtimeDataProvider
+from .base import RealtimeDataProvider, RealtimeDataFactory
 
 
+@RealtimeDataFactory.register("eastmoney")
 class EastmoneyRealtime(RealtimeDataProvider):
-    def __init__(self, symbol: str | None = None):
-        super().__init__(symbol=symbol)
+    def __init__(self, symbol: str | None = None, **kwargs):
+        super().__init__(symbol=symbol, **kwargs)
         self.logger = get_logger(__name__)
 
     @cache(

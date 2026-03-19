@@ -6,9 +6,10 @@ from akshare_one.eastmoney.client import EastMoneyClient
 from akshare_one.eastmoney.utils import parse_kline_data, resample_historical_data
 
 from ..cache import smart_cache
-from .base import HistoricalDataProvider
+from .base import HistoricalDataProvider, HistoricalDataFactory
 
 
+@HistoricalDataFactory.register("eastmoney_direct")
 class EastMoneyDirectHistorical(HistoricalDataProvider):
     """Direct implementation for EastMoney historical stock data API"""
 

@@ -38,7 +38,7 @@ def scenario_1_identify_block_deals():
 
     try:
         # 参数设置：查询浦发银行最近60天的大宗交易
-        symbol = "600000"
+        symbol = "sh600000"
         end_date = datetime.now().strftime("%Y-%m-%d")
         start_date = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
 

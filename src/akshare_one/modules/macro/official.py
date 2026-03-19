@@ -7,9 +7,10 @@ This module implements the macro data provider using official sources
 
 import pandas as pd
 
-from .base import MacroProvider
+from .base import MacroProvider, MacroFactory
 
 
+@MacroFactory.register("official")
 class OfficialMacroProvider(MacroProvider):
     """
     Macro economic data provider using official sources.

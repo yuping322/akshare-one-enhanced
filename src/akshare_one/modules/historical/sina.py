@@ -5,9 +5,10 @@ import pandas as pd
 
 from ...logging_config import get_logger, log_api_request
 from ..cache import cache
-from .base import HistoricalDataProvider
+from .base import HistoricalDataProvider, HistoricalDataFactory
 
 
+@HistoricalDataFactory.register("sina")
 class SinaHistorical(HistoricalDataProvider):
     """Adapter for Sina historical stock data API"""
 

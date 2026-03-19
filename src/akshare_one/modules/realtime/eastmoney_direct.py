@@ -4,21 +4,22 @@ from akshare_one.eastmoney.client import EastMoneyClient
 from akshare_one.eastmoney.utils import parse_realtime_data
 
 from ..cache import cache
-from .base import RealtimeDataProvider
+from .base import RealtimeDataProvider, RealtimeDataFactory
 
 
+@RealtimeDataFactory.register("eastmoney_direct")
 class EastMoneyDirectRealtime(RealtimeDataProvider):
     """Direct implementation for EastMoney realtime stock data API"""
 
-    def __init__(self, symbol: str):
-        super().__init__(symbol)
+    def __init__(self, symbol: str, **kwargs):
+        super().__init__(symbol, **kwargs)
         self.client = EastMoneyClient()
 
     @cache(
         "realtime_cache",
         key=lambda self: f"eastmoney_direct_realtime_{self.symbol}",
     )
-    def get_current_data(self) -> pd.DataFrame:
+    def get_current_data(self, **kwargs) -> pd.DataFrame:
         """Get real-time stock data"""
         try:
             raw_data = self.client.fetch_realtime_quote(self.symbol)

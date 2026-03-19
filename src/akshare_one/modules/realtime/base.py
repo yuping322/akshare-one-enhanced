@@ -3,10 +3,11 @@ from abc import abstractmethod
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class RealtimeDataProvider(BaseProvider):
-    def __init__(self, symbol: str, **kwargs) -> None:
+    def __init__(self, symbol: str | None = None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.symbol = symbol
 
@@ -20,25 +21,12 @@ class RealtimeDataProvider(BaseProvider):
         return self.get_current_data()
 
     @abstractmethod
-    def get_current_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
-        """Fetches realtime market data
-
-        Args:
-            columns: List of columns to keep.
-            row_filter: Dictionary of row filter rules.
-
-        Returns:
-            pd.DataFrame:
-            - symbol: 股票代码
-            - price: 最新价
-            - change: 涨跌额
-            - pct_change: 涨跌幅(%)
-            - timestamp: 时间戳
-            - volume: 成交量(手)
-            - amount: 成交额(元)
-            - open: 今开
-            - high: 最高
-            - low: 最低
-            - prev_close: 昨收
-        """
+    def get_current_data(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
+        """Fetches realtime market data"""
         pass
+
+
+class RealtimeDataFactory(BaseFactory["RealtimeDataProvider"]):
+    """Factory class for creating realtime data providers."""
+
+    _providers: dict[str, type["RealtimeDataProvider"]] = {}

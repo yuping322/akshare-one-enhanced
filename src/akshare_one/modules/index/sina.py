@@ -6,9 +6,10 @@ This module implements the index data provider using Sina Finance (新浪财经)
 
 import pandas as pd
 
-from .base import IndexProvider
+from .base import IndexProvider, IndexFactory
 
 
+@IndexFactory.register("sina")
 class SinaIndexProvider(IndexProvider):
     """
     Index data provider using Sina Finance as the data source.

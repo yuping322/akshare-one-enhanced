@@ -5,11 +5,12 @@ import requests
 
 from akshare_one.modules.cache import cache
 
-from .base import FinancialDataProvider
+from .base import FinancialDataProvider, FinancialDataFactory
 
 logger = logging.getLogger(__name__)
 
 
+@FinancialDataFactory.register("eastmoney_direct")
 class EastMoneyDirectFinancialReport(FinancialDataProvider):
     _balance_sheet_rename_map = {
         "REPORT_DATE": "report_date",
@@ -40,8 +41,8 @@ class EastMoneyDirectFinancialReport(FinancialDataProvider):
         "CCE_ADD": "change_in_cash_and_equivalents",
     }
 
-    def __init__(self, symbol: str) -> None:
-        super().__init__(symbol)
+    def __init__(self, symbol: str, **kwargs) -> None:
+        super().__init__(symbol, **kwargs)
 
     def get_income_statement(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         df = self._fetch_income_statement()

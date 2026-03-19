@@ -2,57 +2,45 @@
 Sentiment data module.
 """
 
-from typing import Any, Dict, Literal
-
 import pandas as pd
 
+from ..base import ColumnsType, FilterType, SourceType
+from ..factory_base import doc_params
 from .factory import SentimentFactory
 
 
+@doc_params
 def get_hot_rank(
-    source: Literal["eastmoney"] = "eastmoney",
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
+    source: SourceType = "eastmoney",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
     Get hot stock ranking.
-
-    Args:
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}
-
-    Returns:
-        pd.DataFrame: Hot stocks with rank, symbol, name, price, etc.
     """
-    from akshare_one.client import apply_data_filter
+    return SentimentFactory.call_provider_method(
+        "get_hot_rank",
+        source=source,
+        columns=columns,
+        row_filter=row_filter,
+    )
 
-    provider = SentimentFactory.get_provider(source=source)
-    df = provider.get_hot_rank()
-    return apply_data_filter(df, columns, row_filter)
 
-
+@doc_params
 def get_stock_sentiment(
-    source: Literal["eastmoney"] = "eastmoney",
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
+    source: SourceType = "eastmoney",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
     Get stock sentiment scores and comments.
-
-    Args:
-        source: Data source ('eastmoney')
-        columns: Columns to return (default: all)
-        row_filter: Row filter config. Supports: {"top_n": 10}, {"query": "score > 50"}
-
-    Returns:
-        pd.DataFrame: Stocks with sentiment scores and attention index.
     """
-    from akshare_one.client import apply_data_filter
-
-    provider = SentimentFactory.get_provider(source=source)
-    df = provider.get_stock_comment()
-    return apply_data_filter(df, columns, row_filter)
+    return SentimentFactory.call_provider_method(
+        "get_stock_comment",
+        source=source,
+        columns=columns,
+        row_filter=row_filter,
+    )
 
 
 __all__ = ["get_hot_rank", "get_stock_sentiment", "SentimentFactory"]

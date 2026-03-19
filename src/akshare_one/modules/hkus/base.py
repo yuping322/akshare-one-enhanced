@@ -7,6 +7,7 @@ from abc import abstractmethod
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class HKUSProvider(BaseProvider):
@@ -22,11 +23,17 @@ class HKUSProvider(BaseProvider):
         return 0
 
     @abstractmethod
-    def get_hk_stocks(self) -> pd.DataFrame:
+    def get_hk_stocks(self, **kwargs) -> pd.DataFrame:
         """Get Hong Kong stock list."""
         pass
 
     @abstractmethod
-    def get_us_stocks(self) -> pd.DataFrame:
+    def get_us_stocks(self, **kwargs) -> pd.DataFrame:
         """Get US stock list."""
         pass
+
+
+class HKUSFactory(BaseFactory["HKUSProvider"]):
+    """Factory class for creating HK/US stock data providers."""
+
+    _providers: dict[str, type["HKUSProvider"]] = {}

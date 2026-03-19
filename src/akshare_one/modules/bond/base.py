@@ -9,17 +9,12 @@ from abc import abstractmethod
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class BondProvider(BaseProvider):
     """
     Abstract base class for bond data providers.
-
-    Defines the interface for fetching various types of bond data:
-    - Convertible bond list and realtime quotes
-    - Bond historical data
-    - Bond adjustment logs
-    - Bond redemption data
     """
 
     def get_data_type(self) -> str:
@@ -35,59 +30,30 @@ class BondProvider(BaseProvider):
         return 0
 
     @abstractmethod
-    def get_bond_list(self) -> pd.DataFrame:
+    def get_bond_list(self, **kwargs) -> pd.DataFrame:
         """
         Get convertible bond list.
-
-        Returns:
-            pd.DataFrame: Bond list with columns:
-                - symbol: Bond symbol
-                - name: Bond name
-                - stock_symbol: Underlying stock symbol
-                - stock_name: Underlying stock name
-                - convert_price: Conversion price
-                - list_date: Listing date
-                - credit_rating: Credit rating
         """
         pass
 
     @abstractmethod
-    def get_bond_hist(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_bond_hist(self, symbol: str, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get bond historical data.
-
-        Args:
-            symbol: Bond symbol (e.g., 'sh113050')
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Historical data with columns:
-                - date: Date
-                - symbol: Bond symbol
-                - open: Opening price
-                - high: Highest price
-                - low: Lowest price
-                - close: Closing price
-                - volume: Trading volume
         """
         pass
 
     @abstractmethod
-    def get_bond_spot(self) -> pd.DataFrame:
+    def get_bond_realtime(self, **kwargs) -> pd.DataFrame:
         """
         Get bond realtime quotes.
-
-        Returns:
-            pd.DataFrame: Realtime bond data with columns:
-                - symbol: Bond symbol
-                - name: Bond name
-                - price: Current price
-                - pct_change: Price change percentage
-                - stock_symbol: Underlying stock symbol
-                - stock_price: Underlying stock price
-                - convert_price: Conversion price
-                - convert_value: Conversion value
-                - premium_rate: Conversion premium rate
         """
         pass
+
+
+class BondFactory(BaseFactory["BondProvider"]):
+    """
+    Factory class for creating bond data providers.
+    """
+
+    _providers: dict[str, type["BondProvider"]] = {}

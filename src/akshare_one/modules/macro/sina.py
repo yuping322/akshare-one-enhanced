@@ -6,9 +6,10 @@ This module implements the macro economic data provider using Sina as the data s
 
 import pandas as pd
 
-from .base import MacroProvider
+from .base import MacroProvider, MacroFactory
 
 
+@MacroFactory.register("sina")
 class SinaMacroProvider(MacroProvider):
     """
     Macro economic data provider using Sina as the data source.

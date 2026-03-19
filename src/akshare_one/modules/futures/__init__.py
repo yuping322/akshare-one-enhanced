@@ -1,10 +1,8 @@
-from typing import Any, Literal
+from typing import Any
 
 import pandas as pd
 
-from .base import HistoricalFuturesDataProvider, RealtimeFuturesDataProvider
 from .factory import FuturesHistoricalFactory, FuturesRealtimeFactory
-from .sina import SinaFuturesHistorical, SinaFuturesRealtime
 
 
 def get_futures_hist_data(
@@ -29,16 +27,15 @@ def get_futures_hist_data(
     Returns:
         pd.DataFrame: Historical data
     """
-    from ...client import apply_data_filter
-
-    if isinstance(source, list) or source is None:
-        router = FuturesHistoricalFactory.create_router(sources=source)
-        df = router.execute("get_historical_data", symbol, start_date, end_date)
-    else:
-        provider = FuturesHistoricalFactory.get_provider(source=source)
-        df = provider.get_historical_data(symbol, start_date, end_date)
-
-    return apply_data_filter(df, columns, row_filter)
+    return FuturesHistoricalFactory.call_provider_method(
+        "get_historical_data",
+        symbol,
+        start_date,
+        end_date,
+        source=source,
+        columns=columns,
+        row_filter=row_filter,
+    )
 
 
 def get_futures_realtime_data(
@@ -59,26 +56,25 @@ def get_futures_realtime_data(
     Returns:
         pd.DataFrame: Realtime data
     """
-    from ...client import apply_data_filter
-
-    if isinstance(source, list) or source is None:
-        router = FuturesRealtimeFactory.create_router(sources=source)
-        df = router.execute("get_realtime_data")
-    else:
-        provider = FuturesRealtimeFactory.get_provider(source=source)
-        df = provider.get_realtime_data()
-
+    # Create extra row filter if symbol is provided
     if symbol:
-        df = df[df["symbol"] == symbol]
+        row_filter = row_filter or {}
+        if "query" in row_filter:
+            row_filter["query"] = f"({row_filter['query']}) and symbol == '{symbol}'"
+        else:
+            row_filter["query"] = f"symbol == '{symbol}'"
 
-    return apply_data_filter(df, columns, row_filter)
+    return FuturesRealtimeFactory.call_provider_method(
+        "get_realtime_data",
+        source=source,
+        columns=columns,
+        row_filter=row_filter,
+    )
 
 
 __all__ = [
     "get_futures_hist_data",
     "get_futures_realtime_data",
-    "HistoricalFuturesDataProvider",
-    "RealtimeFuturesDataProvider",
     "FuturesHistoricalFactory",
     "FuturesRealtimeFactory",
 ]

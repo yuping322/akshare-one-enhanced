@@ -7,6 +7,7 @@ from abc import abstractmethod
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class AnalystProvider(BaseProvider):
@@ -30,3 +31,9 @@ class AnalystProvider(BaseProvider):
     def get_research_report(self, symbol: str) -> pd.DataFrame:
         """Get research reports for a stock."""
         pass
+
+
+class AnalystFactory(BaseFactory["AnalystProvider"]):
+    """Factory class for creating analyst data providers."""
+
+    _providers: dict[str, type["AnalystProvider"]] = {}

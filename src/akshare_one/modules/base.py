@@ -10,10 +10,15 @@ import re
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 import pandas as pd
+
+# 标准参数类型别名
+SourceType: TypeAlias = str | list[str] | None
+ColumnsType: TypeAlias = list[str] | None
+FilterType: TypeAlias = dict[str, Any] | None
 
 from ..logging_config import get_logger, log_api_request, log_data_quality
 from .field_naming import FieldAliasManager, FieldMapper, FieldStandardizer, FieldType, NamingRules
@@ -35,12 +40,9 @@ class BaseProvider(ABC):
     def __init__(self, **kwargs: Any) -> None:
         """
         Initialize the provider with configuration parameters.
-
-        Args:
-            **kwargs: Provider-specific configuration parameters
-                     - enable_deprecation_warnings: Enable/disable deprecation warnings (default: True)
         """
         self.kwargs = kwargs
+        self._API_MAP = getattr(self, "_API_MAP", {})
 
         # Initialize logger
         self.logger = get_logger(self.__class__.__module__)
@@ -52,6 +54,52 @@ class BaseProvider(ABC):
         self.alias_manager = FieldAliasManager(
             self._get_alias_config(),
             enable_warnings=kwargs.get("enable_deprecation_warnings", True),
+        )
+
+    def __getattr__(self, name: str) -> Any:
+        """
+        动态处理方法调用。
+        如果方法名在 _API_MAP 中定义，则执行映射逻辑。
+        """
+        if name in self._API_MAP:
+            return lambda *args, **kwargs: self._execute_api_mapped(name, *args, **kwargs)
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+    def _execute_api_mapped(self, method_name: str, *args: Any, **kwargs: Any) -> pd.DataFrame:
+        """
+        执行 _API_MAP 中定义的映射逻辑。
+        """
+        config = self._API_MAP[method_name]
+        ak_func_name = config["ak_func"]
+        param_map = config.get("params", {})
+        
+        # 1. 参数准备
+        ak_params = {}
+        # 映射方法参数到 akshare 参数
+        for ak_param, method_param in param_map.items():
+            if method_param in kwargs:
+                ak_params[ak_param] = kwargs[method_param]
+            # 如果 positional 参数在 args 中且按顺序映射，可以进一步增强
+
+        # 2. 调用 akshare
+        try:
+            import akshare as ak
+            if isinstance(ak_func_name, str):
+                ak_func = getattr(ak, ak_func_name)
+            else:
+                ak_func = ak_func_name
+            raw_df = ak_func(**ak_params)
+        except Exception as e:
+            self.logger.error(f"Error calling {ak_func_name}: {e}")
+            raise RuntimeError(f"Failed to fetch data via {ak_func_name}: {e}") from e
+
+        # 3. 数据标准化与过滤
+        # 使用通用的 standardize_and_filter 方法
+        return self.standardize_and_filter(
+            raw_df,
+            source=self.get_source_name(),
+            columns=kwargs.get("columns"),
+            row_filter=kwargs.get("row_filter"),
         )
 
     def _get_mapping_config_path(self) -> str | None:

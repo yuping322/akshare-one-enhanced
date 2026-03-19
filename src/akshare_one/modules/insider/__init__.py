@@ -1,19 +1,30 @@
-from typing import Any, Literal
-
 import pandas as pd
 
+from ..base import ColumnsType, FilterType, SourceType
+from ..factory_base import doc_params
 from .factory import InsiderDataFactory
 
 
+@doc_params
 def get_inner_trade_data(
     symbol: str,
-    source: Literal["xueqiu", "eastmoney"] = "xueqiu",
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
+    source: SourceType = "xueqiu",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
 ) -> pd.DataFrame:
-    provider = InsiderDataFactory.get_provider(source=source, symbol=symbol)
-    df = provider.get_inner_trade_data()
-    return provider.apply_data_filter(df, columns, row_filter)
+    """
+    Get insider trading data.
+
+    Args:
+        symbol: Stock symbol
+    """
+    return InsiderDataFactory.call_provider_method(
+        "get_inner_trade_data",
+        source=source,
+        columns=columns,
+        row_filter=row_filter,
+        symbol=symbol,
+    )
 
 
 __all__ = ["get_inner_trade_data", "InsiderDataFactory"]

@@ -7,79 +7,64 @@ This module provides interfaces to fetch limit up/down data including:
 - Limit up/down statistics
 """
 
-from typing import Any, Dict, Literal
-
 import pandas as pd
 
+from ..base import ColumnsType, FilterType, SourceType
+from ..factory_base import doc_params
 from .factory import LimitUpDownFactory
 
 
+@doc_params
 def get_limit_up_pool(
     date: str,
-    source: str | list[str] | None = None,
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
     Get limit up pool data.
 
     Args:
         date: Date in YYYY-MM-DD format
-        source: Data source
-        columns: Columns to return
-        row_filter: Row filter config
-
-    Returns:
-        pd.DataFrame: Standardized limit up pool data
     """
-    from ...client import apply_data_filter
-
-    if isinstance(source, list) or source is None:
-        router = LimitUpDownFactory.create_router(sources=source)
-        df = router.execute("get_limit_up_pool", date)
-    else:
-        provider = LimitUpDownFactory.get_provider(source=source)
-        df = provider.get_limit_up_pool(date)
-
-    return apply_data_filter(df, columns, row_filter)
+    return LimitUpDownFactory.call_provider_method(
+        "get_limit_up_pool",
+        date,
+        source=source,
+        columns=columns,
+        row_filter=row_filter,
+    )
 
 
+@doc_params
 def get_limit_down_pool(
     date: str,
-    source: str | list[str] | None = None,
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
     Get limit down pool data.
 
     Args:
         date: Date in YYYY-MM-DD format
-        source: Data source
-        columns: Columns to return
-        row_filter: Row filter config
-
-    Returns:
-        pd.DataFrame: Standardized limit down pool data
     """
-    from ...client import apply_data_filter
-
-    if isinstance(source, list) or source is None:
-        router = LimitUpDownFactory.create_router(sources=source)
-        df = router.execute("get_limit_down_pool", date)
-    else:
-        provider = LimitUpDownFactory.get_provider(source=source)
-        df = provider.get_limit_down_pool(date)
-
-    return apply_data_filter(df, columns, row_filter)
+    return LimitUpDownFactory.call_provider_method(
+        "get_limit_down_pool",
+        date,
+        source=source,
+        columns=columns,
+        row_filter=row_filter,
+    )
 
 
+@doc_params
 def get_limit_up_stats(
     start_date: str,
     end_date: str,
-    source: str | list[str] | None = None,
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
     Get limit up/down statistics.
@@ -87,23 +72,15 @@ def get_limit_up_stats(
     Args:
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
-        source: Data source
-        columns: Columns to return
-        row_filter: Row filter config
-
-    Returns:
-        pd.DataFrame: Statistics
     """
-    from ...client import apply_data_filter
-
-    if isinstance(source, list) or source is None:
-        router = LimitUpDownFactory.create_router(sources=source)
-        df = router.execute("get_limit_up_stats", start_date, end_date)
-    else:
-        provider = LimitUpDownFactory.get_provider(source=source)
-        df = provider.get_limit_up_stats(start_date, end_date)
-
-    return apply_data_filter(df, columns, row_filter)
+    return LimitUpDownFactory.call_provider_method(
+        "get_limit_up_stats",
+        start_date,
+        end_date,
+        source=source,
+        columns=columns,
+        row_filter=row_filter,
+    )
 
 
 __all__ = [
