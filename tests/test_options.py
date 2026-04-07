@@ -3,6 +3,9 @@ from unittest.mock import patch
 
 import pytest
 
+# Mark all tests in this module as integration tests (require network)
+pytestmark = pytest.mark.integration
+
 from akshare_one import (
     get_options_chain,
     get_options_expirations,
@@ -297,7 +300,7 @@ class TestOptionsDataFactory:
     def test_register_custom_provider(self):
         """测试注册自定义期权数据提供商"""
         from akshare_one.modules.options.base import OptionsDataProvider
-        from akshare_one.modules.options.factory import OptionsDataFactory
+        from akshare_one.modules.options import OptionsDataFactory
 
         class CustomProvider(OptionsDataProvider):
             def get_options_chain(self):
@@ -329,7 +332,7 @@ class TestOptionsDataFactory:
 
     def test_get_provider_by_name(self):
         """测试通过名称获取数据提供商"""
-        from akshare_one.modules.options.factory import OptionsDataFactory
+        from akshare_one.modules.options import OptionsDataFactory
 
         provider = OptionsDataFactory.get_provider("sina", underlying_symbol="510300")
         assert provider is not None
@@ -337,9 +340,9 @@ class TestOptionsDataFactory:
 
     def test_invalid_provider(self):
         """测试无效数据提供商"""
-        from akshare_one.modules.options.factory import OptionsDataFactory
+        from akshare_one.modules.options import OptionsDataFactory
 
-        with pytest.raises(ValueError, match="Unknown.*provider"):
+        with pytest.raises(ValueError, match="Unsupported data source"):
             OptionsDataFactory.get_provider("invalid", underlying_symbol="510300")
 
 

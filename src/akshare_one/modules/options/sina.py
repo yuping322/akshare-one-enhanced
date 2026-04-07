@@ -15,15 +15,32 @@ import pandas as pd
 from akshare_one.mappings.mapping_utils import get_option_underlying_patterns
 
 from ..cache import cache
-from .base import OptionsDataProvider
+from .base import OptionsDataProvider, OptionsDataFactory
 
 
+@OptionsDataFactory.register("sina")
 class SinaOptionsProvider(OptionsDataProvider):
     """Adapter for Sina/EastMoney options data API.
 
     Note: Uses option_current_em from eastmoney as the primary data source
     since the original sina APIs are broken.
     """
+
+    _API_MAP = {
+        "get_options_chain": {
+            "ak_func": "option_current_em",
+        },
+        "get_options_realtime": {
+            "ak_func": "option_current_em",
+        },
+        "get_options_expirations": {
+            "ak_func": "option_current_em",
+        },
+        "get_options_history": {
+            "ak_func": "option_sse_daily_sina",
+            "params": {"symbol": "symbol"},
+        },
+    }
 
     def ensure_json_compatible(self, df: pd.DataFrame) -> pd.DataFrame:
         """Ensure DataFrame is JSON compatible by replacing NaN/Infinity with None."""

@@ -22,10 +22,12 @@ class StructuredFormatter(logging.Formatter):
     {
         "timestamp": "2026-02-18T10:30:45.123Z",
         "level": "INFO",
+        "error_code": "E00101001",
         "logger": "akshare_one.modules.eastmoney",
         "message": "Fetching data completed",
         "context": {
             "source": "eastmoney",
+            "endpoint": "get_realtime_data",
             "symbol": "600000",
             "duration_ms": 156,
             "status": "success"
@@ -42,17 +44,25 @@ class StructuredFormatter(logging.Formatter):
             "message": record.getMessage(),
         }
 
+        # Add error code if present
+        if hasattr(record, "error_code"):
+            log_entry["error_code"] = record.error_code
+
         if hasattr(record, "context"):
             log_entry["context"] = record.context
         else:
             log_entry["context"] = {}
 
         if record.exc_info:
+            exc_info = record.exc_info
             log_entry["exception"] = {
-                "type": record.exc_info[0].__name__ if record.exc_info[0] else None,
-                "message": str(record.exc_info[1]) if record.exc_info[1] else None,
+                "type": exc_info[0].__name__ if exc_info[0] else None,
+                "message": str(exc_info[1]) if exc_info[1] else None,
                 "traceback": self.formatException(record.exc_info),
             }
+            # Extract error code from exception if it's a MarketDataError
+            if exc_info[1] and hasattr(exc_info[1], "error_code") and exc_info[1].error_code:
+                log_entry["error_code"] = exc_info[1].error_code.value
 
         log_entry["location"] = {
             "file": record.filename,
@@ -87,7 +97,7 @@ def setup_logging(
     log_level: str = "INFO",
     log_dir: str = "logs",
     enable_console: bool = True,
-    enable_file: bool = True,
+    enable_file: bool = False,
     json_format: bool = True,
     default_context: dict[str, Any] | None = None,
 ) -> logging.Logger:
@@ -98,7 +108,7 @@ def setup_logging(
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         log_dir: Directory for log files
         enable_console: Whether to output to console
-        enable_file: Whether to output to file
+        enable_file: Whether to output to file (default: False for read-only environments)
         json_format: Whether to use JSON format (True) or plain text (False)
         default_context: Default context to add to all log records
 
@@ -109,9 +119,25 @@ def setup_logging(
         >>> logger = setup_logging(log_level="DEBUG", enable_file=True)
         >>> logger.info("Data fetched", extra={"context": {"rows": 100}})
     """
+    file_logging_enabled = False
     if enable_file:
-        log_path = Path(log_dir)
-        log_path.mkdir(parents=True, exist_ok=True)
+        try:
+            log_path = Path(log_dir)
+            log_path.mkdir(parents=True, exist_ok=True)
+            # Test if directory is writable
+            test_file = log_path / ".write_test"
+            test_file.touch()
+            test_file.unlink()
+            file_logging_enabled = True
+        except (PermissionError, OSError) as e:
+            # Log directory not writable, fall back to console only
+            import warnings
+            warnings.warn(
+                f"Cannot create log directory '{log_dir}': {e}. "
+                "Falling back to console-only logging.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
     logger = logging.getLogger("akshare_one")
     logger.setLevel(getattr(logging, log_level.upper()))
@@ -132,17 +158,26 @@ def setup_logging(
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
 
-    if enable_file:
-        file_handler = TimedRotatingFileHandler(
-            filename=f"{log_dir}/akshare_one.log",
-            when="midnight",
-            interval=1,
-            backupCount=7,
-            encoding="utf-8",
-        )
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+    if file_logging_enabled:
+        try:
+            file_handler = TimedRotatingFileHandler(
+                filename=f"{log_dir}/akshare_one.log",
+                when="midnight",
+                interval=1,
+                backupCount=7,
+                encoding="utf-8",
+            )
+            file_handler.setLevel(logging.DEBUG)
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+        except (PermissionError, OSError) as e:
+            import warnings
+            warnings.warn(
+                f"Cannot create log file in '{log_dir}': {e}. "
+                "Falling back to console-only logging.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
     logger.propagate = False
 
@@ -170,7 +205,20 @@ def get_logger(name: str) -> logging.Logger:
 
     root_logger = logging.getLogger("akshare_one")
     if not root_logger.handlers:
-        setup_logging()
+        try:
+            setup_logging()
+        except Exception:
+            # Ensure a working logger even if setup fails
+            # Add a basic console handler as fallback
+            if not root_logger.handlers:
+                handler = logging.StreamHandler(sys.stdout)
+                handler.setLevel(logging.INFO)
+                handler.setFormatter(
+                    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+                )
+                root_logger.addHandler(handler)
+                root_logger.setLevel(logging.INFO)
+                root_logger.propagate = False
 
     return logger
 
@@ -216,6 +264,7 @@ def log_api_request(
     status: str = "success",
     rows: int | None = None,
     error: str | None = None,
+    error_code: str | None = None,
 ) -> None:
     """
     Log an API request with structured context.
@@ -229,6 +278,7 @@ def log_api_request(
         status: Request status ("success", "error", "timeout")
         rows: Number of rows returned
         error: Error message if failed
+        error_code: Error code if failed
     """
     context = {"log_type": "api_request", "source": source, "endpoint": endpoint, "status": status}
 
@@ -241,12 +291,16 @@ def log_api_request(
     if error:
         context["error"] = error
 
+    extra = {"context": context}
+    if error_code:
+        extra["error_code"] = error_code
+
     if status == "success":
-        logger.info(f"API request to {source} completed", extra={"context": context})
+        logger.info(f"API request to {source} completed", extra=extra)
     elif status == "error":
-        logger.error(f"API request to {source} failed: {error}", extra={"context": context})
+        logger.error(f"API request to {source} failed: {error}", extra=extra)
     else:
-        logger.warning(f"API request to {source} {status}", extra={"context": context})
+        logger.warning(f"API request to {source} {status}", extra=extra)
 
 
 def log_data_quality(
@@ -272,3 +326,54 @@ def log_data_quality(
         context["details"] = details
 
     logger.warning(f"Data quality issue: {issue}", extra={"context": context})
+
+
+def log_exception(
+    logger: logging.Logger,
+    exception: Exception,
+    source: str | None = None,
+    endpoint: str | None = None,
+    symbol: str | None = None,
+    additional_context: dict[str, Any] | None = None,
+) -> None:
+    """
+    Log an exception with structured context and error code.
+
+    Args:
+        logger: Logger instance
+        exception: Exception to log
+        source: Data source name (e.g., "eastmoney")
+        endpoint: API endpoint or function name
+        symbol: Symbol being processed
+        additional_context: Additional context information
+    """
+    context: dict[str, Any] = {"log_type": "exception"}
+
+    if source:
+        context["source"] = source
+    if endpoint:
+        context["endpoint"] = endpoint
+    if symbol:
+        context["symbol"] = symbol
+    if additional_context:
+        context.update(additional_context)
+
+    # Extract error code from MarketDataError
+    error_code = None
+    if hasattr(exception, "error_code") and exception.error_code:
+        error_code = exception.error_code.value
+        context["error_code"] = error_code
+
+    # Extract context from MarketDataError
+    if hasattr(exception, "context") and exception.context:
+        context.update(exception.context)
+
+    extra = {"context": context}
+    if error_code:
+        extra["error_code"] = error_code
+
+    logger.error(
+        f"Exception occurred: {exception}",
+        extra=extra,
+        exc_info=True,
+    )

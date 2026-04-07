@@ -5,11 +5,11 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 
-from akshare_one.modules.financial.factory import FinancialDataFactory
-from akshare_one.modules.historical.factory import HistoricalDataFactory
-from akshare_one.modules.info.factory import InfoDataFactory
+from akshare_one.modules.financial import FinancialDataFactory
+from akshare_one.modules.historical import HistoricalDataFactory
+from akshare_one.modules.info import InfoDataFactory
 from akshare_one.modules.multi_source import MultiSourceRouter
-from akshare_one.modules.news.factory import NewsDataFactory
+from akshare_one.modules.news import NewsDataFactory
 
 
 def test_sina_info_provider_creation():
@@ -260,15 +260,15 @@ def test_provider_registration_classes_correct():
     from akshare_one.modules.historical.netease import NetEaseHistorical
     from akshare_one.modules.historical.tencent import TencentHistorical
     from akshare_one.modules.info.sina import SinaInfo
-    from akshare_one.modules.news.sina import SinaNews
-    
+    from akshare_one.modules.news.sina import SinaNewsProvider
+
     # Test Info factory
     info_provider = InfoDataFactory.get_provider('sina', symbol='600000')
     assert isinstance(info_provider, SinaInfo)
-    
+
     # Test News factory
     news_provider = NewsDataFactory.get_provider('sina', symbol='600000')
-    assert isinstance(news_provider, SinaNews)
+    assert isinstance(news_provider, SinaNewsProvider)
     
     # Test Historical factory
     tencent_provider = HistoricalDataFactory.get_provider('tencent', symbol='600000', interval='day')

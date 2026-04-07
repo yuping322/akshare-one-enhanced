@@ -2,14 +2,14 @@
 Base provider class for ST stocks data.
 """
 
-from abc import abstractmethod
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class STProvider(BaseProvider):
-    """Abstract base class for ST stocks data providers."""
+    """Base class for ST stocks data providers."""
 
     def get_data_type(self) -> str:
         return "st"
@@ -20,7 +20,12 @@ class STProvider(BaseProvider):
     def get_delay_minutes(self) -> int:
         return 0
 
-    @abstractmethod
-    def get_st_stocks(self) -> pd.DataFrame:
+    def get_st_stocks(self, **kwargs) -> pd.DataFrame:
         """Get ST (Special Treatment) stocks."""
-        pass
+        return self._execute_api_mapped("get_st_stocks", **kwargs)
+
+
+class STFactory(BaseFactory["STProvider"]):
+    """Factory class for creating ST stocks data providers."""
+
+    _providers: dict[str, type["STProvider"]] = {}

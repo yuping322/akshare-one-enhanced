@@ -23,7 +23,7 @@ from akshare_one.modules.lhb import (
     get_dragon_tiger_summary,
     get_dragon_tiger_broker_stats,
 )
-from akshare_one.modules.lhb.factory import DragonTigerFactory
+from akshare_one.modules.lhb import DragonTigerFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

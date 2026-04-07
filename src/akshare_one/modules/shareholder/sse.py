@@ -17,9 +17,9 @@ class SSEShareholderProvider(ShareholderProvider):
     - Shareholder changes (增减持)
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Initialize the SSE shareholder provider."""
-        super().__init__()
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

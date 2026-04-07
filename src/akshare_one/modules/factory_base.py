@@ -5,10 +5,13 @@ This module provides a generic factory base class that implements
 the common factory pattern used across all data provider modules.
 """
 
-from typing import Any, Generic, TypeVar, Callable
+import inspect
 from functools import wraps
+from typing import Any, Callable, Generic, TypeVar
 
-from .exceptions import InvalidParameterError
+import pandas as pd
+
+from .exceptions import InvalidParameterError, MarketDataError, map_to_standard_exception
 
 T = TypeVar("T")
 
@@ -39,10 +42,39 @@ def api_endpoint(factory_cls: type["BaseFactory"]) -> Callable:
     def decorator(func: Callable) -> Callable:
         # 先应用文档补全
         decorated_func = doc_params(func)
+        sig = inspect.signature(func)
 
         @wraps(decorated_func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
-            return factory_cls.call_provider_method(func.__name__, *args, **kwargs)
+            # Bind arguments and fill in defaults
+            bound_args = sig.bind(*args, **kwargs)
+            bound_args.apply_defaults()
+            params = bound_args.arguments.copy()
+
+            # Extract standard parameters for call_provider_method
+            source = params.pop("source", None)
+            columns = params.pop("columns", None)
+            row_filter = params.pop("row_filter", None)
+
+            try:
+                return factory_cls.call_provider_method(
+                    func.__name__,
+                    source=source,
+                    columns=columns,
+                    row_filter=row_filter,
+                    **params,
+                )
+            except MarketDataError as e:
+                # Map internal exception to standard exception for public API
+                context = {
+                    "source": source if isinstance(source, str) else None,
+                    "endpoint": func.__name__,
+                }
+                # Add any symbol/context from params
+                if "symbol" in params:
+                    context["symbol"] = params["symbol"]
+
+                raise map_to_standard_exception(e, context)
 
         return wrapper
 
@@ -103,14 +135,18 @@ class BaseFactory(Generic[T]):
             Provider instance
 
         Raises:
-            InvalidParameterError: If the specified source is not supported
+            ValueError: If the specified source is not supported (mapped from InvalidParameterError)
 
         Example:
             >>> provider = FundFlowFactory.get_provider('eastmoney', symbol='600000')
         """
         if source not in cls._providers:
             available = ", ".join(cls._providers.keys())
-            raise InvalidParameterError(f"Unsupported data source: '{source}'. Available sources: {available}")
+            internal_error = InvalidParameterError(
+                f"Unsupported data source: '{source}'. Available sources: {available}"
+            )
+            # Map to ValueError for external callers
+            raise map_to_standard_exception(internal_error, {"source": source})
 
         provider_class = cls._providers[source]
         return provider_class(**kwargs)
@@ -126,11 +162,43 @@ class BaseFactory(Generic[T]):
             source: Data source name
             provider_class: Provider class (must be compatible with the factory's type)
 
+        Raises:
+            TypeError: If provider_class doesn't inherit from the expected base class
+
         Example:
             >>> class CustomProvider(FundFlowProvider):
             ...     pass
             >>> FundFlowFactory.register_provider('custom', CustomProvider)
         """
+        # Validate that provider_class is a proper class
+        if not inspect.isclass(provider_class):
+            raise TypeError(f"Provider must be a class, got {type(provider_class)}")
+
+        # Validate inheritance by checking against existing registered providers
+        # If factory has existing providers, find the base class and validate
+        if cls._providers:
+            # Get a sample provider to determine the base class
+            sample_provider_cls = next(iter(cls._providers.values()))
+
+            # Find the specific provider base class (e.g., NorthboundProvider, FundFlowProvider)
+            # by looking at the sample provider's MRO
+            base_provider_class = None
+            for parent in sample_provider_cls.__mro__:
+                # Skip the sample class itself and generic base classes
+                if parent is sample_provider_cls:
+                    continue
+                # Find the first class ending with "Provider" (the specific base)
+                if parent.__name__.endswith('Provider'):
+                    base_provider_class = parent
+                    break
+
+            # If we found a base class, validate inheritance
+            if base_provider_class:
+                if not issubclass(provider_class, base_provider_class):
+                    raise TypeError(
+                        f"Provider class must inherit from {base_provider_class.__name__}"
+                    )
+
         cls._providers[source] = provider_class
 
     @classmethod
@@ -147,6 +215,21 @@ class BaseFactory(Generic[T]):
             ['eastmoney', 'sina']
         """
         return list(cls._providers.keys())
+
+    @classmethod
+    def get_available_sources(cls) -> list[str]:
+        """
+        Alias for list_sources() for backward compatibility.
+
+        Returns:
+            List of available source names
+
+        Example:
+            >>> sources = FundFlowFactory.get_available_sources()
+            >>> print(sources)
+            ['eastmoney', 'sina']
+        """
+        return cls.list_sources()
 
     @classmethod
     def has_source(cls, source: str) -> bool:
@@ -215,21 +298,39 @@ class BaseFactory(Generic[T]):
 
         Returns:
             pd.DataFrame: Standardized and filtered result
+
+        Raises:
+            ValueError: If source is invalid or parameters are invalid (mapped from InvalidParameterError)
+            KeyError: If upstream data structure changed (mapped from UpstreamChangedError)
+            ConnectionError: If data source is unavailable (mapped from DataSourceUnavailableError)
         """
         from ..client import apply_data_filter
 
-        if isinstance(source, str):
-            # Single source
-            # Extract common constructor parameters if they exist in kwargs
-            # For now, just pass all kwargs to get_provider as well
-            # Providers should be tolerant of extra kwargs in __init__ if needed,
-            # or we can be more selective.
-            provider = cls.get_provider(source=source, **kwargs)
-            method = getattr(provider, method_name)
-            df = method(*args, **kwargs)
-        else:
-            # Multi-source router (source is None or list)
-            router = cls.create_router(sources=source, **kwargs)
-            df = router.execute(method_name, *args, **kwargs)
+        try:
+            if isinstance(source, str):
+                # Single source
+                # Extract common constructor parameters if they exist in kwargs
+                # For now, just pass all kwargs to get_provider as well
+                # Providers should be tolerant of extra kwargs in __init__ if needed,
+                # or we can be more selective.
+                provider = cls.get_provider(source=source, **kwargs)
+                method = getattr(provider, method_name)
+                df = method(*args, **kwargs)
+            else:
+                # Multi-source router (source is None or list)
+                router = cls.create_router(sources=source, **kwargs)
+                df = router.execute(method_name, *args, **kwargs)
 
-        return apply_data_filter(df, columns, row_filter)
+            return apply_data_filter(df, columns, row_filter)
+
+        except MarketDataError as e:
+            # Map internal exception to standard exception for public API
+            context = {
+                "source": source if isinstance(source, str) else None,
+                "endpoint": method_name,
+            }
+            # Add any symbol/context from kwargs
+            if "symbol" in kwargs:
+                context["symbol"] = kwargs["symbol"]
+
+            raise map_to_standard_exception(e, context)

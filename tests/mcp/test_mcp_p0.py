@@ -17,7 +17,11 @@ try:
 except ImportError:
     MCP_AVAILABLE = False
 
-pytestmark = pytest.mark.skipif(not MCP_AVAILABLE, reason="fastmcp not installed")
+# Apply both markers: skipif for missing fastmcp and integration for network access
+pytestmark = [
+    pytest.mark.skipif(not MCP_AVAILABLE, reason="fastmcp not installed"),
+    pytest.mark.integration,
+]
 
 
 # ==================== Helper Functions ====================

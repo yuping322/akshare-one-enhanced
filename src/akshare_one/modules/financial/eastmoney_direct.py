@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 @FinancialDataFactory.register("eastmoney_direct")
-class EastMoneyDirectFinancialReport(FinancialDataProvider):
+class EastmoneyDirectFinancialProvider(FinancialDataProvider):
     _balance_sheet_rename_map = {
         "REPORT_DATE": "report_date",
         "TOTAL_ASSETS": "total_assets",

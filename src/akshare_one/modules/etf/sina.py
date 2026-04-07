@@ -20,9 +20,28 @@ class SinaETFProvider(ETFProvider):
     - Dividend information
     """
 
-    def __init__(self):
+    _API_MAP = {
+        "get_etf_hist": {
+            "ak_func": "fund_etf_hist_sina",
+            "params": {"symbol": "symbol"},
+        },
+        "get_etf_spot": {
+            "ak_func": "fund_etf_category_sina",
+        },
+        "get_etf_list": {
+            "ak_func": "fund_etf_category_sina",
+        },
+        "get_fund_manager": {
+            "ak_func": None,  # Sina doesn't provide this data
+        },
+        "get_fund_rating": {
+            "ak_func": None,  # Sina doesn't provide this data
+        },
+    }
+
+    def __init__(self, **kwargs):
         """Initialize the Sina ETF provider."""
-        super().__init__()
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

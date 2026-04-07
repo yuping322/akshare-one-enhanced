@@ -1,30 +1,29 @@
+"""
+Financial news and market intelligence module.
+"""
+
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import NewsDataFactory
+from ..factory_base import api_endpoint
+from .base import NewsDataFactory
+from . import eastmoney, sina
 
 
-@doc_params
+@api_endpoint(NewsDataFactory)
 def get_news_data(
-    symbol: str,
-    source: SourceType = "eastmoney",
+    symbol: str | None = None,
+    source: SourceType = None,
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get stock news data.
+    Get financial news for a stock or the market.
 
     Args:
-        symbol: Stock symbol
+        symbol: Stock symbol. If None, returns market news.
     """
-    return NewsDataFactory.call_provider_method(
-        "get_news_data",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-        symbol=symbol,
-    )
+    pass
 
 
 __all__ = ["get_news_data", "NewsDataFactory"]

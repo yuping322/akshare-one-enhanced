@@ -12,7 +12,7 @@ from akshare_one.modules.margin import (
     get_margin_summary,
 )
 from akshare_one.modules.margin.eastmoney import EastmoneyMarginProvider
-from akshare_one.modules.margin.factory import MarginFactory
+from akshare_one.modules.margin import MarginFactory
 
 
 class TestMarginFactory:

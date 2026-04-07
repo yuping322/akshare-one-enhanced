@@ -6,9 +6,10 @@ This module implements the shareholder data provider using Eastmoney (东方财�
 
 import pandas as pd
 
-from .base import ShareholderProvider
+from .base import ShareholderProvider, ShareholderFactory
 
 
+@ShareholderFactory.register("eastmoney")
 class EastmoneyShareholderProvider(ShareholderProvider):
     """
     Shareholder data provider using Eastmoney as the data source.
@@ -18,9 +19,9 @@ class EastmoneyShareholderProvider(ShareholderProvider):
     - Institution holdings
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Initialize the Eastmoney shareholder provider."""
-        super().__init__()
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

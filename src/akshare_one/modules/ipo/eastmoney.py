@@ -4,12 +4,13 @@ Eastmoney IPO data provider.
 
 import pandas as pd
 
-from .base import IPOProvider
+from .base import IPOProvider, IPOFactory
 
 
+@IPOFactory.register("eastmoney")
 class EastmoneyIPOProvider(IPOProvider):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         return "eastmoney"

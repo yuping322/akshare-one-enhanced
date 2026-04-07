@@ -7,9 +7,10 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import ESGProvider
+from .base import ESGProvider, ESGFactory
 
 
+@ESGFactory.register("eastmoney")
 class EastmoneyESGProvider(ESGProvider):
     """
     ESG rating data provider using Eastmoney as the data source.
@@ -40,7 +41,7 @@ class EastmoneyESGProvider(ESGProvider):
         start_date: str,
         end_date: str,
         page: int = 1,
-        page_size: int | None = 1,
+        page_size: int | None = None,
     ) -> pd.DataFrame:
         """
         Get ESG rating data from Eastmoney.
@@ -52,10 +53,10 @@ class EastmoneyESGProvider(ESGProvider):
             symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
-        page: Page number to return (default: 1)
-        page_size: Number of items per page (default: 1, returns only first page)
-            If None, returns all matching data.
-            If specified, returns only the requested page of data.
+            page: Page number to return (default: 1)
+            page_size: Number of items per page (default: None, returns all data)
+                If None, returns all matching data.
+                If specified, returns only the requested page of data.
 
         Returns:
             pd.DataFrame: Standardized ESG rating data with columns:

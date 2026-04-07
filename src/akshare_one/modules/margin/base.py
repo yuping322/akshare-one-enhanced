@@ -4,20 +4,15 @@ Base provider class for margin financing data.
 This module defines the abstract interface for margin financing data providers.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class MarginProvider(BaseProvider):
     """
-    Abstract base class for margin financing data providers.
-
-    Defines the interface for fetching various types of margin financing data:
-    - Margin financing data (individual stocks and market-wide)
-    - Margin financing summary (market aggregation)
+    Base class for margin financing data providers.
     """
 
     def get_data_type(self) -> str:
@@ -32,32 +27,20 @@ class MarginProvider(BaseProvider):
         """Margin financing data is T+1, updated next trading day."""
         return 1440  # 24 hours
 
-    @abstractmethod
-    def get_margin_data(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_margin_data(self, symbol: str | None, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get margin financing data.
-
-        Args:
-            symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized margin financing data
         """
-        pass
+        return self._execute_api_mapped("get_margin_data", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
 
-    @abstractmethod
-    def get_margin_summary(self, start_date: str, end_date: str, market: str) -> pd.DataFrame:
+    def get_margin_summary(self, start_date: str, end_date: str, market: str, **kwargs) -> pd.DataFrame:
         """
         Get margin financing summary data.
-
-        Args:
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-            market: Market ('sh', 'sz', or 'all')
-
-        Returns:
-            pd.DataFrame: Summary data
         """
-        pass
+        return self._execute_api_mapped("get_margin_summary", start_date=start_date, end_date=end_date, market=market, **kwargs)
+
+
+class MarginFactory(BaseFactory["MarginProvider"]):
+    """Factory class for creating margin data providers."""
+
+    _providers: dict[str, type["MarginProvider"]] = {}

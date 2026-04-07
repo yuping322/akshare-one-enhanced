@@ -6,9 +6,10 @@ This module implements the ESG rating data provider using Sina as the data sourc
 
 import pandas as pd
 
-from .base import ESGProvider
+from .base import ESGProvider, ESGFactory
 
 
+@ESGFactory.register("sina")
 class SinaESGProvider(ESGProvider):
     """
     ESG rating data provider using Sina as the data source.

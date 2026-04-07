@@ -4,20 +4,15 @@ Base provider class for equity pledge data.
 This module defines the abstract interface for equity pledge data providers.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class EquityPledgeProvider(BaseProvider):
     """
-    Abstract base class for equity pledge data providers.
-
-    Defines the interface for fetching various types of equity pledge data:
-    - Equity pledge data (shareholder pledge information)
-    - Equity pledge ratio ranking (stocks ranked by pledge ratio)
+    Base class for equity pledge data providers.
     """
 
     def get_data_type(self) -> str:
@@ -32,31 +27,20 @@ class EquityPledgeProvider(BaseProvider):
         """Equity pledge data is updated irregularly, no fixed delay."""
         return 0
 
-    @abstractmethod
-    def get_equity_pledge(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_equity_pledge(self, symbol: str | None, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get equity pledge data.
-
-        Args:
-            symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized equity pledge data
         """
-        pass
+        return self._execute_api_mapped("get_equity_pledge", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
 
-    @abstractmethod
-    def get_equity_pledge_ratio_rank(self, date: str, top_n: int) -> pd.DataFrame:
+    def get_equity_pledge_ratio_rank(self, date: str, top_n: int, **kwargs) -> pd.DataFrame:
         """
         Get equity pledge ratio ranking.
-
-        Args:
-            date: Query date (YYYY-MM-DD)
-            top_n: Number of top stocks to return
-
-        Returns:
-            pd.DataFrame: Ranking data
         """
-        pass
+        return self._execute_api_mapped("get_equity_pledge_ratio_rank", date=date, top_n=top_n, **kwargs)
+
+
+class EquityPledgeFactory(BaseFactory["EquityPledgeProvider"]):
+    """Factory class for creating equity pledge data providers."""
+
+    _providers: dict[str, type["EquityPledgeProvider"]] = {}

@@ -11,7 +11,7 @@ from akshare_one.modules.macro import (
     get_lpr_rate,
     get_pmi_index,
 )
-from akshare_one.modules.macro.factory import MacroFactory
+from akshare_one.modules.macro import MacroFactory
 from akshare_one.modules.macro.official import OfficialMacroProvider
 
 

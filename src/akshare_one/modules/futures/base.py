@@ -1,61 +1,35 @@
 import re
-from abc import abstractmethod
 
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 def parse_futures_symbol(symbol: str, contract: str = "main") -> tuple[str, str]:
-    """Parse and normalize futures symbol and contract.
-
-    This function intelligently handles various input formats:
-    - symbol="CU", contract="main" → ("CU", "main")
-    - symbol="CU0", contract="main" → ("CU", "main") - "0" is main contract indicator
-    - symbol="AG2604" → ("AG", "2604") - extracts contract from symbol
-    - symbol="AG", contract="2604" → ("AG", "2604")
-
-    Args:
-        symbol: Futures symbol, can include contract code (e.g., "CU", "CU0", "AG2604")
-        contract: Contract code or "main" for main contract
-
-    Returns:
-        Tuple of (base_symbol, contract) where base_symbol is the variety code
-        and contract is either "main" or the specific contract code
-    """
+    """Parse and normalize futures symbol and contract."""
     symbol = symbol.upper().strip()
     contract = contract.strip()
 
-    # Extract the alphabetic prefix (variety code) and numeric suffix
     match = re.match(r"^([A-Z]+)(\d*)$", symbol)
     if not match:
-        # If pattern doesn't match, return as-is
         return symbol, contract
 
     base_symbol = match.group(1)
     symbol_suffix = match.group(2)
 
-    # If symbol has a numeric suffix
     if symbol_suffix:
-        # "0" suffix indicates main contract (e.g., "CU0", "AG0")
         if symbol_suffix == "0":
-            # This is main contract notation, use "main" as contract
             if contract.lower() == "main" or contract == "0":
                 return base_symbol, "main"
-            # If user explicitly provided a different contract, use it
             return base_symbol, contract
         else:
-            # Symbol contains full contract code (e.g., "AG2604")
-            # If contract is "main", the user likely meant to use the symbol's contract
             if contract.lower() == "main":
                 return base_symbol, symbol_suffix
-            # If contract is explicitly provided and different,
-            # prefer contract parameter unless it's the same as symbol_suffix
             if contract != symbol_suffix and contract.lower() != "main":
                 return base_symbol, contract
             return base_symbol, symbol_suffix
 
-    # Symbol is just the variety code (e.g., "CU", "AG")
     return base_symbol, contract
 
 
@@ -98,45 +72,13 @@ class HistoricalFuturesDataProvider(BaseProvider):
     def get_supported_intervals(cls) -> list[str]:
         return ["minute", "hour", "day", "week", "month"]
 
-    @abstractmethod
-    def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
-        """Fetches historical futures market data
+    def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
+        """Fetches historical futures market data"""
+        return self._execute_api_mapped("get_hist_data", columns=columns, row_filter=row_filter, **kwargs)
 
-        Args:
-            columns: List of columns to keep.
-            row_filter: Dictionary of row filter rules.
-
-        Returns:
-            pd.DataFrame:
-            - timestamp: 时间戳
-            - symbol: 期货代码
-            - contract: 合约代码
-            - open: 开盘价
-            - high: 最高价
-            - low: 最低价
-            - close: 收盘价
-            - volume: 成交量
-            - open_interest: 持仓量
-            - settlement: 结算价
-        """
-        pass
-
-    @abstractmethod
-    def get_main_contracts(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
-        """Fetches main contract list
-
-        Args:
-            columns: List of columns to keep.
-            row_filter: Dictionary of row filter rules.
-
-        Returns:
-            pd.DataFrame:
-            - symbol: 期货代码
-            - name: 期货名称
-            - contract: 主力合约代码
-            - exchange: 交易所
-        """
-        pass
+    def get_main_contracts(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
+        """Fetches main contract list"""
+        return self._execute_api_mapped("get_main_contracts", columns=columns, row_filter=row_filter, **kwargs)
 
 
 class RealtimeFuturesDataProvider(BaseProvider):
@@ -165,41 +107,79 @@ class RealtimeFuturesDataProvider(BaseProvider):
     def fetch_data(self) -> pd.DataFrame:
         return self.get_current_data()
 
-    @abstractmethod
-    def get_current_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
-        """Fetches realtime futures market data
+    def get_current_data(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
+        """Fetches realtime futures market data"""
+        return self._execute_api_mapped("get_current_data", columns=columns, row_filter=row_filter, **kwargs)
+
+    def get_all_quotes(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
+        """Fetches all futures quotes"""
+        return self._execute_api_mapped("get_all_quotes", columns=columns, row_filter=row_filter, **kwargs)
+
+
+class FuturesHistoricalFactory(BaseFactory["HistoricalFuturesDataProvider"]):
+    """Factory class for creating historical futures data providers."""
+
+    _providers: dict[str, type["HistoricalFuturesDataProvider"]] = {}
+
+
+class FuturesRealtimeFactory(BaseFactory["RealtimeFuturesDataProvider"]):
+    """Factory class for creating realtime futures data providers."""
+
+    _providers: dict[str, type["RealtimeFuturesDataProvider"]] = {}
+
+
+class FuturesDataFactory:
+    """
+    Unified factory for futures data providers.
+
+    This factory provides compatibility methods for accessing both historical
+    and realtime futures providers through a single interface.
+
+    This class delegates to FuturesHistoricalFactory and FuturesRealtimeFactory
+    for actual provider creation.
+    """
+
+    _historical_providers: dict[str, type["HistoricalFuturesDataProvider"]] = (
+        FuturesHistoricalFactory._providers
+    )
+    _realtime_providers: dict[str, type["RealtimeFuturesDataProvider"]] = (
+        FuturesRealtimeFactory._providers
+    )
+
+    @classmethod
+    def get_historical_provider(cls, source: str, **kwargs) -> "HistoricalFuturesDataProvider":
+        """
+        Get a historical futures data provider for the specified source.
 
         Args:
-            columns: List of columns to keep.
-            row_filter: Dictionary of row filter rules.
+            source: Data source name (e.g., 'eastmoney', 'sina')
+            **kwargs: Additional parameters passed to the provider constructor
 
         Returns:
-            pd.DataFrame:
-            - symbol: 期货代码
-            - contract: 合约代码
-            - price: 最新价
-            - change: 涨跌额
-            - pct_change: 涨跌幅(%)
-            - timestamp: 时间戳
-            - volume: 成交量
-            - open_interest: 持仓量
-            - open: 今开
-            - high: 最高
-            - low: 最低
-            - prev_settlement: 昨结算
-            - settlement: 最新结算价
+            HistoricalFuturesDataProvider instance
         """
-        pass
+        return FuturesHistoricalFactory.get_provider(source, **kwargs)
 
-    @abstractmethod
-    def get_all_quotes(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
-        """Fetches all futures quotes
+    @classmethod
+    def get_realtime_provider(cls, source: str, **kwargs) -> "RealtimeFuturesDataProvider":
+        """
+        Get a realtime futures data provider for the specified source.
 
         Args:
-            columns: List of columns to keep.
-            row_filter: Dictionary of row filter rules.
+            source: Data source name (e.g., 'eastmoney', 'sina')
+            **kwargs: Additional parameters passed to the provider constructor
 
         Returns:
-            pd.DataFrame: All futures market quotes
+            RealtimeFuturesDataProvider instance
         """
-        pass
+        return FuturesRealtimeFactory.get_provider(source, **kwargs)
+
+    @classmethod
+    def list_historical_sources(cls) -> list[str]:
+        """List all available historical data sources."""
+        return FuturesHistoricalFactory.list_sources()
+
+    @classmethod
+    def list_realtime_sources(cls) -> list[str]:
+        """List all available realtime data sources."""
+        return FuturesRealtimeFactory.list_sources()

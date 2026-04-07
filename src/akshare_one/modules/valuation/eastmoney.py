@@ -6,9 +6,10 @@ This module implements the valuation data provider using Eastmoney (东方财富
 
 import pandas as pd
 
-from .base import ValuationProvider
+from .base import ValuationProvider, ValuationFactory
 
 
+@ValuationFactory.register("eastmoney")
 class EastmoneyValuationProvider(ValuationProvider):
     """
     Valuation data provider using Eastmoney as the data source.
@@ -18,9 +19,10 @@ class EastmoneyValuationProvider(ValuationProvider):
     - Market cap data
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Initialize the Eastmoney valuation provider."""
         super().__init__()
+        # Accept **kwargs for compatibility (ignore symbol parameter)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

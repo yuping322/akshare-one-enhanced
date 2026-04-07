@@ -10,6 +10,7 @@ import re
 import time
 from abc import ABC, abstractmethod
 from datetime import datetime
+from enum import Enum
 from typing import Any, TypeAlias
 
 import numpy as np
@@ -20,15 +21,27 @@ SourceType: TypeAlias = str | list[str] | None
 ColumnsType: TypeAlias = list[str] | None
 FilterType: TypeAlias = dict[str, Any] | None
 
-from ..logging_config import get_logger, log_api_request, log_data_quality
+
+class MarketType(Enum):
+    """市场类型枚举"""
+    A_STOCK = "a_stock"      # A股：6位数字（600000, 000001）
+    BOND = "bond"           # 债券：sh/sz + 6位数字（sh113050, sz123456）
+    ETF = "etf"             # ETF：6位数字（510050, 159915）
+    FUTURES = "futures"     # 期货：字母+数字（CU2405, AG2506）
+    INDEX = "index"         # 指数：数字（000001, 000300）
+
+from ..akshare_compat import get_adapter
+from ..error_codes import ErrorCode
+from ..logging_config import get_logger, log_api_request, log_data_quality, log_exception
+from .exceptions import InvalidParameterError
 from .field_naming import FieldAliasManager, FieldMapper, FieldStandardizer, FieldType, NamingRules
 from .field_naming.models import FIELD_EQUIVALENTS
 from .field_naming.unit_converter import UnitConverter
 
 
-class BaseProvider(ABC):
+class BaseProvider:
     """
-    Abstract base class for all market data providers.
+    Base class for all market data providers.
 
     Provides common functionality for:
     - Parameter validation (dates, symbols)
@@ -42,10 +55,26 @@ class BaseProvider(ABC):
         Initialize the provider with configuration parameters.
         """
         self.kwargs = kwargs
-        self._API_MAP = getattr(self, "_API_MAP", {})
+        # Use object.__setattr__ to avoid recursion if __getattr__ is used
+        self._API_MAP = getattr(self.__class__, "_API_MAP", {})
 
         # Initialize logger
         self.logger = get_logger(self.__class__.__module__)
+
+        # Log provider initialization
+        self.logger.info(
+            f"Initializing {self.__class__.__name__}",
+            extra={
+                "context": {
+                    "log_type": "provider_init",
+                    "provider": self.__class__.__name__,
+                    "kwargs": {k: v for k, v in kwargs.items() if k not in ['password', 'api_key', 'token']}
+                }
+            }
+        )
+
+        # Initialize AkShare compatibility adapter
+        self.akshare_adapter = get_adapter()
 
         # Initialize standardization components
         self.field_standardizer = FieldStandardizer(NamingRules())
@@ -68,11 +97,18 @@ class BaseProvider(ABC):
     def _execute_api_mapped(self, method_name: str, *args: Any, **kwargs: Any) -> pd.DataFrame:
         """
         执行 _API_MAP 中定义的映射逻辑。
+
+        使用 AkShareAdapter 处理函数版本漂移问题，自动检测函数是否存在，
+        并在必要时使用替代函数。
         """
+        if method_name not in self._API_MAP:
+            raise NotImplementedError(f"Method '{method_name}' not implemented and not in _API_MAP")
+
         config = self._API_MAP[method_name]
         ak_func_name = config["ak_func"]
         param_map = config.get("params", {})
-        
+        fallback_func = config.get("fallback_func")
+
         # 1. 参数准备
         ak_params = {}
         # 映射方法参数到 akshare 参数
@@ -81,17 +117,41 @@ class BaseProvider(ABC):
                 ak_params[ak_param] = kwargs[method_param]
             # 如果 positional 参数在 args 中且按顺序映射，可以进一步增强
 
-        # 2. 调用 akshare
+        # 2. 调用 akshare（使用适配器处理版本漂移）
+        start_time = time.time()
         try:
-            import akshare as ak
-            if isinstance(ak_func_name, str):
-                ak_func = getattr(ak, ak_func_name)
-            else:
-                ak_func = ak_func_name
-            raw_df = ak_func(**ak_params)
+            # 使用适配器调用，自动处理函数名变更
+            raw_df = self.akshare_adapter.call(
+                ak_func_name,
+                fallback_func=fallback_func,
+                **ak_params
+            )
+
+            # Log successful API call
+            duration_ms = (time.time() - start_time) * 1000
+            log_api_request(
+                self.logger,
+                source=self.get_source_name(),
+                endpoint=method_name,
+                params=ak_params,
+                duration_ms=duration_ms,
+                status="success",
+                rows=len(raw_df) if not raw_df.empty else 0
+            )
         except Exception as e:
-            self.logger.error(f"Error calling {ak_func_name}: {e}")
-            raise RuntimeError(f"Failed to fetch data via {ak_func_name}: {e}") from e
+            # Log API call error
+            duration_ms = (time.time() - start_time) * 1000
+            log_exception(
+                self.logger,
+                e,
+                source=self.get_source_name(),
+                endpoint=method_name,
+                additional_context={"ak_func": ak_func_name, "params": ak_params, "duration_ms": duration_ms}
+            )
+
+            # 返回空 DataFrame 而不是硬失败
+            self.logger.warning(f"Returning empty DataFrame due to AkShare API failure")
+            raw_df = pd.DataFrame()
 
         # 3. 数据标准化与过滤
         # 使用通用的 standardize_and_filter 方法
@@ -139,15 +199,13 @@ class BaseProvider(ABC):
             "delay_minutes": self.get_delay_minutes(),
         }
 
-    @abstractmethod
     def get_source_name(self) -> str:
         """Return the name of the data source (e.g., 'eastmoney', 'official')"""
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
     def get_data_type(self) -> str:
         """Return the type of data (e.g., 'fundflow', 'disclosure', 'northbound')"""
-        pass
+        raise NotImplementedError
 
     def get_update_frequency(self) -> str:
         """
@@ -170,22 +228,54 @@ class BaseProvider(ABC):
     # Parameter Validation Methods
 
     @staticmethod
-    def validate_symbol(symbol: str) -> None:
+    def validate_symbol(symbol: str, market_type: MarketType = MarketType.A_STOCK) -> None:
         """
-        Validate stock symbol format.
+        Validate stock symbol format based on market type.
 
         Args:
-            symbol: Stock symbol (e.g., '600000', '000001')
+            symbol: Stock symbol (e.g., '600000', '000001', 'sh113050')
+            market_type: Market type for validation (default: A_STOCK)
 
         Raises:
-            ValueError: If symbol format is invalid
+            InvalidParameterError: If symbol format is invalid for the market type
         """
         if not symbol:
-            raise ValueError("Symbol cannot be empty")
+            raise InvalidParameterError(
+                "Symbol cannot be empty",
+                error_code=ErrorCode.INVALID_SYMBOL_EMPTY,
+                context={"market_type": market_type.value}
+            )
 
-        # Chinese A-share symbols are 6 digits
-        if not re.match(r"^\d{6}$", symbol):
-            raise ValueError(f"Invalid symbol format: {symbol}. Expected 6-digit stock code (e.g., '600000')")
+        # Validation patterns for different market types
+        patterns = {
+            MarketType.A_STOCK: r"^\d{6}$",  # 6 digits
+            MarketType.BOND: r"^(sh|sz)\d{6}$",  # sh/sz + 6 digits
+            MarketType.ETF: r"^\d{6}$",  # 6 digits (same as A-share format)
+            MarketType.FUTURES: r"^[A-Z]{1,2}\d{4}$",  # Letter(s) + 4 digits
+            MarketType.INDEX: r"^\d{6}$",  # 6 digits (same as A-share format)
+        }
+
+        pattern = patterns.get(market_type)
+        if not pattern:
+            raise InvalidParameterError(
+                f"Unsupported market type: {market_type}",
+                error_code=ErrorCode.INVALID_MARKET_TYPE,
+                context={"market_type": market_type.value}
+            )
+
+        if not re.match(pattern, symbol):
+            examples = {
+                MarketType.A_STOCK: "'600000', '000001'",
+                MarketType.BOND: "'sh113050', 'sz123456'",
+                MarketType.ETF: "'510050', '159915'",
+                MarketType.FUTURES: "'CU2405', 'AG2506'",
+                MarketType.INDEX: "'000001', '000300'",
+            }
+            raise InvalidParameterError(
+                f"Invalid symbol format for {market_type.value}: {symbol}. Expected format like {examples.get(market_type, 'unknown')}",
+                error_code=ErrorCode.INVALID_SYMBOL_FORMAT,
+                context={"symbol": symbol, "market_type": market_type.value}
+            )
 
     @staticmethod
     def validate_date(date_str: str, param_name: str = "date") -> None:
@@ -197,16 +287,22 @@ class BaseProvider(ABC):
             param_name: Parameter name for error messages
 
         Raises:
-            ValueError: If date format is invalid
+            InvalidParameterError: If date format is invalid
         """
         if not date_str:
-            raise ValueError(f"{param_name} cannot be empty")
+            raise InvalidParameterError(
+                f"{param_name} cannot be empty",
+                error_code=ErrorCode.INVALID_DATE_EMPTY,
+                context={"param_name": param_name}
+            )
 
         try:
             datetime.strptime(date_str, "%Y-%m-%d")
         except ValueError as e:
-            raise ValueError(
-                f"Invalid {param_name} format: {date_str}. Expected YYYY-MM-DD format. Error: {e}"
+            raise InvalidParameterError(
+                f"Invalid {param_name} format: {date_str}. Expected YYYY-MM-DD format. Error: {e}",
+                error_code=ErrorCode.INVALID_DATE_FORMAT,
+                context={"param_name": param_name, "date_str": date_str}
             ) from None
 
     @staticmethod
@@ -219,7 +315,7 @@ class BaseProvider(ABC):
             end_date: End date in YYYY-MM-DD format
 
         Raises:
-            ValueError: If date range is invalid
+            InvalidParameterError: If date range is invalid
         """
         BaseProvider.validate_date(start_date, "start_date")
         BaseProvider.validate_date(end_date, "end_date")
@@ -228,37 +324,46 @@ class BaseProvider(ABC):
         end = datetime.strptime(end_date, "%Y-%m-%d")
 
         if start > end:
-            raise ValueError(f"start_date ({start_date}) must be <= end_date ({end_date})")
+            raise InvalidParameterError(
+                f"start_date ({start_date}) must be <= end_date ({end_date})",
+                error_code=ErrorCode.INVALID_DATE_RANGE,
+                context={"start_date": start_date, "end_date": end_date}
+            )
 
     @staticmethod
-    def validate_symbol_optional(symbol: str | None) -> None:
+    def validate_symbol_optional(symbol: str | None, market_type: MarketType = MarketType.A_STOCK) -> None:
         """
         Validate optional symbol parameter.
 
         Args:
             symbol: Stock symbol or None
+            market_type: Market type for validation (default: A_STOCK)
 
         Raises:
             ValueError: If symbol format is invalid (when not None)
         """
         if symbol is not None:
-            BaseProvider.validate_symbol(symbol)
+            BaseProvider.validate_symbol(symbol, market_type)
 
     # JSON Compatibility Methods
 
     @staticmethod
-    def ensure_json_compatible(df: pd.DataFrame) -> pd.DataFrame:
+    def ensure_json_compatible(df: pd.DataFrame, convert_nan_to_none: bool = True) -> pd.DataFrame:
         """
         Ensure DataFrame is JSON-compatible by handling NaN/Infinity and data types.
 
         This method:
-        1. Replaces NaN with None (JSON null)
+        1. Replaces NaN with None (JSON null) - optional, controlled by convert_nan_to_none
         2. Replaces Infinity/-Infinity with None
         3. Converts datetime columns to string (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)
         4. Ensures symbol columns are strings with leading zeros preserved
 
         Args:
             df: Input DataFrame
+            convert_nan_to_none: If True, convert NaN to None (object dtype).
+                                 If False, keep NaN (float64 dtype). Default True.
+                                 Note: pandas.to_json() handles NaN automatically regardless of this setting.
+                                 Use False when you need numeric dtype for analysis, True for manual JSON serialization.
 
         Returns:
             pd.DataFrame: JSON-compatible DataFrame
@@ -272,8 +377,13 @@ class BaseProvider(ABC):
         for col in df.select_dtypes(include=["float64", "float32", "float16"]).columns:
             # Replace Infinity with NaN first
             df[col] = df[col].replace([np.inf, -np.inf], np.nan)
-            # Replace NaN with None using replace dict (this works correctly)
-            df[col] = df[col].replace({np.nan: None})
+
+            if convert_nan_to_none:
+                # Replace NaN with None for JSON compatibility
+                # Note: This changes dtype to object (mixed), but ensures json.dumps(df.to_dict()) works
+                df[col] = df[col].replace({np.nan: None})
+            # else: keep NaN with float64 dtype for analysis purposes
+            # pandas.to_json() handles NaN automatically
 
         # 2. Convert datetime columns to strings
         for col in df.select_dtypes(include=["datetime64"]).columns:
@@ -286,11 +396,16 @@ class BaseProvider(ABC):
                 # Date only, use date format
                 df[col] = df[col].dt.strftime("%Y-%m-%d")
 
-        # 3. Ensure symbol columns are strings with leading zeros
+        # 3. Ensure symbol columns are strings with leading zeros (only for numeric-like symbols)
         symbol_columns = ["symbol", "stock_code", "code"]
         for col in symbol_columns:
             if col in df.columns:
-                df[col] = df[col].astype(str).str.zfill(6)
+                # Convert to string first
+                df[col] = df[col].astype(str)
+                # Only apply zfill to values that look like stock codes (all digits)
+                # This avoids zfilling placeholder values like 'ALL', 'SH', 'SZ', etc.
+                mask = df[col].str.match(r'^\d+$', na=False)
+                df.loc[mask, col] = df.loc[mask, col].str.zfill(6)
 
         return df
 
@@ -507,9 +622,8 @@ class BaseProvider(ABC):
         """
         return pd.to_datetime(series).dt.tz_localize(timezone)
 
-    # Abstract Methods (to be implemented by subclasses)
+    # Methods (to be implemented by subclasses)
 
-    @abstractmethod
     def fetch_data(self) -> pd.DataFrame:
         """
         Fetch raw data from the data source.
@@ -517,7 +631,7 @@ class BaseProvider(ABC):
         Returns:
             pd.DataFrame: Raw data from the source
         """
-        pass
+        raise NotImplementedError
 
     def fetch_data_with_logging(self) -> pd.DataFrame:
         """

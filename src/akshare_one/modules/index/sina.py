@@ -19,9 +19,10 @@ class SinaIndexProvider(IndexProvider):
     - Global indices
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Initialize the Sina index provider."""
         super().__init__()
+        # Accept **kwargs for compatibility (ignore symbol parameter)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

@@ -5,7 +5,7 @@ import pandas as pd
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import HistoricalDataFactory
-from . import eastmoney, eastmoney_direct, sina, tencent, netease  # 触发 Provider 注册
+from . import eastmoney, eastmoney_direct, sina, tencent, netease
 
 
 @api_endpoint(HistoricalDataFactory)

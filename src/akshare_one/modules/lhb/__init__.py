@@ -1,10 +1,10 @@
 """
-Dragon Tiger List (龙虎榜) data module for PV.DragonTigerLHB.
+Dragon Tiger List (龙虎榜) data module for PV.DragonTiger.
 
 This module provides interfaces to fetch dragon tiger list data including:
-- Dragon tiger list data (daily trading anomaly data)
+- Daily dragon tiger list transaction details
 - Dragon tiger list summary statistics
-- Broker statistics from dragon tiger list
+- Broker (营业部) statistics and rankings
 """
 
 from typing import Literal
@@ -12,41 +12,35 @@ from typing import Literal
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import DragonTigerFactory
+from ..factory_base import api_endpoint
+from .base import DragonTigerFactory
+from . import eastmoney
 
 
-@doc_params
+@api_endpoint(DragonTigerFactory)
 def get_dragon_tiger_list(
-    date: str,
+    date: str | None = None,
     symbol: str | None = None,
-    source: SourceType = None,
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get dragon tiger list data.
+    Get dragon tiger list transaction details.
 
     Args:
-        date: Date in YYYY-MM-DD format
-        symbol: Stock symbol (optional, if None returns all stocks)
+        date: Query date in YYYY-MM-DD format. If None, returns latest.
+        symbol: Stock symbol. If None, returns all stocks for the date.
     """
-    return DragonTigerFactory.call_provider_method(
-        "get_dragon_tiger_list",
-        date,
-        symbol,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(DragonTigerFactory)
 def get_dragon_tiger_summary(
-    start_date: str,
-    end_date: str,
-    group_by: Literal["stock", "broker", "reason"] = "stock",
-    source: SourceType = None,
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    group_by: Literal["date", "stock", "broker"] = "date",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -56,25 +50,17 @@ def get_dragon_tiger_summary(
     Args:
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
-        group_by: Grouping dimension ('stock', 'broker', or 'reason')
+        group_by: Grouping dimension
     """
-    return DragonTigerFactory.call_provider_method(
-        "get_dragon_tiger_summary",
-        start_date,
-        end_date,
-        group_by,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(DragonTigerFactory)
 def get_dragon_tiger_broker_stats(
-    start_date: str,
-    end_date: str,
-    top_n: int = 50,
-    source: SourceType = None,
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    top_n: int = 100,
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -86,15 +72,7 @@ def get_dragon_tiger_broker_stats(
         end_date: End date in YYYY-MM-DD format
         top_n: Number of top brokers to return
     """
-    return DragonTigerFactory.call_provider_method(
-        "get_dragon_tiger_broker_stats",
-        start_date,
-        end_date,
-        top_n,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = [

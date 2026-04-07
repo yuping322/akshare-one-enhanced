@@ -1,15 +1,16 @@
 """
-Suspended stocks (停复牌) data module.
+Suspended (停复牌) stocks module.
 """
 
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import SuspendedFactory
+from ..factory_base import api_endpoint
+from .base import SuspendedFactory
+from . import eastmoney
 
 
-@doc_params
+@api_endpoint(SuspendedFactory)
 def get_suspended_stocks(
     source: SourceType = None,
     columns: ColumnsType = None,
@@ -18,12 +19,7 @@ def get_suspended_stocks(
     """
     Get suspended/halted stocks.
     """
-    return SuspendedFactory.call_provider_method(
-        "get_suspended_stocks",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = ["get_suspended_stocks", "SuspendedFactory"]

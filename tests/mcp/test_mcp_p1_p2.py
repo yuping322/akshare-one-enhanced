@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 import pandas as pd
 import pytest
 
+# Set longer timeout for network-dependent tests
+pytestmark = pytest.mark.timeout(120)  # 120 seconds for MCP tests
+
 try:
     from fastmcp import FastMCP  # noqa: F401
 
@@ -16,7 +19,11 @@ try:
 except ImportError:
     MCP_AVAILABLE = False
 
-pytestmark = pytest.mark.skipif(not MCP_AVAILABLE, reason="fastmcp not installed")
+# Apply both markers: skipif for missing fastmcp and integration for network access
+pytestmark = [
+    pytest.mark.skipif(not MCP_AVAILABLE, reason="fastmcp not installed"),
+    pytest.mark.integration,
+]
 
 
 def get_recent_30_days():
@@ -123,14 +130,19 @@ if MCP_AVAILABLE:
 class TestDisclosureMCP:
     """Test disclosure data retrieval."""
 
+    @pytest.mark.timeout(180)  # 3 minutes for disclosure tests
     def test_get_disclosure_news_basic(self):
-        df = disclosure_get_disclosure_news()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = disclosure_get_disclosure_news(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.timeout(300)  # 5 minutes for disclosure news with symbol
     def test_get_disclosure_news_with_symbol(self):
         df = disclosure_get_disclosure_news(symbol="600000")
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.timeout(300)  # 5 minutes for disclosure news with category
     def test_get_disclosure_news_with_category(self):
         start_date, end_date = get_recent_30_days()
         df = disclosure_get_disclosure_news(
@@ -139,7 +151,9 @@ class TestDisclosureMCP:
         assert isinstance(df, pd.DataFrame)
 
     def test_get_dividend_data_basic(self):
-        df = disclosure_get_dividend_data()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = disclosure_get_dividend_data(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_dividend_data_with_symbol(self):
@@ -147,7 +161,9 @@ class TestDisclosureMCP:
         assert isinstance(df, pd.DataFrame)
 
     def test_get_repurchase_data_basic(self):
-        df = disclosure_get_repurchase_data()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = disclosure_get_repurchase_data(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_repurchase_data_with_symbol(self):
@@ -155,7 +171,9 @@ class TestDisclosureMCP:
         assert isinstance(df, pd.DataFrame)
 
     def test_get_st_delist_data_basic(self):
-        df = disclosure_get_st_delist_data()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = disclosure_get_st_delist_data(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
 
@@ -166,7 +184,9 @@ class TestMacroMCP:
     """Test macro economic data retrieval."""
 
     def test_get_lpr_rate(self):
-        df = macro_get_lpr_rate()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = macro_get_lpr_rate(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_lpr_rate_with_date_range(self):
@@ -175,35 +195,53 @@ class TestMacroMCP:
         assert isinstance(df, pd.DataFrame)
 
     def test_get_pmi_index_manufacturing(self):
-        df = macro_get_pmi_index(pmi_type="manufacturing")
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = macro_get_pmi_index(pmi_type="manufacturing", start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_pmi_index_non_manufacturing(self):
-        df = macro_get_pmi_index(pmi_type="non_manufacturing")
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = macro_get_pmi_index(pmi_type="non_manufacturing", start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.integration
+    @pytest.mark.timeout(180)
     def test_get_pmi_index_caixin(self):
-        df = macro_get_pmi_index(pmi_type="caixin")
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = macro_get_pmi_index(pmi_type="caixin", start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_cpi_data(self):
-        df = macro_get_cpi_data()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = macro_get_cpi_data(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_ppi_data(self):
-        df = macro_get_ppi_data()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = macro_get_ppi_data(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_m2_supply(self):
-        df = macro_get_m2_supply()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = macro_get_m2_supply(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_shibor_rate(self):
-        df = macro_get_shibor_rate()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = macro_get_shibor_rate(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_social_financing(self):
-        df = macro_get_social_financing()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = macro_get_social_financing(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
 
@@ -214,7 +252,9 @@ class TestBlockDealMCP:
     """Test block deal data retrieval."""
 
     def test_get_block_deal_basic(self):
-        df = blockdeal_get_block_deal()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = blockdeal_get_block_deal(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_block_deal_with_symbol(self):
@@ -256,24 +296,34 @@ class TestMarginMCP:
     """Test margin financing data retrieval."""
 
     def test_get_margin_data_basic(self):
-        df = margin_get_margin_data()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = margin_get_margin_data(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.integration
+    @pytest.mark.timeout(180)
     def test_get_margin_data_with_symbol(self):
         start_date, end_date = get_recent_30_days()
         df = margin_get_margin_data(symbol="600000", start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.integration
+    @pytest.mark.timeout(180)
     def test_get_margin_summary_all(self):
         start_date, end_date = get_recent_30_days()
         df = margin_get_margin_summary(start_date=start_date, end_date=end_date, market="all")
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.integration
+    @pytest.mark.timeout(180)
     def test_get_margin_summary_sh(self):
         start_date, end_date = get_recent_30_days()
         df = margin_get_margin_summary(start_date=start_date, end_date=end_date, market="sh")
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.integration
+    @pytest.mark.timeout(180)
     def test_get_margin_summary_sz(self):
         start_date, end_date = get_recent_30_days()
         df = margin_get_margin_summary(start_date=start_date, end_date=end_date, market="sz")
@@ -287,7 +337,9 @@ class TestEquityPledgeMCP:
     """Test equity pledge data retrieval."""
 
     def test_get_equity_pledge_basic(self):
-        df = pledge_get_equity_pledge()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = pledge_get_equity_pledge(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_equity_pledge_with_symbol(self):
@@ -313,7 +365,9 @@ class TestRestrictedReleaseMCP:
     """Test restricted release data retrieval."""
 
     def test_get_restricted_release_basic(self):
-        df = restricted_get_restricted_release()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = restricted_get_restricted_release(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_restricted_release_with_symbol(self):
@@ -338,7 +392,9 @@ class TestGoodwillMCP:
     """Test goodwill data retrieval."""
 
     def test_get_goodwill_data_basic(self):
-        df = goodwill_get_goodwill_data()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = goodwill_get_goodwill_data(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
     def test_get_goodwill_data_with_symbol(self):
@@ -362,24 +418,31 @@ class TestGoodwillMCP:
 class TestESGMCP:
     """Test ESG rating data retrieval."""
 
+    @pytest.mark.timeout(180)  # 3 minutes for ESG tests
     def test_get_esg_rating_basic(self):
-        df = esg_get_esg_rating()
+        # Use a reasonable date range to avoid fetching too much data
+        start_date, end_date = get_recent_30_days()
+        df = esg_get_esg_rating(start_date=start_date, end_date=end_date)
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.timeout(180)
     def test_get_esg_rating_with_symbol(self):
         df = esg_get_esg_rating(symbol="600000")
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.timeout(180)
     def test_get_esg_rating_rank(self):
         today = datetime.now().strftime("%Y-%m-%d")
         df = esg_get_esg_rating_rank(date=today)
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.timeout(180)
     def test_get_esg_rating_rank_with_industry(self):
         today = datetime.now().strftime("%Y-%m-%d")
         df = esg_get_esg_rating_rank(date=today, industry="银行")
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.timeout(180)
     def test_get_esg_rating_rank_custom_top_n(self):
         today = datetime.now().strftime("%Y-%m-%d")
         df = esg_get_esg_rating_rank(date=today, top_n=50)
@@ -456,34 +519,35 @@ class TestMCPToolWrappersP1P2:
             assert hasattr(tool, "fn"), f"{tool.name} should have 'fn' attribute"
             assert callable(tool.fn), f"{tool.name}.fn should be callable"
 
+    @pytest.mark.timeout(180)  # 3 minutes for JSON output test
     def test_mcp_tools_json_output(self):
         today = datetime.now().strftime("%Y-%m-%d")
         start_date, end_date = get_recent_30_days()
 
         test_cases = [
-            (mcp_get_disclosure_news, {}),
-            (mcp_get_dividend_data, {}),
-            (mcp_get_repurchase_data, {}),
-            (mcp_get_st_delist_data, {}),
-            (mcp_get_lpr_rate, {}),
-            (mcp_get_pmi_index, {}),
-            (mcp_get_cpi_data, {}),
-            (mcp_get_ppi_data, {}),
-            (mcp_get_m2_supply, {}),
-            (mcp_get_shibor_rate, {}),
-            (mcp_get_social_financing, {}),
-            (mcp_get_block_deal, {}),
+            (mcp_get_disclosure_news, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_dividend_data, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_repurchase_data, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_st_delist_data, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_lpr_rate, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_pmi_index, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_cpi_data, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_ppi_data, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_m2_supply, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_shibor_rate, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_social_financing, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_block_deal, {"start_date": start_date, "end_date": end_date}),
             (mcp_get_block_deal_summary, {"start_date": start_date, "end_date": end_date}),
-            (mcp_get_margin_data, {}),
-            (mcp_get_margin_summary, {}),
-            (mcp_get_equity_pledge, {}),
+            (mcp_get_margin_data, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_margin_summary, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_equity_pledge, {"start_date": start_date, "end_date": end_date}),
             (mcp_get_equity_pledge_ratio_rank, {"date": today}),
-            (mcp_get_restricted_release, {}),
-            (mcp_get_restricted_release_calendar, {}),
-            (mcp_get_goodwill_data, {}),
+            (mcp_get_restricted_release, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_restricted_release_calendar, {"start_date": start_date, "end_date": end_date}),
+            (mcp_get_goodwill_data, {"start_date": start_date, "end_date": end_date}),
             (mcp_get_goodwill_impairment, {"date": today}),
             (mcp_get_goodwill_by_industry, {"date": today}),
-            (mcp_get_esg_rating, {}),
+            (mcp_get_esg_rating, {"start_date": start_date, "end_date": end_date}),
             (mcp_get_esg_rating_rank, {"date": today}),
         ]
 

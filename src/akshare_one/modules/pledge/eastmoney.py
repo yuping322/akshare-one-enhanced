@@ -7,9 +7,10 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import EquityPledgeProvider
+from .base import EquityPledgeProvider, EquityPledgeFactory
 
 
+@EquityPledgeFactory.register("eastmoney")
 class EastmoneyEquityPledgeProvider(EquityPledgeProvider):
     """
     Equity pledge data provider using Eastmoney as the data source.

@@ -6,9 +6,10 @@ This module implements the margin financing data provider using Sina as the data
 
 import pandas as pd
 
-from .base import MarginProvider
+from .base import MarginProvider, MarginFactory
 
 
+@MarginFactory.register("sina")
 class SinaMarginProvider(MarginProvider):
     """
     Margin financing data provider using Sina as the data source.

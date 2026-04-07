@@ -6,9 +6,10 @@ This module implements the limit up/down data provider using Sina as the data so
 
 import pandas as pd
 
-from .base import LimitUpDownProvider
+from .base import LimitUpDownProvider, LimitUpDownFactory
 
 
+@LimitUpDownFactory.register("sina")
 class SinaLimitUpDownProvider(LimitUpDownProvider):
     """
     Limit up/down data provider using Sina as the data source.

@@ -63,14 +63,16 @@ class NamingRules:
     duration_field_pattern: str = r"^[a-z_]+_(days|duration)$"
 
     # 金额字段规则
-    amount_field_pattern: str = r"^([a-z_]+_amount|price|close|open|high|low|last|bid|ask)$"
-    balance_field_pattern: str = r"^[a-z_]+_balance$"
-    value_field_pattern: str = r"^[a-z_]+_value$"
-    net_flow_pattern: str = r"^[a-z_]+_net_(inflow|outflow|buy|sell)$"
+    amount_field_pattern: str = (
+        r"^([a-z_]+_amount|amount|price|close|open|high|low|last|bid|ask)$"
+    )
+    balance_field_pattern: str = r"^([a-z_]+_balance|balance)$"
+    value_field_pattern: str = r"^([a-z_]+_value|value)$"
+    net_flow_pattern: str = r"^([a-z_]+_net_(inflow|outflow|buy|sell)|net_flow)$"
 
     # 比率字段规则
-    rate_field_pattern: str = r"^([a-z_]+_rate|pct_change|turnover_rate)$"
-    ratio_field_pattern: str = r"^[a-z_]+_ratio$"
+    rate_field_pattern: str = r"^([a-z_]+_rate|rate|pct_change|turnover_rate)$"
+    ratio_field_pattern: str = r"^([a-z_]+_ratio|ratio)$"
 
     # 标识符字段规则
     symbol_field_name: str = "symbol"
@@ -316,7 +318,6 @@ FIELD_EQUIVALENTS = {
         "债券名称",
         "期货名称",
         "商品",
-        "title",
         "股票简称",
         "基金简称",
         "债券简称",
@@ -333,6 +334,13 @@ FIELD_EQUIVALENTS = {
         "REPORT_DATE_NAME",
         "营业部名称",
         "股东名称",
+    ],
+    # 标题相关
+    "title": [
+        "标题",
+        "新闻标题",
+        "title",
+        "新闻名称",
     ],
     # 计数/数量相关
     "constituent_count": ["公司数量", "成分股数量", "股票数量", "constituent_count", "stock_count"],

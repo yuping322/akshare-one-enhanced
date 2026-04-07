@@ -1,25 +1,26 @@
 """
-Shareholder data module.
+Shareholder data module for PV.Shareholder.
 
-This module provides interfaces to fetch shareholder data including:
+This module provides interfaces to fetch shareholder-related data including:
 - Shareholder changes (增减持)
-- Top shareholders
-- Institution holdings
+- Top shareholders (十大股东/十大流通股东)
+- Institution holdings (机构持股)
 """
 
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import ShareholderFactory
+from ..factory_base import api_endpoint
+from .base import ShareholderFactory
+from . import eastmoney
 
 
-@doc_params
+@api_endpoint(ShareholderFactory)
 def get_shareholder_changes(
     symbol: str | None = None,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    source: SourceType = "sse",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -27,22 +28,14 @@ def get_shareholder_changes(
     Get shareholder changes (增减持) data.
 
     Args:
-        symbol: Stock symbol (optional, if None returns all)
+        symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
     """
-    return ShareholderFactory.call_provider_method(
-        "get_shareholder_changes",
-        symbol,
-        start_date,
-        end_date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(ShareholderFactory)
 def get_top_shareholders(
     symbol: str,
     source: SourceType = "eastmoney",
@@ -55,16 +48,10 @@ def get_top_shareholders(
     Args:
         symbol: Stock symbol
     """
-    return ShareholderFactory.call_provider_method(
-        "get_top_shareholders",
-        symbol,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(ShareholderFactory)
 def get_institution_holdings(
     symbol: str,
     source: SourceType = "eastmoney",
@@ -77,13 +64,7 @@ def get_institution_holdings(
     Args:
         symbol: Stock symbol
     """
-    return ShareholderFactory.call_provider_method(
-        "get_institution_holdings",
-        symbol,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = [

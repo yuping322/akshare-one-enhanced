@@ -4,8 +4,7 @@ Base provider class for fund flow data.
 This module defines the abstract interface for fund flow data providers.
 """
 
-from abc import abstractmethod
-
+from typing import Any
 import pandas as pd
 
 from ..base import BaseProvider
@@ -31,54 +30,47 @@ class FundFlowProvider(BaseProvider):
         """Fund flow data has minimal delay."""
         return 0
 
-    @abstractmethod
-    def get_stock_fund_flow(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_stock_fund_flow(self, symbol: str, start_date: str, end_date: str, **kwargs: Any) -> pd.DataFrame:
         """
         Get individual stock fund flow data.
         """
-        pass
+        return self._execute_api_mapped("get_stock_fund_flow", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
 
-    @abstractmethod
-    def get_sector_fund_flow(self, sector_type: str, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_sector_fund_flow(self, sector_type: str, start_date: str, end_date: str, **kwargs: Any) -> pd.DataFrame:
         """
         Get sector fund flow data.
         """
-        pass
+        return self._execute_api_mapped("get_sector_fund_flow", sector_type=sector_type, start_date=start_date, end_date=end_date, **kwargs)
 
-    @abstractmethod
-    def get_main_fund_flow_rank(self, date: str, indicator: str) -> pd.DataFrame:
+    def get_main_fund_flow_rank(self, date: str, indicator: str, **kwargs: Any) -> pd.DataFrame:
         """
         Get main fund flow ranking.
         """
-        pass
+        return self._execute_api_mapped("get_main_fund_flow_rank", date=date, indicator=indicator, **kwargs)
 
-    @abstractmethod
-    def get_industry_list(self) -> pd.DataFrame:
+    def get_industry_list(self, **kwargs: Any) -> pd.DataFrame:
         """
         Get list of industry sectors.
         """
-        pass
+        return self._execute_api_mapped("get_industry_list", **kwargs)
 
-    @abstractmethod
-    def get_industry_constituents(self, industry_code: str) -> pd.DataFrame:
+    def get_industry_constituents(self, industry_code: str, **kwargs: Any) -> pd.DataFrame:
         """
         Get constituent stocks of an industry sector.
         """
-        pass
+        return self._execute_api_mapped("get_industry_constituents", industry_code=industry_code, **kwargs)
 
-    @abstractmethod
-    def get_concept_list(self) -> pd.DataFrame:
+    def get_concept_list(self, **kwargs: Any) -> pd.DataFrame:
         """
         Get list of concept sectors.
         """
-        pass
+        return self._execute_api_mapped("get_concept_list", **kwargs)
 
-    @abstractmethod
-    def get_concept_constituents(self, concept_code: str) -> pd.DataFrame:
+    def get_concept_constituents(self, concept_code: str, **kwargs: Any) -> pd.DataFrame:
         """
         Get constituent stocks of a concept sector.
         """
-        pass
+        return self._execute_api_mapped("get_concept_constituents", concept_code=concept_code, **kwargs)
 
 
 class FundFlowFactory(BaseFactory["FundFlowProvider"]):

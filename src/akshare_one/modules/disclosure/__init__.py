@@ -1,28 +1,27 @@
 """
-Disclosure news data module for PV.DisclosureNews.
+Disclosure (公告披露) data module for PV.Disclosure.
 
-This module provides interfaces to fetch disclosure and announcement data including:
-- General disclosure news
-- Dividend data
-- Repurchase data
-- ST/Delist risk data
+This module provides interfaces to fetch corporate disclosure data including:
+- Corporate announcements and news
+- Dividend and distribution data
+- Stock repurchase data
+- ST/Delist risk warnings
 """
-
-from typing import Literal
 
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import DisclosureFactory
+from ..factory_base import api_endpoint
+from .base import DisclosureFactory
+from . import eastmoney, sina
 
 
-@doc_params
+@api_endpoint(DisclosureFactory)
 def get_disclosure_news(
     symbol: str | None = None,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    category: Literal["all", "dividend", "repurchase", "st", "major_event"] = "all",
+    category: str = "all",
     source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
@@ -31,24 +30,15 @@ def get_disclosure_news(
     Get disclosure news data.
 
     Args:
-        symbol: Stock symbol (e.g., '600000'), None for all stocks
+        symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
-        category: News category ('all', 'dividend', 'repurchase', 'st', 'major_event')
+        category: Disclosure category ('all', 'dividend', 'repurchase', 'st', 'major_event')
     """
-    return DisclosureFactory.call_provider_method(
-        "get_disclosure_news",
-        symbol,
-        start_date,
-        end_date,
-        category,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(DisclosureFactory)
 def get_dividend_data(
     symbol: str | None = None,
     start_date: str = "1970-01-01",
@@ -61,22 +51,14 @@ def get_dividend_data(
     Get dividend data.
 
     Args:
-        symbol: Stock symbol (e.g., '600000'), None for all stocks
+        symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
     """
-    return DisclosureFactory.call_provider_method(
-        "get_dividend_data",
-        symbol,
-        start_date,
-        end_date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(DisclosureFactory)
 def get_repurchase_data(
     symbol: str | None = None,
     start_date: str = "1970-01-01",
@@ -86,27 +68,36 @@ def get_repurchase_data(
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get repurchase data.
+    Get stock repurchase data.
 
     Args:
-        symbol: Stock symbol (e.g., '600000'), None for all stocks
+        symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
     """
-    return DisclosureFactory.call_provider_method(
-        "get_repurchase_data",
-        symbol,
-        start_date,
-        end_date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
+
+
+@api_endpoint(DisclosureFactory)
+def get_st_delist_data(
+    symbol: str | None = None,
+    source: SourceType = "eastmoney",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get ST/delist risk data.
+
+    Args:
+        symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
+    """
+    pass
 
 
 __all__ = [
     "get_disclosure_news",
     "get_dividend_data",
     "get_repurchase_data",
+    "get_st_delist_data",
     "DisclosureFactory",
 ]

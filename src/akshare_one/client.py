@@ -8,20 +8,20 @@ from typing import Any, Literal
 
 import pandas as pd
 
-from .modules.financial.factory import FinancialDataFactory
-from .modules.futures.factory import FuturesDataFactory
-from .modules.historical.factory import HistoricalDataFactory
-from .modules.info.factory import InfoDataFactory
-from .modules.insider.factory import InsiderDataFactory
+from .modules.financial import FinancialDataFactory
+from .modules.futures import FuturesHistoricalFactory, FuturesRealtimeFactory
+from .modules.historical import HistoricalDataFactory
+from .modules.info import InfoDataFactory
+from .modules.insider import InsiderDataFactory
 from .modules.multi_source import (
     MultiSourceRouter,
     create_financial_router,
     create_historical_router,
     create_realtime_router,
 )
-from .modules.news.factory import NewsDataFactory
-from .modules.options.factory import OptionsDataFactory
-from .modules.realtime.factory import RealtimeDataFactory
+from .modules.news import NewsDataFactory
+from .modules.options import OptionsDataFactory
+from .modules.realtime import RealtimeDataFactory
 
 
 def apply_data_filter(
@@ -515,7 +515,7 @@ def get_basic_info_multi_source(
     """
     import logging
 
-    from .modules.info.factory import InfoDataFactory
+    from .modules.info import InfoDataFactory
 
     if sources is None:
         sources = ["eastmoney", "sina"]
@@ -620,7 +620,7 @@ def get_news_data_multi_source(
     """
     import logging
 
-    from .modules.news.factory import NewsDataFactory
+    from .modules.news import NewsDataFactory
 
     if sources is None:
         sources = ["eastmoney", "sina"]
@@ -654,7 +654,7 @@ def get_inner_trade_data_multi_source(
     """
     import logging
 
-    from .modules.insider.factory import InsiderDataFactory
+    from .modules.insider import InsiderDataFactory
 
     if sources is None:
         sources = ["xueqiu"]
@@ -690,7 +690,7 @@ def get_financial_data_multi_source(
     """
     import logging
 
-    from .modules.financial.factory import FinancialDataFactory
+    from .modules.financial import FinancialDataFactory
 
     if sources is None:
         sources = ["eastmoney_direct", "sina", "cninfo"]

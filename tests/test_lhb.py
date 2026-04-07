@@ -13,7 +13,7 @@ from akshare_one.modules.lhb import (
     get_dragon_tiger_summary,
 )
 from akshare_one.modules.lhb.eastmoney import EastmoneyDragonTigerProvider
-from akshare_one.modules.lhb.factory import DragonTigerFactory
+from akshare_one.modules.lhb import DragonTigerFactory
 
 
 class TestDragonTigerFactory:

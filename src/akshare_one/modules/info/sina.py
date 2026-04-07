@@ -1,10 +1,11 @@
 import pandas as pd
 
 from ..cache import cache
-from .base import InfoDataProvider
+from .base import InfoDataProvider, InfoDataFactory
 
 
-class SinaInfo(InfoDataProvider):
+@InfoDataFactory.register("sina")
+class SinaInfoProvider(InfoDataProvider):
     """Sina Finance stock basic info provider
 
     Provides standardized access to stock basic information from Sina Finance API.
@@ -43,3 +44,5 @@ class SinaInfo(InfoDataProvider):
 
         except Exception:
             return pd.DataFrame(columns=self._expected_columns)
+
+SinaInfo = SinaInfoProvider

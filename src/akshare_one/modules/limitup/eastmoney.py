@@ -7,9 +7,10 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import LimitUpDownProvider
+from .base import LimitUpDownProvider, LimitUpDownFactory
 
 
+@LimitUpDownFactory.register("eastmoney")
 class EastmoneyLimitUpDownProvider(LimitUpDownProvider):
     """
     Limit up/down data provider using Eastmoney as the data source.

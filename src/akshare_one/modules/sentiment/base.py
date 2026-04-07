@@ -2,15 +2,14 @@
 Base provider class for sentiment data.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class SentimentProvider(BaseProvider):
-    """Abstract base class for sentiment data providers."""
+    """Base class for sentiment data providers."""
 
     def get_data_type(self) -> str:
         return "sentiment"
@@ -21,12 +20,16 @@ class SentimentProvider(BaseProvider):
     def get_delay_minutes(self) -> int:
         return 0
 
-    @abstractmethod
-    def get_hot_rank(self) -> pd.DataFrame:
+    def get_hot_rank(self, **kwargs) -> pd.DataFrame:
         """Get hot stock ranking."""
-        pass
+        return self._execute_api_mapped("get_hot_rank", **kwargs)
 
-    @abstractmethod
-    def get_stock_comment(self) -> pd.DataFrame:
+    def get_stock_comment(self, **kwargs) -> pd.DataFrame:
         """Get stock comments and sentiment scores."""
-        pass
+        return self._execute_api_mapped("get_stock_comment", **kwargs)
+
+
+class SentimentFactory(BaseFactory["SentimentProvider"]):
+    """Factory class for creating sentiment data providers."""
+
+    _providers: dict[str, type["SentimentProvider"]] = {}

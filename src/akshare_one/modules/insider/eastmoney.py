@@ -6,9 +6,10 @@ This module implements the insider data provider using Eastmoney as the data sou
 
 import pandas as pd
 
-from .base import InsiderDataProvider
+from .base import InsiderDataProvider, InsiderDataFactory
 
 
+@InsiderDataFactory.register("eastmoney")
 class EastmoneyInsiderProvider(InsiderDataProvider):
     """
     Insider data provider using Eastmoney as the data source.

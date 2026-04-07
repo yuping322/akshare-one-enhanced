@@ -24,7 +24,7 @@ from akshare_one.modules.northbound import (
     get_northbound_holdings,
     get_northbound_top_stocks,
 )
-from akshare_one.modules.northbound.factory import NorthboundFactory
+from akshare_one.modules.northbound import NorthboundFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

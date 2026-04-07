@@ -18,7 +18,7 @@ import pytest
 
 # TODO: Replace with actual imports
 # from akshare_one.modules.MODULE_NAME.base import PROVIDER_CLASS
-# from akshare_one.modules.MODULE_NAME.factory import MODULE_NAMEFactory
+# from akshare_one.modules.MODULE_NAME import MODULE_NAMEFactory
 
 
 class TestProviderBasics:

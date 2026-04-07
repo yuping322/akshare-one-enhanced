@@ -126,7 +126,7 @@ class TestMainEntryFilterParams:
     def test_get_hist_data_signature(self):
         """Test get_hist_data accepts filter params."""
         import inspect
-        from akshare_one.modules.historical.factory import HistoricalDataFactory
+        from akshare_one.modules.historical import HistoricalDataFactory
 
         provider_cls = HistoricalDataFactory._providers.get("eastmoney")
         assert provider_cls is not None

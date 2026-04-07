@@ -92,9 +92,8 @@ class StandardizationChecker:
         modules = []
         for item in os.listdir(self.modules_dir):
             item_path = os.path.join(self.modules_dir, item)
-            if os.path.isdir(item_path) and not item.startswith("_"):
-                if os.path.exists(os.path.join(item_path, "factory.py")):
-                    modules.append(item)
+            if os.path.isdir(item_path) and not item.startswith("_") and item != "config":
+                modules.append(item)
 
         self.results["summary"]["total_modules"] = len(modules)
         print(f"  发现 {len(modules)} 个模块")

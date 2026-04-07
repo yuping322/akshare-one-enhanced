@@ -14,6 +14,8 @@ from .exceptions import (
     RateLimitError,
     UpstreamChangedError,
     handle_upstream_error,
+    map_to_standard_exception,
+    raise_mapped_exception,
 )
 
 __all__ = [
@@ -26,4 +28,6 @@ __all__ = [
     "RateLimitError",
     "DataValidationError",
     "handle_upstream_error",
+    "map_to_standard_exception",
+    "raise_mapped_exception",
 ]

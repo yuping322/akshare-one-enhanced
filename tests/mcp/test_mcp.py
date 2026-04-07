@@ -15,7 +15,10 @@ try:
 except ImportError:
     MCP_AVAILABLE = False
 
-pytestmark = pytest.mark.skipif(not MCP_AVAILABLE, reason="fastmcp not installed")
+pytestmark = [
+    pytest.mark.skipif(not MCP_AVAILABLE, reason="fastmcp not installed"),
+    pytest.mark.integration,
+]
 
 
 class TestMCPInitialization:

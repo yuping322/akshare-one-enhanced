@@ -4,8 +4,6 @@ Base provider class for ETF data.
 This module defines the abstract interface for ETF data providers.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
@@ -14,7 +12,7 @@ from ..factory_base import BaseFactory
 
 class ETFProvider(BaseProvider):
     """
-    Abstract base class for ETF data providers.
+    Base class for ETF data providers.
     """
 
     def get_data_type(self) -> str:
@@ -29,33 +27,44 @@ class ETFProvider(BaseProvider):
         """ETF data has 1 day delay for some fields."""
         return 0
 
-    @abstractmethod
     def get_etf_hist(self, symbol: str, start_date: str, end_date: str, interval: str = "daily", **kwargs) -> pd.DataFrame:
         """
         Get ETF historical data.
         """
-        pass
+        return self._execute_api_mapped("get_etf_hist", symbol=symbol, start_date=start_date, end_date=end_date, interval=interval, **kwargs)
 
-    @abstractmethod
+    def get_etf_hist_data(self, symbol: str, start_date: str, end_date: str, interval: str = "daily", **kwargs) -> pd.DataFrame:
+        return self.get_etf_hist(symbol=symbol, start_date=start_date, end_date=end_date, interval=interval, **kwargs)
+
     def get_etf_spot(self, **kwargs) -> pd.DataFrame:
         """
         Get all ETF realtime quotes.
         """
-        pass
+        return self._execute_api_mapped("get_etf_spot", **kwargs)
 
-    @abstractmethod
+    def get_etf_realtime_data(self, **kwargs) -> pd.DataFrame:
+        return self.get_etf_spot(**kwargs)
+
     def get_etf_list(self, category: str = "all", **kwargs) -> pd.DataFrame:
         """
         Get ETF list.
         """
-        pass
+        return self._execute_api_mapped("get_etf_list", category=category, **kwargs)
 
-    @abstractmethod
     def get_fund_manager(self, **kwargs) -> pd.DataFrame:
         """
         Get fund manager information.
         """
-        pass
+        return self._execute_api_mapped("get_fund_manager", **kwargs)
+
+    def get_fund_manager_info(self, **kwargs) -> pd.DataFrame:
+        return self.get_fund_manager(**kwargs)
+
+    def get_fund_rating(self, **kwargs) -> pd.DataFrame:
+        return self._execute_api_mapped("get_fund_rating", **kwargs)
+
+    def get_fund_rating_data(self, **kwargs) -> pd.DataFrame:
+        return self.get_fund_rating(**kwargs)
 
 
 class ETFFactory(BaseFactory["ETFProvider"]):

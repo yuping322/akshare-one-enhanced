@@ -6,13 +6,28 @@ This module implements the futures data provider using Eastmoney as the data sou
 
 import pandas as pd
 
-from .base import HistoricalFuturesDataProvider, RealtimeFuturesDataProvider
+from .base import (
+    HistoricalFuturesDataProvider,
+    RealtimeFuturesDataProvider,
+    FuturesHistoricalFactory,
+    FuturesRealtimeFactory,
+)
 
 
+@FuturesHistoricalFactory.register("eastmoney")
 class EastmoneyFuturesHistoricalProvider(HistoricalFuturesDataProvider):
     """
     Historical futures data provider using Eastmoney as the data source.
     """
+
+    _API_MAP = {
+        "get_hist_data": {
+            "ak_func": None,  # Eastmoney futures historical data not implemented
+        },
+        "get_main_contracts": {
+            "ak_func": None,  # Eastmoney futures main contracts not implemented
+        },
+    }
 
     def get_source_name(self) -> str:
         """Return the data source name."""
@@ -42,10 +57,20 @@ class EastmoneyFuturesHistoricalProvider(HistoricalFuturesDataProvider):
         return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
 
 
+@FuturesRealtimeFactory.register("eastmoney")
 class EastmoneyFuturesRealtimeProvider(RealtimeFuturesDataProvider):
     """
     Realtime futures data provider using Eastmoney as the data source.
     """
+
+    _API_MAP = {
+        "get_current_data": {
+            "ak_func": None,  # Eastmoney futures realtime data not implemented
+        },
+        "get_all_quotes": {
+            "ak_func": None,  # Eastmoney futures all quotes not implemented
+        },
+    }
 
     def get_source_name(self) -> str:
         """Return the data source name."""

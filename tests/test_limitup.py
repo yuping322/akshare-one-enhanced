@@ -13,7 +13,7 @@ from akshare_one.modules.limitup import (
     get_limit_up_stats,
 )
 from akshare_one.modules.limitup.eastmoney import EastmoneyLimitUpDownProvider
-from akshare_one.modules.limitup.factory import LimitUpDownFactory
+from akshare_one.modules.limitup import LimitUpDownFactory
 
 
 class TestLimitUpDownFactory:

@@ -1,10 +1,11 @@
 import pandas as pd
 
 from ..cache import cache
-from .base import NewsDataProvider
+from .base import NewsDataProvider, NewsDataFactory
 
 
-class SinaNews(NewsDataProvider):
+@NewsDataFactory.register("sina")
+class SinaNewsProvider(NewsDataProvider):
     """Sina Finance news provider
 
     Provides standardized access to stock news from Sina Finance API.

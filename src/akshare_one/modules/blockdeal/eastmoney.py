@@ -6,9 +6,11 @@ This module implements the block deal data provider using Eastmoney as the data 
 
 import pandas as pd
 
-from .base import BlockDealProvider
+from ...akshare_compat import call_akshare
+from .base import BlockDealProvider, BlockDealFactory
 
 
+@BlockDealFactory.register("eastmoney")
 class EastmoneyBlockDealProvider(BlockDealProvider):
     """
     Block deal data provider using Eastmoney as the data source.
@@ -50,16 +52,18 @@ class EastmoneyBlockDealProvider(BlockDealProvider):
             self.validate_symbol(symbol)
 
         try:
-            import akshare as ak
-
             # Convert date format from YYYY-MM-DD to YYYYMMDD for akshare
             ak_start_date = start_date.replace("-", "")
             ak_end_date = end_date.replace("-", "")
 
-            # Call akshare function - stock_dzjy_mrtj returns daily statistics
-            # Note: The API changed - stock_dzjy_mrmx now takes 'A股', 'B股', '基金', '债券' as symbol
-            # We use stock_dzjy_mrtj which returns daily statistics with stock codes
-            raw_df = ak.stock_dzjy_mrtj(start_date=ak_start_date, end_date=ak_end_date)
+            # Use adapter to call akshare function (handles function drift)
+            # stock_dzjy_mrtj returns daily statistics with stock codes
+            raw_df = call_akshare(
+                "stock_dzjy_mrtj",
+                start_date=ak_start_date,
+                end_date=ak_end_date,
+                fallback_func="stock_dzjy_sctj",  # Fallback for older versions
+            )
 
             if raw_df.empty:
                 return self.create_empty_dataframe(
@@ -82,10 +86,11 @@ class EastmoneyBlockDealProvider(BlockDealProvider):
             standardized["symbol"] = raw_df["证券代码"].astype(str).str.zfill(6)
             standardized["name"] = raw_df["证券简称"].astype(str)
             standardized["price"] = pd.to_numeric(raw_df["成交价"], errors="coerce")
-            standardized["volume"] = pd.to_numeric(raw_df["成交总量"], errors="coerce")
-            standardized["amount"] = pd.to_numeric(raw_df["成交总额"], errors="coerce")
-            standardized["buyer_branch"] = None  # Not available in mrtj
-            standardized["seller_branch"] = None  # Not available in mrtj
+            # Fix: API returns '成交总量' not '成交量'
+            standardized["volume"] = pd.to_numeric(raw_df.get("成交总量", raw_df.get("成交量", 0)), errors="coerce")
+            standardized["amount"] = pd.to_numeric(raw_df.get("成交额", raw_df.get("成交总额", 0)), errors="coerce")
+            standardized["buyer_branch"] = raw_df["买方营业部"].astype(str) if "买方营业部" in raw_df.columns else None
+            standardized["seller_branch"] = raw_df["卖方营业部"].astype(str) if "卖方营业部" in raw_df.columns else None
 
             # Calculate premium rate from 折溢率 column (already in percentage)
             if "折溢率" in raw_df.columns:
@@ -103,7 +108,21 @@ class EastmoneyBlockDealProvider(BlockDealProvider):
             return self.ensure_json_compatible(result)
 
         except Exception as e:
-            raise RuntimeError(f"Failed to fetch block deal data: {e}") from e
+            self.logger.error(f"Failed to fetch block deal data: {e}", exc_info=True)
+            # Return empty DataFrame instead of raising hard error
+            return self.create_empty_dataframe(
+                [
+                    "date",
+                    "symbol",
+                    "name",
+                    "price",
+                    "volume",
+                    "amount",
+                    "buyer_branch",
+                    "seller_branch",
+                    "premium_rate",
+                ]
+            )
 
     def get_block_deal_summary(self, start_date: str, end_date: str, group_by: str) -> pd.DataFrame:
         """

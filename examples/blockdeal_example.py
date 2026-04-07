@@ -22,7 +22,7 @@ from akshare_one.modules.blockdeal import (
     get_block_deal,
     get_block_deal_summary,
 )
-from akshare_one.modules.blockdeal.factory import BlockDealFactory
+from akshare_one.modules.blockdeal import BlockDealFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,
@@ -38,7 +38,7 @@ def scenario_1_identify_block_deals():
 
     try:
         # 参数设置：查询浦发银行最近60天的大宗交易
-        symbol = "sh600000"
+        symbol = "600000"  # A股股票代码格式：6位数字
         end_date = datetime.now().strftime("%Y-%m-%d")
         start_date = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
 
@@ -227,7 +227,7 @@ def scenario_3_multi_source_example():
         print(f"  数据源名称：{sina_provider.get_source_name()}")
 
         # 使用 Sina 数据源获取数据
-        symbol = "600000"
+        symbol = "600000"  # A股股票代码格式：6位数字
         end_date = datetime.now().strftime("%Y-%m-%d")
         start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 

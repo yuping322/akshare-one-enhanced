@@ -1,19 +1,21 @@
 """
-Equity Pledge (股权质押) data module for PV.EquityPledge.
+Equity pledge (股权质押) data module for PV.Pledge.
 
 This module provides interfaces to fetch equity pledge data including:
-- Equity pledge data (股权质押数据) - shareholder pledge information
-- Equity pledge ratio ranking (质押比例排名) - stocks ranked by pledge ratio
+- Equity pledge details (shareholder pledge information)
+- Equity pledge ratio rankings (stocks ranked by pledge percentage)
 """
 
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import EquityPledgeFactory
+from ..factory_base import api_endpoint
+from .base import EquityPledgeFactory
+from . import eastmoney
+from . import sina
 
 
-@doc_params
+@api_endpoint(EquityPledgeFactory)
 def get_equity_pledge(
     symbol: str | None = None,
     start_date: str = "1970-01-01",
@@ -30,18 +32,10 @@ def get_equity_pledge(
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
     """
-    return EquityPledgeFactory.call_provider_method(
-        "get_equity_pledge",
-        symbol,
-        start_date,
-        end_date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(EquityPledgeFactory)
 def get_equity_pledge_ratio_rank(
     date: str,
     top_n: int = 100,
@@ -54,16 +48,9 @@ def get_equity_pledge_ratio_rank(
 
     Args:
         date: Query date in YYYY-MM-DD format
-        top_n: Number of top stocks to return (default: 100)
+        top_n: Number of top stocks to return
     """
-    return EquityPledgeFactory.call_provider_method(
-        "get_equity_pledge_ratio_rank",
-        date,
-        top_n,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = [

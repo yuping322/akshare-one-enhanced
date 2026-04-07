@@ -21,9 +21,28 @@ class EastmoneyETFProvider(ETFProvider):
     - Fund ratings
     """
 
-    def __init__(self):
+    _API_MAP = {
+        "get_etf_hist": {
+            "ak_func": "fund_etf_hist_em",
+            "params": {"symbol": "symbol", "period": "interval"},
+        },
+        "get_etf_spot": {
+            "ak_func": "fund_etf_spot_em",
+        },
+        "get_etf_list": {
+            "ak_func": "fund_etf_spot_em",
+        },
+        "get_fund_manager": {
+            "ak_func": "fund_manager_em",
+        },
+        "get_fund_rating": {
+            "ak_func": "fund_rating_all",
+        },
+    }
+
+    def __init__(self, **kwargs):
         """Initialize the Eastmoney ETF provider."""
-        super().__init__()
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

@@ -63,8 +63,9 @@ class TestValidateFieldName:
     def test_validate_invalid_amount_field(self):
         """Test validation of invalid amount field."""
         standardizer = FieldStandardizer(NamingRules())
-        is_valid, error_msg = standardizer.validate_field_name('amount', FieldType.AMOUNT)
-        
+        # Test invalid CamelCase field name
+        is_valid, error_msg = standardizer.validate_field_name('BuyAmount', FieldType.AMOUNT)
+
         assert is_valid is False
         assert 'pattern' in error_msg.lower()
     
@@ -195,11 +196,13 @@ class TestStandardizeFieldName:
     def test_standardize_invalid_amount_field_raises_error(self):
         """Test that standardizing an invalid amount field raises ValueError."""
         standardizer = FieldStandardizer(NamingRules())
-        
+
+        # Test invalid CamelCase field name (should raise error)
         with pytest.raises(ValueError) as exc_info:
-            standardizer.standardize_field_name('amount', FieldType.AMOUNT)
-        
+            standardizer.standardize_field_name('BuyAmount', FieldType.AMOUNT)
+
         assert 'does not conform to naming rules' in str(exc_info.value)
+        assert 'BuyAmount' in str(exc_info.value)
     
     def test_standardize_invalid_symbol_field_raises_error(self):
         """Test that standardizing an invalid symbol field raises ValueError."""

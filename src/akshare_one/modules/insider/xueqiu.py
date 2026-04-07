@@ -3,9 +3,10 @@ import pandas as pd
 
 from ..cache import cache
 from ..utils import convert_xieqiu_symbol
-from .base import InsiderDataProvider
+from .base import InsiderDataProvider, InsiderDataFactory
 
 
+@InsiderDataFactory.register("xueqiu")
 class XueQiuInsider(InsiderDataProvider):
     """Provider for XueQiu insider trading data"""
 

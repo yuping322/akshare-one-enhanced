@@ -6,9 +6,10 @@ This module implements the equity pledge data provider using Sina as the data so
 
 import pandas as pd
 
-from .base import EquityPledgeProvider
+from .base import EquityPledgeProvider, EquityPledgeFactory
 
 
+@EquityPledgeFactory.register("sina")
 class SinaEquityPledgeProvider(EquityPledgeProvider):
     """
     Equity pledge data provider using Sina as the data source.

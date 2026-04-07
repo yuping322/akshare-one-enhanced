@@ -2,10 +2,16 @@ import akshare as ak
 import pandas as pd
 
 from ..cache import cache
-from .base import InfoDataProvider
+from .base import InfoDataProvider, InfoDataFactory
 
 
-class EastmoneyInfo(InfoDataProvider):
+@InfoDataFactory.register("eastmoney")
+class EastmoneyInfoProvider(InfoDataProvider):
+    """Eastmoney stock basic info provider"""
+
+    def get_source_name(self) -> str:
+        return "eastmoney"
+
     _basic_info_rename_map = {
         "最新": "price",
         "股票代码": "symbol",
@@ -28,3 +34,5 @@ class EastmoneyInfo(InfoDataProvider):
         info_df = info_df.set_index("item").T
         info_df.reset_index(drop=True, inplace=True)
         return self.standardize_and_filter(info_df, "eastmoney", columns=columns, row_filter=row_filter)
+
+EastmoneyInfo = EastmoneyInfoProvider

@@ -6,8 +6,11 @@ Provides utilities for:
 - Test data validation
 - Common test fixtures
 - Mock data generation
+- Retry mechanisms for network-dependent tests
+- Enhanced error handling
 """
 
+import logging
 import time
 from collections.abc import Callable
 from functools import wraps
@@ -15,19 +18,26 @@ from functools import wraps
 import pandas as pd
 import pytest
 
+# Configure logging for integration tests
+logger = logging.getLogger('integration_test_logger')
+
 
 class RateLimiter:
     """Rate limiter for API calls during testing."""
 
-    def __init__(self, calls_per_second: float = 1.0):
+    def __init__(self, calls_per_second: float = 1.0, max_retries: int = 3, retry_delay: float = 5.0):
         """
         Initialize rate limiter.
 
         Args:
             calls_per_second: Maximum number of calls per second
+            max_retries: Maximum number of retries for failed API calls
+            retry_delay: Delay in seconds between retries
         """
         self.min_interval = 1.0 / calls_per_second
         self.last_call_time = 0.0
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
 
     def wait(self) -> None:
         """Wait if necessary to respect rate limit."""
@@ -35,9 +45,56 @@ class RateLimiter:
         time_since_last_call = current_time - self.last_call_time
 
         if time_since_last_call < self.min_interval:
-            time.sleep(self.min_interval - time_since_last_call)
+            sleep_time = self.min_interval - time_since_last_call
+            logger.debug(f"Rate limiting: sleeping for {sleep_time:.2f}s")
+            time.sleep(sleep_time)
 
         self.last_call_time = time.time()
+
+    def retry_on_network_error(self, func: Callable) -> Callable:
+        """
+        Decorator to retry function on network-related errors.
+
+        Args:
+            func: Function to decorate
+
+        Returns:
+            Decorated function with retry logic
+        """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            retry_count = 0
+            last_exception = None
+
+            while retry_count < self.max_retries:
+                try:
+                    self.wait()
+                    result = func(*args, **kwargs)
+                    return result
+                except (ConnectionError, TimeoutError, OSError) as e:
+                    last_exception = e
+                    retry_count += 1
+
+                    if retry_count < self.max_retries:
+                        logger.warning(
+                            f"Network error in {func.__name__} (attempt {retry_count}/{self.max_retries}): {str(e)}. "
+                            f"Retrying in {self.retry_delay} seconds..."
+                        )
+                        time.sleep(self.retry_delay)
+                    else:
+                        logger.error(
+                            f"Network error persisted after {self.max_retries} retries in {func.__name__}: {str(e)}"
+                        )
+                        raise
+                except Exception as e:
+                    # For non-network errors, don't retry
+                    logger.error(f"Non-network error in {func.__name__}: {str(e)}")
+                    raise
+
+            if last_exception:
+                raise last_exception
+
+        return wrapper
 
     def __call__(self, func: Callable) -> Callable:
         """Decorator to apply rate limiting to a function."""
@@ -50,8 +107,12 @@ class RateLimiter:
         return wrapper
 
 
-# Global rate limiter for integration tests (1 call per second)
-integration_rate_limiter = RateLimiter(calls_per_second=1.0)
+# Global rate limiter for integration tests (1 call per second, with retry support)
+integration_rate_limiter = RateLimiter(
+    calls_per_second=1.0,
+    max_retries=3,
+    retry_delay=5.0
+)
 
 
 def skip_if_no_network():
@@ -60,10 +121,20 @@ def skip_if_no_network():
 
     def check_network():
         try:
-            # Try to connect to a reliable host
-            socket.create_connection(("8.8.8.8", 53), timeout=3)
-            return True
-        except OSError:
+            # Try to connect to multiple reliable hosts
+            hosts = [
+                ("8.8.8.8", 53),      # Google DNS
+                ("1.1.1.1", 53),      # Cloudflare DNS
+                ("208.67.222.222", 53)  # OpenDNS
+            ]
+            for host, port in hosts:
+                try:
+                    socket.create_connection((host, port), timeout=3)
+                    return True
+                except OSError:
+                    continue
+            return False
+        except Exception:
             return False
 
     return pytest.mark.skipif(not check_network(), reason="Network unavailable")
@@ -75,6 +146,58 @@ def skip_if_rate_limited():
         False,  # TODO: Implement rate limit detection
         reason="Rate limited by upstream API",
     )
+
+
+def flaky_test(max_retries: int = 5, retry_delay: float = 2.0):
+    """
+    Decorator to mark a test as flaky and add retry logic.
+
+    Args:
+        max_retries: Maximum number of retries for flaky tests
+        retry_delay: Delay in seconds between retries
+
+    Returns:
+        Decorated test function with retry logic
+
+    Usage:
+        @pytest.mark.flaky
+        @flaky_test(max_retries=5, retry_delay=2.0)
+        def test_unstable_api():
+            # Test code here
+            pass
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            retry_count = 0
+            last_exception = None
+
+            while retry_count < max_retries:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    last_exception = e
+                    retry_count += 1
+
+                    if retry_count < max_retries:
+                        logger.warning(
+                            f"Flaky test {func.__name__} failed (attempt {retry_count}/{max_retries}): {str(e)}. "
+                            f"Retrying in {retry_delay} seconds..."
+                        )
+                        time.sleep(retry_delay)
+                    else:
+                        logger.error(
+                            f"Flaky test {func.__name__} failed after {max_retries} attempts: {str(e)}"
+                        )
+                        pytest.fail(
+                            f"Test failed after {max_retries} retries. Last error: {str(e)}"
+                        )
+
+            if last_exception:
+                raise last_exception
+
+        return wrapper
+    return decorator
 
 
 class DataFrameValidator:

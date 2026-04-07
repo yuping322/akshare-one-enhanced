@@ -1,30 +1,34 @@
+"""
+Insider trading (内部持股变动) data module for PV.Insider.
+
+This module provides interfaces to fetch insider trading data including:
+- Individual stock insider trade records
+- Market-wide insider trading summary
+"""
+
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import InsiderDataFactory
+from ..factory_base import api_endpoint
+from .base import InsiderDataFactory
+from . import eastmoney
+from . import xueqiu
 
 
-@doc_params
+@api_endpoint(InsiderDataFactory)
 def get_inner_trade_data(
     symbol: str,
-    source: SourceType = "xueqiu",
+    source: SourceType = None,
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get insider trading data.
+    Get insider trade data for a stock.
 
     Args:
-        symbol: Stock symbol
+        symbol: Stock symbol (e.g., '600000')
     """
-    return InsiderDataFactory.call_provider_method(
-        "get_inner_trade_data",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-        symbol=symbol,
-    )
+    pass
 
 
 __all__ = ["get_inner_trade_data", "InsiderDataFactory"]

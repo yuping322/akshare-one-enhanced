@@ -2,6 +2,9 @@ from unittest.mock import patch
 
 import pytest
 
+# Mark all tests in this module as integration tests (require network)
+pytestmark = pytest.mark.integration
+
 from akshare_one import (
     get_futures_hist_data,
     get_futures_realtime_data,
@@ -155,17 +158,19 @@ class TestFuturesRealtimeData:
 
     def test_invalid_source(self):
         """测试无效数据源"""
-        with pytest.raises(ValueError, match="Unknown.*provider"):
-            from akshare_one.modules.futures.factory import FuturesDataFactory
+        from akshare_one.modules.futures.base import FuturesRealtimeFactory
 
-            FuturesDataFactory.get_realtime_provider("invalid", symbol="CU")
+        with pytest.raises(ValueError, match="Unknown.*provider"):
+            FuturesRealtimeFactory.get_provider("invalid", symbol="CU")
 
 
 class TestFuturesDataFactory:
     def test_register_custom_provider(self):
         """测试注册自定义数据提供商"""
-        from akshare_one.modules.futures.base import HistoricalFuturesDataProvider
-        from akshare_one.modules.futures.factory import FuturesDataFactory
+        from akshare_one.modules.futures.base import (
+            HistoricalFuturesDataProvider,
+            FuturesHistoricalFactory,
+        )
 
         class CustomProvider(HistoricalFuturesDataProvider):
             def get_hist_data(self):
@@ -178,22 +183,22 @@ class TestFuturesDataFactory:
 
                 return pd.DataFrame()
 
-        FuturesDataFactory.register_historical_provider("custom", CustomProvider)
-        provider = FuturesDataFactory.get_historical_provider("custom", symbol="AG2604")
+        FuturesHistoricalFactory.register_provider("custom", CustomProvider)
+        provider = FuturesHistoricalFactory.get_provider("custom", symbol="AG2604")
         assert isinstance(provider, CustomProvider)
 
     def test_get_provider_by_name(self):
         """测试通过名称获取数据提供商"""
-        from akshare_one.modules.futures.factory import FuturesDataFactory
+        from akshare_one.modules.futures.base import FuturesHistoricalFactory
 
-        provider = FuturesDataFactory.get_historical_provider("sina", symbol="AG2604")
+        provider = FuturesHistoricalFactory.get_provider("sina", symbol="AG2604")
         assert provider is not None
         assert provider.symbol == "AG"
 
     def test_get_realtime_provider(self):
         """测试获取实时数据提供商"""
-        from akshare_one.modules.futures.factory import FuturesDataFactory
+        from akshare_one.modules.futures.base import FuturesRealtimeFactory
 
-        provider = FuturesDataFactory.get_realtime_provider("sina", symbol="AG2604")
+        provider = FuturesRealtimeFactory.get_provider("sina", symbol="AG2604")
         assert provider is not None
         assert provider.symbol == "AG"

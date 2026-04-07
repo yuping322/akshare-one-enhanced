@@ -5,11 +5,12 @@ Industry sector (行业板块) data module.
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import IndustryFactory
+from ..factory_base import api_endpoint
+from .base import IndustryFactory
+from . import eastmoney
 
 
-@doc_params
+@api_endpoint(IndustryFactory)
 def get_industry_list(
     source: SourceType = None,
     columns: ColumnsType = None,
@@ -18,15 +19,10 @@ def get_industry_list(
     """
     Get industry sector list.
     """
-    return IndustryFactory.call_provider_method(
-        "get_industry_list",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(IndustryFactory)
 def get_industry_stocks(
     industry: str,
     source: SourceType = None,
@@ -37,15 +33,9 @@ def get_industry_stocks(
     Get stocks in an industry sector.
 
     Args:
-        industry: Industry name (e.g., '银行', '房地产')
+        industry: Industry name or code
     """
-    return IndustryFactory.call_provider_method(
-        "get_industry_stocks",
-        industry,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = ["get_industry_list", "get_industry_stocks", "IndustryFactory"]

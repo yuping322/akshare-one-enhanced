@@ -2,11 +2,30 @@ import akshare as ak
 import pandas as pd
 
 from ..cache import cache
-from .base import HistoricalFuturesDataProvider, RealtimeFuturesDataProvider
+from .base import (
+    HistoricalFuturesDataProvider,
+    RealtimeFuturesDataProvider,
+    FuturesHistoricalFactory,
+    FuturesRealtimeFactory,
+)
 
 
-class SinaFuturesHistorical(HistoricalFuturesDataProvider):
+@FuturesHistoricalFactory.register("sina")
+class SinaHistoricalFuturesProvider(HistoricalFuturesDataProvider):
     """Adapter for Sina futures historical data API"""
+
+    _API_MAP = {
+        "get_hist_data": {
+            "ak_func": "futures_zh_daily_sina",  # Also uses futures_zh_minute_sina for intraday
+            "params": {"symbol": "symbol"},
+        },
+        "get_main_contracts": {
+            "ak_func": "futures_contract_info_shfe",  # Also uses dce, czce, cffex
+        },
+    }
+
+    def get_source_name(self) -> str:
+        return "sina"
 
     _exchange_map = {
         "CZCE": "CZCE",
@@ -313,8 +332,21 @@ def _build_cache_key(provider: "SinaFuturesRealtime") -> str:
     return f"sina_futures_{symbol_part}_{contract_part}"
 
 
-class SinaFuturesRealtime(RealtimeFuturesDataProvider):
+@FuturesRealtimeFactory.register("sina")
+class SinaRealtimeFuturesProvider(RealtimeFuturesDataProvider):
     """Adapter for Sina futures realtime data API"""
+
+    _API_MAP = {
+        "get_current_data": {
+            "ak_func": "futures_zh_spot",  # Also uses futures_zh_realtime as fallback
+        },
+        "get_all_quotes": {
+            "ak_func": "futures_zh_spot",
+        },
+    }
+
+    def get_source_name(self) -> str:
+        return "sina"
 
     @cache("futures_realtime_cache", key=_build_cache_key)
     def get_current_data(self) -> pd.DataFrame:
@@ -467,3 +499,7 @@ class SinaFuturesRealtime(RealtimeFuturesDataProvider):
             "settlement",
         ]
         return df[[col for col in required_columns if col in df.columns]]
+
+
+SinaFuturesHistorical = SinaHistoricalFuturesProvider
+SinaFuturesRealtime = SinaRealtimeFuturesProvider

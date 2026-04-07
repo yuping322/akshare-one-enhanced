@@ -1,9 +1,9 @@
 """
-Margin Financing (融资融券) data module for PV.MarginFinancing.
+Margin financing (融资融券) data module for PV.Margin.
 
 This module provides interfaces to fetch margin financing data including:
-- Margin financing data (融资融券数据) - individual stocks and market-wide
-- Margin financing summary (融资融券汇总) - market aggregation
+- Margin financing data for individual stocks and whole market
+- Margin financing summary (market totals by exchange)
 """
 
 from typing import Literal
@@ -11,11 +11,13 @@ from typing import Literal
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import MarginFactory
+from ..factory_base import api_endpoint
+from .base import MarginFactory
+from . import eastmoney
+from . import sina
 
 
-@doc_params
+@api_endpoint(MarginFactory)
 def get_margin_data(
     symbol: str | None = None,
     start_date: str = "1970-01-01",
@@ -32,18 +34,10 @@ def get_margin_data(
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
     """
-    return MarginFactory.call_provider_method(
-        "get_margin_data",
-        symbol,
-        start_date,
-        end_date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(MarginFactory)
 def get_margin_summary(
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
@@ -58,17 +52,9 @@ def get_margin_summary(
     Args:
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
-        market: Market ('sh' for Shanghai, 'sz' for Shenzhen, 'all' for both)
+        market: Market identifier ('sh', 'sz', or 'all')
     """
-    return MarginFactory.call_provider_method(
-        "get_margin_summary",
-        start_date,
-        end_date,
-        market,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = [

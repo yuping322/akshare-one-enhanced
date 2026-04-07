@@ -23,7 +23,7 @@ from akshare_one.modules.goodwill import (
     get_goodwill_impairment,
     get_goodwill_by_industry,
 )
-from akshare_one.modules.goodwill.factory import GoodwillFactory
+from akshare_one.modules.goodwill import GoodwillFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

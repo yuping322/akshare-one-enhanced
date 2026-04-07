@@ -4,12 +4,13 @@ Eastmoney suspended stocks data provider.
 
 import pandas as pd
 
-from .base import SuspendedProvider
+from .base import SuspendedProvider, SuspendedFactory
 
 
+@SuspendedFactory.register("eastmoney")
 class EastmoneySuspendedProvider(SuspendedProvider):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         return "eastmoney"

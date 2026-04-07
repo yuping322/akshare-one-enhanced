@@ -22,7 +22,7 @@ from akshare_one.modules.pledge import (
     get_equity_pledge,
     get_equity_pledge_ratio_rank,
 )
-from akshare_one.modules.pledge.factory import EquityPledgeFactory
+from akshare_one.modules.pledge import EquityPledgeFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

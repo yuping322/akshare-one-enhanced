@@ -23,7 +23,7 @@ from akshare_one.modules.limitup import (
     get_limit_down_pool,
     get_limit_up_stats,
 )
-from akshare_one.modules.limitup.factory import LimitUpDownFactory
+from akshare_one.modules.limitup import LimitUpDownFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

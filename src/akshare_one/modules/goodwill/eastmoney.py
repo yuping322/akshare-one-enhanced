@@ -7,9 +7,10 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import GoodwillProvider
+from .base import GoodwillProvider, GoodwillFactory
 
 
+@GoodwillFactory.register("eastmoney")
 class EastmoneyGoodwillProvider(GoodwillProvider):
     """
     Goodwill data provider using Eastmoney as the data source.
@@ -117,14 +118,21 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
 
                 # Standardize the data
                 standardized = pd.DataFrame()
-                standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
 
-                # Extract report date
+                # Extract report date first (needed for row count)
                 if "报告期" in raw_df.columns:
                     standardized["report_date"] = pd.to_datetime(raw_df["报告期"]).dt.strftime("%Y-%m-%d")
                 else:
                     # Use end_date as default
                     standardized["report_date"] = end_date
+
+                # Handle both cases: with stock codes (individual data) or without (aggregate data)
+                if "股票代码" in raw_df.columns:
+                    # Individual stock data - normalize stock codes with zfill
+                    standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+                else:
+                    # Aggregate data without stock codes - use 'ALL' placeholder without zfill
+                    standardized["symbol"] = pd.Series(["ALL"] * len(standardized), dtype=str)
 
                 # Extract goodwill balance
                 if "商誉" in raw_df.columns:

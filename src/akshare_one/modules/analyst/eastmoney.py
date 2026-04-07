@@ -24,3 +24,5 @@ class EastmoneyAnalystProvider(AnalystProvider):
 
     def fetch_data(self) -> pd.DataFrame:
         return pd.DataFrame()
+
+EastmoneyAnalyst = EastmoneyAnalystProvider

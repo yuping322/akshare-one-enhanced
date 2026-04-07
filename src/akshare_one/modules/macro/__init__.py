@@ -17,7 +17,7 @@ import pandas as pd
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import MacroFactory
-from . import official, sina  # 触发 Provider 注册
+from . import official, sina
 
 
 @api_endpoint(MacroFactory)
@@ -130,6 +130,24 @@ def get_shibor_rate(
     pass
 
 
+@api_endpoint(MacroFactory)
+def get_social_financing(
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    source: SourceType = "official",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get social financing scale data.
+
+    Args:
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+    """
+    pass
+
+
 __all__ = [
     "get_lpr_rate",
     "get_pmi_index",
@@ -137,5 +155,6 @@ __all__ = [
     "get_ppi_data",
     "get_m2_supply",
     "get_shibor_rate",
+    "get_social_financing",
     "MacroFactory",
 ]

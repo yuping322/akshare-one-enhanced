@@ -2,8 +2,6 @@
 Base provider class for analyst data.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
@@ -11,7 +9,7 @@ from ..factory_base import BaseFactory
 
 
 class AnalystProvider(BaseProvider):
-    """Abstract base class for analyst data providers."""
+    """Base class for analyst data providers."""
 
     def get_data_type(self) -> str:
         return "analyst"
@@ -22,15 +20,13 @@ class AnalystProvider(BaseProvider):
     def get_delay_minutes(self) -> int:
         return 0
 
-    @abstractmethod
-    def get_analyst_rank(self) -> pd.DataFrame:
+    def get_analyst_rank(self, **kwargs) -> pd.DataFrame:
         """Get analyst ranking."""
-        pass
+        return self._execute_api_mapped("get_analyst_rank", **kwargs)
 
-    @abstractmethod
-    def get_research_report(self, symbol: str) -> pd.DataFrame:
+    def get_research_report(self, symbol: str, **kwargs) -> pd.DataFrame:
         """Get research reports for a stock."""
-        pass
+        return self._execute_api_mapped("get_research_report", symbol=symbol, **kwargs)
 
 
 class AnalystFactory(BaseFactory["AnalystProvider"]):

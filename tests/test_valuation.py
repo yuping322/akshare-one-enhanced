@@ -51,8 +51,9 @@ class TestGetStockValuation:
         assert isinstance(df, pd.DataFrame)
 
         if not df.empty:
-            assert "pe_ttm" in df.columns or "pe" in df.columns
-            assert "pb" in df.columns
+            # Eastmoney returns: middlePETTM, averagePETTM, etc.
+            assert any(col in df.columns for col in ["pe_ttm", "pe", "middlePETTM", "averagePETTM"])
+            assert any(col in df.columns for col in ["pb", "middlePB", "averagePB"])
 
     def test_get_stock_valuation_empty_period(self):
         """Test with date range that returns no data."""
@@ -90,7 +91,8 @@ class TestGetMarketValuation:
         assert isinstance(df, pd.DataFrame)
 
         if not df.empty:
-            assert "pe" in df.columns or "pb" in df.columns
+            # Eastmoney returns: middlePETTM, averagePETTM, etc.
+            assert any(col in df.columns for col in ["pe", "pb", "middlePETTM", "averagePETTM", "middlePB"])
 
     def test_get_market_valuation_legu(self):
         """Test getting market valuation from legu."""
@@ -131,16 +133,20 @@ class TestValuationDataQuality:
 
 
 class TestInvalidSource:
-    """Test invalid source handling."""
+    """Test invalid source handling.
+
+    Note: Public API exceptions are mapped from internal InvalidParameterError
+    to standard ValueError for unified exception contract.
+    """
 
     def test_invalid_source_stock_valuation(self):
-        """Test invalid source raises error."""
-        with pytest.raises((ValueError, KeyError)):
+        """Test invalid source raises ValueError (mapped from InvalidParameterError)."""
+        with pytest.raises(ValueError, match="Unsupported data source"):
             get_stock_valuation(symbol="600000", source="invalid")
 
     def test_invalid_source_market_valuation(self):
-        """Test invalid source raises error."""
-        with pytest.raises((ValueError, KeyError)):
+        """Test invalid source raises ValueError (mapped from InvalidParameterError)."""
+        with pytest.raises(ValueError, match="Unsupported data source"):
             get_market_valuation(source="invalid")
 
 
@@ -153,6 +159,6 @@ class TestFactoryRegistration:
         assert isinstance(provider, EastmoneyValuationProvider)
 
     def test_factory_invalid_source(self):
-        """Test factory raises error for invalid source."""
-        with pytest.raises((ValueError, KeyError)):
+        """Test factory raises ValueError for invalid source (mapped from InvalidParameterError)."""
+        with pytest.raises(ValueError, match="Unsupported data source"):
             ValuationFactory.get_provider(source="invalid")

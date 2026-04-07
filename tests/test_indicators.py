@@ -39,7 +39,7 @@ from akshare_one.indicators import (
     get_ultosc,
     get_willr,
 )
-from akshare_one.modules.indicators.factory import TALIB_AVAILABLE
+from akshare_one.modules.indicators import TALIB_AVAILABLE
 
 
 class TestIndicators(unittest.TestCase):

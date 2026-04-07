@@ -1,5 +1,3 @@
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
@@ -20,30 +18,25 @@ class FinancialDataProvider(BaseProvider):
     def fetch_data(self) -> pd.DataFrame:
         return self.get_balance_sheet()
 
-    @abstractmethod
     def get_balance_sheet(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
         """Fetches balance sheet data"""
-        pass
+        return self._execute_api_mapped("get_balance_sheet", columns=columns, row_filter=row_filter, **kwargs)
 
-    @abstractmethod
     def get_income_statement(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
         """Fetches income statement data"""
-        pass
+        return self._execute_api_mapped("get_income_statement", columns=columns, row_filter=row_filter, **kwargs)
 
-    @abstractmethod
     def get_cash_flow(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
         """Fetches cash flow data"""
-        pass
+        return self._execute_api_mapped("get_cash_flow", columns=columns, row_filter=row_filter, **kwargs)
 
-    @abstractmethod
     def get_financial_metrics(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
         """Fetch financial metrics"""
-        pass
+        return self._execute_api_mapped("get_financial_metrics", columns=columns, row_filter=row_filter, **kwargs)
 
-    @abstractmethod
     def get_dividend_history(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
         """Fetch dividend history"""
-        pass
+        return self._execute_api_mapped("get_dividend_history", columns=columns, row_filter=row_filter, **kwargs)
 
 
 class FinancialDataFactory(BaseFactory["FinancialDataProvider"]):

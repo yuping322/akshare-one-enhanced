@@ -1,9 +1,10 @@
 """
-Block deal data module for PV.BlockDeal.
+Block deal (大宗交易) data module for PV.BlockDeal.
 
-This module provides interfaces to fetch block deal (大宗交易) data including:
-- Block deal details (individual stock and market-wide)
-- Block deal summary statistics
+This module provides interfaces to fetch block deal data including:
+- Individual stock block deal transactions
+- Market-wide block deal details
+- Block deal summary statistics by date, stock, or broker
 """
 
 from typing import Literal
@@ -11,11 +12,12 @@ from typing import Literal
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import BlockDealFactory
+from ..factory_base import api_endpoint
+from .base import BlockDealFactory
+from . import eastmoney, sina
 
 
-@doc_params
+@api_endpoint(BlockDealFactory)
 def get_block_deal(
     symbol: str | None = None,
     start_date: str = "1970-01-01",
@@ -32,22 +34,14 @@ def get_block_deal(
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
     """
-    return BlockDealFactory.call_provider_method(
-        "get_block_deal",
-        symbol,
-        start_date,
-        end_date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(BlockDealFactory)
 def get_block_deal_summary(
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    group_by: Literal["stock", "date", "broker"] = "stock",
+    group_by: Literal["date", "stock", "broker"] = "date",
     source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
@@ -58,17 +52,9 @@ def get_block_deal_summary(
     Args:
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
-        group_by: Grouping dimension ('stock', 'date', or 'broker')
+        group_by: Grouping dimension ('date', 'stock', or 'broker')
     """
-    return BlockDealFactory.call_provider_method(
-        "get_block_deal_summary",
-        start_date,
-        end_date,
-        group_by,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = [

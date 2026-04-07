@@ -4,18 +4,19 @@ Eastmoney industry sector data provider.
 
 import pandas as pd
 
-from .base import IndustryProvider
+from .base import IndustryProvider, IndustryFactory
 
 
+@IndustryFactory.register("eastmoney")
 class EastmoneyIndustryProvider(IndustryProvider):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
-        return pd.DataFrame()
+        return self.get_industry_list()
 
     def get_industry_list(self) -> pd.DataFrame:
         import akshare as ak

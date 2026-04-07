@@ -1,15 +1,16 @@
 """
-ST stocks (ST板块) data module.
+ST (Special Treatment) stocks module.
 """
 
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import STFactory
+from ..factory_base import api_endpoint
+from .base import STFactory
+from . import eastmoney
 
 
-@doc_params
+@api_endpoint(STFactory)
 def get_st_stocks(
     source: SourceType = None,
     columns: ColumnsType = None,
@@ -18,12 +19,7 @@ def get_st_stocks(
     """
     Get ST (Special Treatment) stocks.
     """
-    return STFactory.call_provider_method(
-        "get_st_stocks",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = ["get_st_stocks", "STFactory"]

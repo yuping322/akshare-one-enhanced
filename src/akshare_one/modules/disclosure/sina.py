@@ -7,9 +7,10 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import DisclosureProvider
+from .base import DisclosureProvider, DisclosureFactory
 
 
+@DisclosureFactory.register("sina")
 class SinaDisclosureProvider(DisclosureProvider):
     """
     Disclosure news data provider using Sina as the data source.

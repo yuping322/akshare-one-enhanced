@@ -1,15 +1,16 @@
 """
-Special boards (科创板/创业板) data module.
+Board (科创板/创业板) data module.
 """
 
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import BoardFactory
+from ..factory_base import api_endpoint
+from .base import BoardFactory
+from . import eastmoney
 
 
-@doc_params
+@api_endpoint(BoardFactory)
 def get_kcb_stocks(
     source: SourceType = None,
     columns: ColumnsType = None,
@@ -18,15 +19,10 @@ def get_kcb_stocks(
     """
     Get KCB (科创板) stocks.
     """
-    return BoardFactory.call_provider_method(
-        "get_kcb_stocks",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(BoardFactory)
 def get_cyb_stocks(
     source: SourceType = None,
     columns: ColumnsType = None,
@@ -35,12 +31,7 @@ def get_cyb_stocks(
     """
     Get CYB (创业板) stocks.
     """
-    return BoardFactory.call_provider_method(
-        "get_cyb_stocks",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = ["get_kcb_stocks", "get_cyb_stocks", "BoardFactory"]

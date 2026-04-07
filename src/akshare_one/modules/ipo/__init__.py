@@ -1,15 +1,16 @@
 """
-IPO and new stocks (新股次新) data module.
+IPO data module.
 """
 
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import IPOFactory
+from ..factory_base import api_endpoint
+from .base import IPOFactory
+from . import eastmoney
 
 
-@doc_params
+@api_endpoint(IPOFactory)
 def get_new_stocks(
     source: SourceType = None,
     columns: ColumnsType = None,
@@ -18,15 +19,10 @@ def get_new_stocks(
     """
     Get newly listed stocks.
     """
-    return IPOFactory.call_provider_method(
-        "get_new_stocks",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(IPOFactory)
 def get_ipo_info(
     source: SourceType = None,
     columns: ColumnsType = None,
@@ -35,12 +31,7 @@ def get_ipo_info(
     """
     Get IPO information.
     """
-    return IPOFactory.call_provider_method(
-        "get_ipo_info",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = ["get_new_stocks", "get_ipo_info", "IPOFactory"]

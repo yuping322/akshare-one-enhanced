@@ -5,6 +5,7 @@ This module implements the northbound capital data provider using Eastmoney as t
 """
 
 import akshare as ak
+import numpy as np
 import pandas as pd
 
 from ..field_naming import FieldType
@@ -63,7 +64,10 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
             return self._standardize_flow_data(raw_df, start_date, end_date, market)
 
         except Exception as e:
-            raise RuntimeError(f"Failed to fetch northbound flow data: {e}") from e
+            self.logger.warning(f"Failed to fetch northbound flow data: {e}")
+            return self.create_empty_dataframe(
+                ["date", "market", "net_buy", "buy_amount", "sell_amount", "balance"]
+            )
 
     def _standardize_flow_data(self, df: pd.DataFrame, start_date: str, end_date: str, market: str) -> pd.DataFrame:
         """Standardize northbound flow data."""
@@ -81,27 +85,28 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
             # Use pd.to_numeric to handle non-numeric values safely
             standardized["net_buy"] = pd.to_numeric(df["当日成交净买额"], errors='coerce').astype(float) * 100000000
         else:
-            standardized["net_buy"] = None
+            # Create float64 column filled with NaN
+            standardized["net_buy"] = pd.Series([np.nan] * len(df), dtype=float)
 
         # Buy and sell amounts
         if "买入成交额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
             standardized["buy_amount"] = pd.to_numeric(df["买入成交额"], errors='coerce').astype(float) * 100000000
         else:
-            standardized["buy_amount"] = None
+            standardized["buy_amount"] = pd.Series([np.nan] * len(df), dtype=float)
 
         if "卖出成交额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
             standardized["sell_amount"] = pd.to_numeric(df["卖出成交额"], errors='coerce').astype(float) * 100000000
         else:
-            standardized["sell_amount"] = None
+            standardized["sell_amount"] = pd.Series([np.nan] * len(df), dtype=float)
 
         # Balance
         if "当日余额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
             standardized["balance"] = pd.to_numeric(df["当日余额"], errors='coerce').astype(float) * 100000000
         else:
-            standardized["balance"] = None
+            standardized["balance"] = pd.Series([np.nan] * len(df), dtype=float)
 
         # Filter by date range
         mask = (standardized["date"] >= start_date) & (standardized["date"] <= end_date)
@@ -124,7 +129,9 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
             # If validation fails, return the result as is
             pass
 
-        return self.ensure_json_compatible(result)
+        # Keep numeric dtype (don't convert NaN to None) for analysis purposes
+        # pandas.to_json() handles NaN automatically
+        return self.ensure_json_compatible(result, convert_nan_to_none=False)
 
     def get_northbound_holdings(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
         """
@@ -164,7 +171,10 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
             return self._standardize_holdings_data(raw_df, symbol, start_date, end_date)
 
         except Exception as e:
-            raise RuntimeError(f"Failed to fetch northbound holdings data: {e}") from e
+            self.logger.warning(f"Failed to fetch northbound holdings data: {e}")
+            return self.create_empty_dataframe(
+                ["date", "symbol", "holdings_shares", "holdings_value", "holdings_ratio", "holdings_change"]
+            )
 
     def _standardize_holdings_data(
         self, df: pd.DataFrame, symbol: str | None, start_date: str, end_date: str
@@ -290,7 +300,10 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
             return self._standardize_ranking_data(raw_df, market, top_n, date)
 
         except Exception as e:
-            raise RuntimeError(f"Failed to fetch northbound top stocks: {e}") from e
+            self.logger.warning(f"Failed to fetch northbound top stocks: {e}")
+            return self.create_empty_dataframe(
+                ["rank", "symbol", "name", "northbound_net_buy", "holdings_shares", "holdings_ratio"]
+            )
 
     def _standardize_ranking_data(
         self, df: pd.DataFrame, market: str, top_n: int, date: str | None = None

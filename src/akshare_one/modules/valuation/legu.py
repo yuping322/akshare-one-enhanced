@@ -6,9 +6,10 @@ This module implements the valuation data provider using Legu as the data source
 
 import pandas as pd
 
-from .base import ValuationProvider
+from .base import ValuationProvider, ValuationFactory
 
 
+@ValuationFactory.register("legu")
 class LeguValuationProvider(ValuationProvider):
     """
     Valuation data provider using Legu (乐咕乐股) as the data source.
@@ -18,9 +19,10 @@ class LeguValuationProvider(ValuationProvider):
     - Market-wide indicators
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Initialize the Legu valuation provider."""
         super().__init__()
+        # Accept **kwargs for compatibility (ignore symbol parameter)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

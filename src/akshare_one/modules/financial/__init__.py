@@ -1,9 +1,13 @@
+"""
+Financial statements and metrics module.
+"""
+
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import FinancialDataFactory
-from . import sina, cninfo, eastmoney_direct  # 触发 Provider 注册
+from . import eastmoney_direct, sina, cninfo
 
 
 @api_endpoint(FinancialDataFactory)
@@ -14,7 +18,7 @@ def get_balance_sheet(
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get balance sheet data.
+    Get balance sheet data for a stock.
 
     Args:
         symbol: Stock symbol
@@ -30,7 +34,7 @@ def get_income_statement(
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get income statement data.
+    Get income statement data for a stock.
 
     Args:
         symbol: Stock symbol
@@ -46,7 +50,7 @@ def get_cash_flow(
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get cash flow statement data.
+    Get cash flow statement data for a stock.
 
     Args:
         symbol: Stock symbol
@@ -62,7 +66,7 @@ def get_financial_metrics(
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get key financial metrics.
+    Get financial metrics for a stock.
 
     Args:
         symbol: Stock symbol
@@ -78,7 +82,7 @@ def get_dividend_history(
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get dividend and bonus history.
+    Get dividend history for a stock.
 
     Args:
         symbol: Stock symbol

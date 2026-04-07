@@ -54,8 +54,8 @@ class TestFieldType:
     
     def test_field_type_enum_count(self):
         """Test that all expected field types are present."""
-        # 应该有 22 个字段类型
-        assert len(FieldType) == 22
+        # 应该有 24 个字段类型
+        assert len(FieldType) == 24
 
 
 class TestNamingRules:
@@ -136,10 +136,12 @@ class TestNamingRules:
         assert rules.validate_field_name('buy_amount', FieldType.AMOUNT) is True
         assert rules.validate_field_name('sell_amount', FieldType.AMOUNT) is True
         assert rules.validate_field_name('total_amount', FieldType.AMOUNT) is True
+        assert rules.validate_field_name('amount', FieldType.AMOUNT) is True  # Simple 'amount' is valid
+        assert rules.validate_field_name('price', FieldType.AMOUNT) is True  # Price aliases
         
         # Invalid amount fields
-        assert rules.validate_field_name('amount', FieldType.AMOUNT) is False
-        assert rules.validate_field_name('BuyAmount', FieldType.AMOUNT) is False
+        assert rules.validate_field_name('BuyAmount', FieldType.AMOUNT) is False  # CamelCase invalid
+        assert rules.validate_field_name('amount123', FieldType.AMOUNT) is False  # Numbers invalid
     
     def test_validate_balance_field_name(self):
         """Test validation of balance field names."""
@@ -148,9 +150,11 @@ class TestNamingRules:
         # Valid balance fields
         assert rules.validate_field_name('margin_balance', FieldType.BALANCE) is True
         assert rules.validate_field_name('total_balance', FieldType.BALANCE) is True
+        assert rules.validate_field_name('balance', FieldType.BALANCE) is True  # Simple 'balance' is valid
         
         # Invalid balance fields
-        assert rules.validate_field_name('balance', FieldType.BALANCE) is False
+        assert rules.validate_field_name('Balance', FieldType.BALANCE) is False  # Capitalized invalid
+        assert rules.validate_field_name('balance123', FieldType.BALANCE) is False
     
     def test_validate_value_field_name(self):
         """Test validation of value field names."""
@@ -159,9 +163,11 @@ class TestNamingRules:
         # Valid value fields
         assert rules.validate_field_name('market_value', FieldType.VALUE) is True
         assert rules.validate_field_name('holdings_value', FieldType.VALUE) is True
+        assert rules.validate_field_name('value', FieldType.VALUE) is True  # Simple 'value' is valid
         
         # Invalid value fields
-        assert rules.validate_field_name('value', FieldType.VALUE) is False
+        assert rules.validate_field_name('Value', FieldType.VALUE) is False
+        assert rules.validate_field_name('value123', FieldType.VALUE) is False
     
     def test_validate_net_flow_field_name(self):
         """Test validation of net flow field names."""
@@ -186,9 +192,11 @@ class TestNamingRules:
         assert rules.validate_field_name('turnover_rate', FieldType.RATE) is True
         assert rules.validate_field_name('pct_change', FieldType.RATE) is True
         assert rules.validate_field_name('broken_rate', FieldType.RATE) is True
+        assert rules.validate_field_name('rate', FieldType.RATE) is True  # Simple 'rate' is valid
         
         # Invalid rate fields
-        assert rules.validate_field_name('rate', FieldType.RATE) is False
+        assert rules.validate_field_name('Rate', FieldType.RATE) is False
+        assert rules.validate_field_name('rate123', FieldType.RATE) is False
     
     def test_validate_ratio_field_name(self):
         """Test validation of ratio field names."""
@@ -197,9 +205,11 @@ class TestNamingRules:
         # Valid ratio fields
         assert rules.validate_field_name('holdings_ratio', FieldType.RATIO) is True
         assert rules.validate_field_name('pledge_ratio', FieldType.RATIO) is True
+        assert rules.validate_field_name('ratio', FieldType.RATIO) is True  # Simple 'ratio' is valid
         
         # Invalid ratio fields
-        assert rules.validate_field_name('ratio', FieldType.RATIO) is False
+        assert rules.validate_field_name('Ratio', FieldType.RATIO) is False
+        assert rules.validate_field_name('ratio123', FieldType.RATIO) is False
     
     def test_validate_symbol_field_name(self):
         """Test validation of symbol field names."""

@@ -204,8 +204,14 @@ pmi = get_pmi_index(
 
 - **在线文档**: https://zwldarren.github.io/akshare-one/
 - **快速开始**: [docs/quickstart.md](docs/quickstart.md)
-- **API 参考**: [docs/api/overview.md](docs/api/overview.md)
-- **示例代码**: [docs/examples.md](docs/examples.md)
+- **最小测试集**: [docs/MINIMUM_TEST_SUITE.md](docs/MINIMUM_TEST_SUITE.md)
+- **产品就绪状态**: [PRODUCT_READINESS_STATUS.md](PRODUCT_READINESS_STATUS.md)
+
+**更多文档**：
+- **字段标准**: [docs/FIELD_NAMING_STANDARDS.md](docs/FIELD_NAMING_STANDARDS.md)
+- **兼容性契约**: [docs/COMPATIBILITY_CONTRACT.md](docs/COMPATIBILITY_CONTRACT.md)
+- **错误码参考**: [docs/error_codes.md](docs/error_codes.md)
+- **变更日志**: [CHANGELOG.md](CHANGELOG.md)
 
 ## 🔧 技术栈
 

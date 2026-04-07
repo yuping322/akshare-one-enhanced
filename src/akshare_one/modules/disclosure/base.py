@@ -4,16 +4,15 @@ Base provider class for disclosure news data.
 This module defines the abstract interface for disclosure news data providers.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class DisclosureProvider(BaseProvider):
     """
-    Abstract base class for disclosure news data providers.
+    Base class for disclosure news data providers.
 
     Defines the interface for fetching various types of disclosure data:
     - General disclosure news
@@ -168,61 +167,32 @@ class DisclosureProvider(BaseProvider):
         else:
             return "low"
 
-    @abstractmethod
-    def get_disclosure_news(self, symbol: str | None, start_date: str, end_date: str, category: str) -> pd.DataFrame:
+    def get_disclosure_news(self, symbol: str | None, start_date: str, end_date: str, category: str, **kwargs) -> pd.DataFrame:
         """
         Get disclosure news data.
-
-        Args:
-            symbol: Stock symbol (6-digit code) or None for all stocks
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-            category: News category ('all', 'dividend', 'repurchase', 'st', 'major_event')
-
-        Returns:
-            pd.DataFrame: Standardized disclosure news data
         """
-        pass
+        return self._execute_api_mapped("get_disclosure_news", symbol=symbol, start_date=start_date, end_date=end_date, category=category, **kwargs)
 
-    @abstractmethod
-    def get_dividend_data(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_dividend_data(self, symbol: str | None, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get dividend data.
-
-        Args:
-            symbol: Stock symbol (6-digit code) or None for all stocks
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized dividend data
         """
-        pass
+        return self._execute_api_mapped("get_dividend_data", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
 
-    @abstractmethod
-    def get_repurchase_data(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_repurchase_data(self, symbol: str | None, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get stock repurchase data.
-
-        Args:
-            symbol: Stock symbol (6-digit code) or None for all stocks
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized repurchase data
         """
-        pass
+        return self._execute_api_mapped("get_repurchase_data", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
 
-    @abstractmethod
-    def get_st_delist_data(self, symbol: str | None) -> pd.DataFrame:
+    def get_st_delist_data(self, symbol: str | None, **kwargs) -> pd.DataFrame:
         """
         Get ST/delist risk data.
-
-        Args:
-            symbol: Stock symbol (6-digit code) or None for all stocks
-
-        Returns:
-            pd.DataFrame: Standardized ST/delist risk data
         """
-        pass
+        return self._execute_api_mapped("get_st_delist_data", symbol=symbol, **kwargs)
+
+
+class DisclosureFactory(BaseFactory["DisclosureProvider"]):
+    """Factory class for creating disclosure data providers."""
+
+    _providers: dict[str, type["DisclosureProvider"]] = {}

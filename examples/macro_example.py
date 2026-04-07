@@ -27,7 +27,7 @@ from akshare_one.modules.macro import (
     get_m2_supply,
     get_shibor_rate,
 )
-from akshare_one.modules.macro.factory import MacroFactory
+from akshare_one.modules.macro import MacroFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

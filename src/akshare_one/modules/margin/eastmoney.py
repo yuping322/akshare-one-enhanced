@@ -7,9 +7,10 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import MarginProvider
+from .base import MarginProvider, MarginFactory
 
 
+@MarginFactory.register("eastmoney")
 class EastmoneyMarginProvider(MarginProvider):
     """
     Margin financing data provider using Eastmoney as the data source.

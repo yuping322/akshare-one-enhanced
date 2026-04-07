@@ -2,14 +2,14 @@
 Base provider class for IPO data.
 """
 
-from abc import abstractmethod
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class IPOProvider(BaseProvider):
-    """Abstract base class for IPO data providers."""
+    """Base class for IPO data providers."""
 
     def get_data_type(self) -> str:
         return "ipo"
@@ -20,12 +20,16 @@ class IPOProvider(BaseProvider):
     def get_delay_minutes(self) -> int:
         return 0
 
-    @abstractmethod
-    def get_new_stocks(self) -> pd.DataFrame:
+    def get_new_stocks(self, **kwargs) -> pd.DataFrame:
         """Get newly listed stocks."""
-        pass
+        return self._execute_api_mapped("get_new_stocks", **kwargs)
 
-    @abstractmethod
-    def get_ipo_info(self) -> pd.DataFrame:
+    def get_ipo_info(self, **kwargs) -> pd.DataFrame:
         """Get IPO information."""
-        pass
+        return self._execute_api_mapped("get_ipo_info", **kwargs)
+
+
+class IPOFactory(BaseFactory["IPOProvider"]):
+    """Factory class for creating IPO data providers."""
+
+    _providers: dict[str, type["IPOProvider"]] = {}

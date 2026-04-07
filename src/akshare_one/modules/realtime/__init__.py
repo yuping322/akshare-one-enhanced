@@ -1,25 +1,29 @@
+"""
+Realtime market data module.
+"""
+
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import RealtimeDataFactory
-from . import eastmoney, xueqiu, eastmoney_direct  # 触发 Provider 注册
+from . import eastmoney, eastmoney_direct, xueqiu
 
 
 @api_endpoint(RealtimeDataFactory)
-def get_realtime_data(
+def get_current_data(
     symbol: str | None = None,
     source: SourceType = None,
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get realtime stock data.
+    Get realtime market data for a stock or all stocks.
 
     Args:
-        symbol: Stock symbol
+        symbol: Stock symbol. If None, returns all stocks.
     """
     pass
 
 
-__all__ = ["get_realtime_data", "RealtimeDataFactory"]
+__all__ = ["get_current_data", "RealtimeDataFactory"]

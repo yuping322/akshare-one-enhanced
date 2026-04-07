@@ -4,12 +4,13 @@ Eastmoney performance data provider.
 
 import pandas as pd
 
-from .base import PerformanceProvider
+from .base import PerformanceProvider, PerformanceFactory
 
 
+@PerformanceFactory.register("eastmoney")
 class EastmoneyPerformanceProvider(PerformanceProvider):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         return "eastmoney"

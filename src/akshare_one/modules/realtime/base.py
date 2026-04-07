@@ -1,5 +1,3 @@
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
@@ -20,10 +18,9 @@ class RealtimeDataProvider(BaseProvider):
     def fetch_data(self) -> pd.DataFrame:
         return self.get_current_data()
 
-    @abstractmethod
     def get_current_data(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
         """Fetches realtime market data"""
-        pass
+        return self._execute_api_mapped("get_current_data", columns=columns, row_filter=row_filter, **kwargs)
 
 
 class RealtimeDataFactory(BaseFactory["RealtimeDataProvider"]):

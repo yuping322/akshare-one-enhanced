@@ -7,9 +7,10 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import RestrictedReleaseProvider
+from .base import RestrictedReleaseProvider, RestrictedReleaseFactory
 
 
+@RestrictedReleaseFactory.register("eastmoney")
 class EastmoneyRestrictedReleaseProvider(RestrictedReleaseProvider):
     """
     Restricted release data provider using Eastmoney as the data source.

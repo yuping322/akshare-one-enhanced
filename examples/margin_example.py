@@ -22,7 +22,7 @@ from akshare_one.modules.margin import (
     get_margin_data,
     get_margin_summary,
 )
-from akshare_one.modules.margin.factory import MarginFactory
+from akshare_one.modules.margin import MarginFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

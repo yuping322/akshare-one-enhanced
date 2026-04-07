@@ -27,7 +27,7 @@ from akshare_one.modules.fundflow import (
     get_concept_list,
     get_concept_constituents,
 )
-from akshare_one.modules.fundflow.factory import FundFlowFactory
+from akshare_one.modules.fundflow import FundFlowFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

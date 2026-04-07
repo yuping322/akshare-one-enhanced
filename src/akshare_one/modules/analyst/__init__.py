@@ -7,12 +7,12 @@ import pandas as pd
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import AnalystFactory
-from . import eastmoney  # 触发 Provider 注册
+from . import eastmoney
 
 
 @api_endpoint(AnalystFactory)
 def get_analyst_rank(
-    source: SourceType = "eastmoney",
+    source: SourceType = None,
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -25,7 +25,7 @@ def get_analyst_rank(
 @api_endpoint(AnalystFactory)
 def get_research_report(
     symbol: str,
-    source: SourceType = "eastmoney",
+    source: SourceType = None,
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -33,7 +33,7 @@ def get_research_report(
     Get research reports for a stock.
 
     Args:
-        symbol: Stock symbol (e.g., '600000')
+        symbol: Stock symbol
     """
     pass
 

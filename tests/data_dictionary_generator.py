@@ -52,13 +52,9 @@ class DataDictionaryGenerator:
             if not os.path.isdir(module_path):
                 continue
 
-            factory_path = os.path.join(module_path, "factory.py")
-            if not os.path.exists(factory_path):
-                continue
-
             try:
                 module = __import__(
-                    f"akshare_one.modules.{module_name}.factory",
+                    f"akshare_one.modules.{module_name}",
                     fromlist=[],
                 )
 

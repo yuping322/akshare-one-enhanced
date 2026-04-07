@@ -18,6 +18,13 @@ from typing import Any, Dict, Literal
 
 import pandas as pd
 
+# AkShare compatibility adapter for handling function drift
+from .akshare_compat import (
+    AkShareAdapter,
+    call_akshare,
+    check_akshare_function,
+    get_adapter,
+)
 from .http_client import configure_ssl_verification
 
 
@@ -78,12 +85,13 @@ def apply_data_filter(
 
 _apply_data_filter = apply_data_filter
 
-from .modules.financial.factory import FinancialDataFactory
-from .modules.futures.factory import FuturesDataFactory
-from .modules.historical.factory import HistoricalDataFactory
-from .modules.info.factory import InfoDataFactory
-from .modules.insider.factory import InsiderDataFactory
+from .modules.financial import FinancialDataFactory
+
+from .modules.historical import HistoricalDataFactory
+from .modules.info import InfoDataFactory
+from .modules.insider import InsiderDataFactory
 from .modules.multi_source import (
+    EmptyDataPolicy,
     ExecutionResult,
     MultiSourceRouter,
     create_financial_router,
@@ -95,17 +103,39 @@ from .modules.multi_source import (
     create_limit_up_down_router,
     create_block_deal_router,
 )
-from .modules.news.factory import NewsDataFactory
-from .modules.options.factory import OptionsDataFactory
-from .modules.realtime.factory import RealtimeDataFactory
-from .modules.etf.factory import ETFFactory
-from .modules.index.factory import IndexFactory
-from .modules.bond.factory import BondFactory
-from .modules.valuation.factory import ValuationFactory
-from .modules.shareholder.factory import ShareholderFactory
-from .modules.performance.factory import PerformanceFactory
-from .modules.analyst.factory import AnalystFactory
-from .modules.sentiment.factory import SentimentFactory
+from .modules.news import NewsDataFactory
+from .modules.options import OptionsDataFactory
+from .modules.realtime import RealtimeDataFactory
+from .modules.etf import (
+    ETFFactory,
+    get_etf_hist_data,
+    get_etf_realtime_data,
+    get_etf_list,
+    get_fund_manager_info,
+    get_fund_rating_data,
+)
+from .modules.index import (
+    IndexFactory,
+    get_index_hist_data,
+    get_index_realtime_data,
+    get_index_list,
+    get_index_constituents,
+)
+from .modules.bond import (
+    BondFactory,
+    get_bond_list,
+    get_bond_hist_data,
+    get_bond_realtime_data,
+)
+from .modules.valuation import (
+    ValuationFactory,
+    get_stock_valuation,
+    get_market_valuation,
+)
+from .modules.shareholder import ShareholderFactory
+from .modules.performance import PerformanceFactory
+from .modules.analyst import AnalystFactory
+from .modules.sentiment import SentimentFactory
 from .modules.concept import ConceptFactory, get_concept_list, get_concept_stocks
 from .modules.industry import IndustryFactory, get_industry_list, get_industry_stocks
 from .modules.hkus import HKUSFactory, get_hk_stocks, get_us_stocks
@@ -130,6 +160,13 @@ from .modules.lhb import (
     get_dragon_tiger_list,
     get_dragon_tiger_summary,
     get_dragon_tiger_broker_stats,
+)
+from .modules.futures import (
+    FuturesDataFactory,
+    get_futures_hist_data,
+    get_futures_main_contracts,
+    get_futures_realtime_data,
+    get_futures_all_quotes,
 )
 from .modules.limitup import (
     LimitUpDownFactory,
@@ -189,9 +226,15 @@ from .modules.esg import (
 __all__ = [
     # 配置
     "configure_ssl_verification",
+    # AkShare兼容性适配器
+    "AkShareAdapter",
+    "call_akshare",
+    "check_akshare_function",
+    "get_adapter",
     # 工具函数
     "apply_data_filter",
     # 多数据源
+    "EmptyDataPolicy",
     "ExecutionResult",
     "MultiSourceRouter",
     "create_historical_router",
@@ -840,7 +883,7 @@ def get_basic_info_multi_source(
         pd.DataFrame: 股票基础信息
     """
     import logging
-    from .modules.info.factory import InfoDataFactory
+    from .modules.info import InfoDataFactory
 
     if sources is None:
         sources = ["eastmoney", "sina"]
@@ -953,7 +996,7 @@ def get_news_data_multi_source(
         pd.DataFrame: 新闻数据
     """
     import logging
-    from .modules.news.factory import NewsDataFactory
+    from .modules.news import NewsDataFactory
 
     if sources is None:
         sources = ["eastmoney", "sina"]
@@ -989,7 +1032,7 @@ def get_inner_trade_data_multi_source(
         pd.DataFrame: 内部交易数据
     """
     import logging
-    from .modules.insider.factory import InsiderDataFactory
+    from .modules.insider import InsiderDataFactory
 
     if sources is None:
         sources = ["xueqiu"]
@@ -1027,7 +1070,7 @@ def get_financial_data_multi_source(
         pd.DataFrame: 财务数据
     """
     import logging
-    from .modules.financial.factory import FinancialDataFactory
+    from .modules.financial import FinancialDataFactory
 
     if sources is None:
         sources = ["eastmoney_direct", "sina", "cninfo"]

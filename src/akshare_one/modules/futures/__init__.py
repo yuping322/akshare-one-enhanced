@@ -1,80 +1,95 @@
-from typing import Any
+"""
+Futures data module for PV.Futures.
+
+This module provides interfaces to fetch futures data including:
+- Historical futures market data
+- Realtime futures quotes
+- Main contract list
+- All futures quotes
+"""
+
+from typing import Any, Literal
 
 import pandas as pd
 
-from .factory import FuturesHistoricalFactory, FuturesRealtimeFactory
+from ..base import ColumnsType, FilterType, SourceType
+from ..factory_base import api_endpoint
+from .base import FuturesHistoricalFactory, FuturesRealtimeFactory, FuturesDataFactory
+from . import sina, eastmoney
 
 
+@api_endpoint(FuturesHistoricalFactory)
 def get_futures_hist_data(
     symbol: str,
+    contract: str = "main",
+    interval: Literal["minute", "hour", "day", "week", "month"] = "day",
+    interval_multiplier: int = 1,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    source: str | list[str] | None = None,
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
     Get futures historical data.
 
     Args:
-        symbol: Futures symbol
-        start_date: Start date (YYYY-MM-DD)
-        end_date: End date (YYYY-MM-DD)
-        source: Data source(s)
-        columns: Columns to return
-        row_filter: Row filter config
-
-    Returns:
-        pd.DataFrame: Historical data
+        symbol: Futures symbol (e.g., 'CU', 'AG')
+        contract: Contract code or 'main'
+        interval: Data interval
+        interval_multiplier: Interval multiplier
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
     """
-    return FuturesHistoricalFactory.call_provider_method(
-        "get_historical_data",
-        symbol,
-        start_date,
-        end_date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
+@api_endpoint(FuturesHistoricalFactory)
+def get_futures_main_contracts(
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get main futures contracts list.
+    """
+    pass
+
+
+@api_endpoint(FuturesRealtimeFactory)
 def get_futures_realtime_data(
     symbol: str | None = None,
-    source: str | list[str] | None = None,
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
     Get futures realtime quotes.
 
     Args:
         symbol: Futures symbol (optional)
-        source: Data source(s)
-        columns: Columns to return
-        row_filter: Row filter config
-
-    Returns:
-        pd.DataFrame: Realtime data
     """
-    # Create extra row filter if symbol is provided
-    if symbol:
-        row_filter = row_filter or {}
-        if "query" in row_filter:
-            row_filter["query"] = f"({row_filter['query']}) and symbol == '{symbol}'"
-        else:
-            row_filter["query"] = f"symbol == '{symbol}'"
+    pass
 
-    return FuturesRealtimeFactory.call_provider_method(
-        "get_realtime_data",
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+
+@api_endpoint(FuturesRealtimeFactory)
+def get_futures_all_quotes(
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get all futures quotes.
+    """
+    pass
 
 
 __all__ = [
     "get_futures_hist_data",
+    "get_futures_main_contracts",
     "get_futures_realtime_data",
+    "get_futures_all_quotes",
     "FuturesHistoricalFactory",
     "FuturesRealtimeFactory",
+    "FuturesDataFactory",
 ]

@@ -2,10 +2,11 @@ import akshare as ak
 import pandas as pd
 
 from ..cache import cache
-from .base import NewsDataProvider
+from .base import NewsDataProvider, NewsDataFactory
 
 
-class EastMoneyNews(NewsDataProvider):
+@NewsDataFactory.register("eastmoney")
+class EastmoneyNewsProvider(NewsDataProvider):
     @cache(
         "news_cache",
         key=lambda self: f"eastmoney_news_{self.symbol}",

@@ -9,7 +9,7 @@ from .base import RealtimeDataProvider, RealtimeDataFactory
 
 
 @RealtimeDataFactory.register("eastmoney")
-class EastmoneyRealtime(RealtimeDataProvider):
+class EastmoneyRealtimeProvider(RealtimeDataProvider):
     def __init__(self, symbol: str | None = None, **kwargs):
         super().__init__(symbol=symbol, **kwargs)
         self.logger = get_logger(__name__)
@@ -69,3 +69,5 @@ class EastmoneyRealtime(RealtimeDataProvider):
 
             raise
 
+
+EastmoneyRealtime = EastmoneyRealtimeProvider

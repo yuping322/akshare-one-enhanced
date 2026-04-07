@@ -4,21 +4,15 @@ Base provider class for limit up/down data.
 This module defines the abstract interface for limit up/down data providers.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class LimitUpDownProvider(BaseProvider):
     """
-    Abstract base class for limit up/down data providers.
-
-    Defines the interface for fetching various types of limit up/down data:
-    - Limit up pool (涨停池)
-    - Limit down pool (跌停池)
-    - Limit up/down statistics
+    Base class for limit up/down data providers.
     """
 
     def get_data_type(self) -> str:
@@ -33,42 +27,26 @@ class LimitUpDownProvider(BaseProvider):
         """Limit up/down data is realtime, minimal delay."""
         return 0
 
-    @abstractmethod
-    def get_limit_up_pool(self, date: str) -> pd.DataFrame:
+    def get_limit_up_pool(self, date: str, **kwargs) -> pd.DataFrame:
         """
         Get limit up pool data.
-
-        Args:
-            date: Date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized limit up pool data
         """
-        pass
+        return self._execute_api_mapped("get_limit_up_pool", date=date, **kwargs)
 
-    @abstractmethod
-    def get_limit_down_pool(self, date: str) -> pd.DataFrame:
+    def get_limit_down_pool(self, date: str, **kwargs) -> pd.DataFrame:
         """
         Get limit down pool data.
-
-        Args:
-            date: Date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized limit down pool data
         """
-        pass
+        return self._execute_api_mapped("get_limit_down_pool", date=date, **kwargs)
 
-    @abstractmethod
-    def get_limit_up_stats(self, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_limit_up_stats(self, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get limit up/down statistics.
-
-        Args:
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Statistics data
         """
-        pass
+        return self._execute_api_mapped("get_limit_up_stats", start_date=start_date, end_date=end_date, **kwargs)
+
+
+class LimitUpDownFactory(BaseFactory["LimitUpDownProvider"]):
+    """Factory class for creating limit up/down data providers."""
+
+    _providers: dict[str, type["LimitUpDownProvider"]] = {}

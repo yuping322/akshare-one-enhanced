@@ -20,9 +20,21 @@ class JslBondProvider(BondProvider):
     - Double low strategy data
     """
 
-    def __init__(self):
+    _API_MAP = {
+        "get_bond_list": {
+            "ak_func": "bond_cb_jsl",
+        },
+        "get_bond_hist": {
+            "ak_func": None,  # JiSiLu doesn't provide direct historical data API
+        },
+        "get_bond_realtime": {
+            "ak_func": "bond_cb_jsl",
+        },
+    }
+
+    def __init__(self, **kwargs):
         """Initialize the JiSiLu bond provider."""
-        super().__init__()
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

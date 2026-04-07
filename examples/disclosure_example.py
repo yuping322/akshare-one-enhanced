@@ -24,7 +24,7 @@ from akshare_one.modules.disclosure import (
     get_repurchase_data,
     get_st_delist_data,
 )
-from akshare_one.modules.disclosure.factory import DisclosureFactory
+from akshare_one.modules.disclosure import DisclosureFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

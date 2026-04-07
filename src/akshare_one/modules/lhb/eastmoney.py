@@ -7,9 +7,10 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import DragonTigerProvider
+from .base import DragonTigerProvider, DragonTigerFactory
 
 
+@DragonTigerFactory.register("eastmoney")
 class EastmoneyDragonTigerProvider(DragonTigerProvider):
     """
     Dragon tiger list data provider using Eastmoney as the data source.

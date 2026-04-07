@@ -4,18 +4,19 @@ Eastmoney concept sector data provider.
 
 import pandas as pd
 
-from .base import ConceptProvider
+from .base import ConceptProvider, ConceptFactory
 
 
+@ConceptFactory.register("eastmoney")
 class EastmoneyConceptProvider(ConceptProvider):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
-        return pd.DataFrame()
+        return self.get_concept_list()
 
     def get_concept_list(
         self,

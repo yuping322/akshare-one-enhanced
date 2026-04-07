@@ -20,9 +20,10 @@ class EastmoneyIndexProvider(IndexProvider):
     - Index constituents
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Initialize the Eastmoney index provider."""
         super().__init__()
+        # Accept **kwargs for compatibility (ignore symbol/category parameters)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

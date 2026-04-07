@@ -1,8 +1,8 @@
 import time
 
-import akshare as ak
 import pandas as pd
 
+from ...akshare_compat import call_akshare
 from ...logging_config import get_logger, log_api_request
 from ..cache import cache
 from .base import HistoricalDataProvider, HistoricalDataFactory
@@ -93,14 +93,16 @@ class EastMoneyHistorical(HistoricalDataProvider):
         start_date = self._ensure_time_format(self.start_date, "09:30:00")
         end_date = self._ensure_time_format(self.end_date, "15:00:00")
 
-        # Get raw data
+        # Get raw data using adapter (handles function drift)
         period = "1" if self.interval == "minute" else "60"
-        raw_df = ak.stock_zh_a_hist_min_em(
+        raw_df = call_akshare(
+            "stock_zh_a_hist_min_em",
             symbol=self.symbol,
             period=period,
             start_date=start_date,
             end_date=end_date,
             adjust=self._map_adjust_param(self.adjust),
+            fallback_func=None,  # No fallback for intraday
         )
 
         # Process data
@@ -127,12 +129,15 @@ class EastMoneyHistorical(HistoricalDataProvider):
         if self._is_etf_code(self.symbol):
             raw_df = self._get_etf_data(start_date, end_date)
         else:
-            raw_df = ak.stock_zh_a_hist(
+            # Use adapter for stock data (handles function drift)
+            raw_df = call_akshare(
+                "stock_zh_a_hist",
                 symbol=self.symbol,
                 period=period,
                 start_date=start_date,
                 end_date=end_date,
                 adjust=self._map_adjust_param(self.adjust),
+                fallback_func="stock_zh_a_daily",  # Fallback for older versions
             )
 
         if self.interval == "year":
@@ -295,7 +300,12 @@ class EastMoneyHistorical(HistoricalDataProvider):
             },
         )
 
-        raw_df: pd.DataFrame = ak.fund_etf_hist_sina(symbol=etf_symbol)
+        # Use adapter for ETF data (handles function drift)
+        raw_df = call_akshare(
+            "fund_etf_hist_sina",
+            symbol=etf_symbol,
+            fallback_func="fund_etf_fund_daily_em",
+        )
 
         if raw_df.empty:
             self.logger.warning(

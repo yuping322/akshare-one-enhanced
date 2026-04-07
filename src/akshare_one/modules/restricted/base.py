@@ -4,20 +4,15 @@ Base provider class for restricted stock release data.
 This module defines the abstract interface for restricted stock release data providers.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class RestrictedReleaseProvider(BaseProvider):
     """
-    Abstract base class for restricted stock release data providers.
-
-    Defines the interface for fetching various types of restricted release data:
-    - Restricted release data (detailed release information)
-    - Restricted release calendar (aggregated release schedule)
+    Base class for restricted stock release data providers.
     """
 
     def get_data_type(self) -> str:
@@ -32,31 +27,20 @@ class RestrictedReleaseProvider(BaseProvider):
         """Restricted release data is updated irregularly, no fixed delay."""
         return 0
 
-    @abstractmethod
-    def get_restricted_release(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_restricted_release(self, symbol: str | None, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get restricted stock release data.
-
-        Args:
-            symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized restricted release data
         """
-        pass
+        return self._execute_api_mapped("get_restricted_release", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
 
-    @abstractmethod
-    def get_restricted_release_calendar(self, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_restricted_release_calendar(self, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get restricted stock release calendar.
-
-        Args:
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Calendar data
         """
-        pass
+        return self._execute_api_mapped("get_restricted_release_calendar", start_date=start_date, end_date=end_date, **kwargs)
+
+
+class RestrictedReleaseFactory(BaseFactory["RestrictedReleaseProvider"]):
+    """Factory class for creating restricted release data providers."""
+
+    _providers: dict[str, type["RestrictedReleaseProvider"]] = {}

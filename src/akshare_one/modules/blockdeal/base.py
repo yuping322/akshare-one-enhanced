@@ -4,20 +4,15 @@ Base provider class for block deal data.
 This module defines the abstract interface for block deal data providers.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class BlockDealProvider(BaseProvider):
     """
-    Abstract base class for block deal data providers.
-
-    Defines the interface for fetching block deal transaction data:
-    - Block deal details (individual stock and market-wide)
-    - Block deal summary statistics
+    Base class for block deal data providers.
     """
 
     def get_data_type(self) -> str:
@@ -32,32 +27,20 @@ class BlockDealProvider(BaseProvider):
         """Block deal data is T+1, no intraday delay."""
         return 0
 
-    @abstractmethod
-    def get_block_deal(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_block_deal(self, symbol: str | None, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
         """
         Get block deal transaction details.
-
-        Args:
-            symbol: Stock symbol (6-digit code). If None, returns all stocks.
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized block deal data
         """
-        pass
+        return self._execute_api_mapped("get_block_deal", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
 
-    @abstractmethod
-    def get_block_deal_summary(self, start_date: str, end_date: str, group_by: str) -> pd.DataFrame:
+    def get_block_deal_summary(self, start_date: str, end_date: str, group_by: str, **kwargs) -> pd.DataFrame:
         """
         Get block deal summary statistics.
-
-        Args:
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-            group_by: Grouping dimension ('stock', 'date', or 'broker')
-
-        Returns:
-            pd.DataFrame: Summary statistics
         """
-        pass
+        return self._execute_api_mapped("get_block_deal_summary", start_date=start_date, end_date=end_date, group_by=group_by, **kwargs)
+
+
+class BlockDealFactory(BaseFactory["BlockDealProvider"]):
+    """Factory class for creating block deal data providers."""
+
+    _providers: dict[str, type["BlockDealProvider"]] = {}

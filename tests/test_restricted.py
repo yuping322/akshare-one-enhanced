@@ -12,7 +12,7 @@ from akshare_one.modules.restricted import (
     get_restricted_release_calendar,
 )
 from akshare_one.modules.restricted.eastmoney import EastmoneyRestrictedReleaseProvider
-from akshare_one.modules.restricted.factory import RestrictedReleaseFactory
+from akshare_one.modules.restricted import RestrictedReleaseFactory
 
 
 class TestRestrictedReleaseFactory:

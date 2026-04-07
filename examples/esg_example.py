@@ -22,7 +22,7 @@ from akshare_one.modules.esg import (
     get_esg_rating,
     get_esg_rating_rank,
 )
-from akshare_one.modules.esg.factory import ESGFactory
+from akshare_one.modules.esg import ESGFactory
 from akshare_one.modules.exceptions import (
     InvalidParameterError,
     NoDataError,

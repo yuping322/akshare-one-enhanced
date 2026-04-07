@@ -1,5 +1,3 @@
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
@@ -38,10 +36,9 @@ class HistoricalDataProvider(BaseProvider):
     def get_supported_intervals(cls) -> list[str]:
         return ["minute", "hour", "day", "week", "month", "year"]
 
-    @abstractmethod
     def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
         """Fetches historical market data"""
-        pass
+        return self._execute_api_mapped("get_hist_data", columns=columns, row_filter=row_filter, **kwargs)
 
 
 class HistoricalDataFactory(BaseFactory["HistoricalDataProvider"]):

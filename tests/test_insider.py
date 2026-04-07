@@ -73,7 +73,7 @@ class TestInnerTradeData:
     def test_factory_error_handling(self):
         """测试工厂错误处理"""
         with patch(
-            "akshare_one.modules.insider.factory.InsiderDataFactory.get_provider"
+            "akshare_one.modules.insider.InsiderDataFactory.get_provider"
         ) as mock_factory:
             mock_factory.side_effect = ValueError("Unsupported source")
             with pytest.raises(ValueError, match="Unsupported source"):

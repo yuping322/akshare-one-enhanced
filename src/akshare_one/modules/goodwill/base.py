@@ -4,21 +4,15 @@ Base provider class for goodwill data.
 This module defines the abstract interface for goodwill data providers.
 """
 
-from abc import abstractmethod
-
 import pandas as pd
 
 from ..base import BaseProvider
+from ..factory_base import BaseFactory
 
 
 class GoodwillProvider(BaseProvider):
     """
-    Abstract base class for goodwill data providers.
-
-    Defines the interface for fetching various types of goodwill data:
-    - Goodwill data (balance and ratios)
-    - Goodwill impairment expectations
-    - Goodwill statistics by industry
+    Base class for goodwill data providers.
     """
 
     def get_data_type(self) -> str:
@@ -33,43 +27,26 @@ class GoodwillProvider(BaseProvider):
         """Goodwill data is updated quarterly, typically with a delay."""
         return 43200  # 30 days in minutes
 
-    @abstractmethod
-    def get_goodwill_data(self, symbol: str | None, start_date: str, end_date: str) -> pd.DataFrame:
+    def get_goodwill_data(self, symbol: str | None = None, start_date: str = "1970-01-01", end_date: str = "2030-12-31", **kwargs) -> pd.DataFrame:
         """
         Get goodwill data.
-
-        Args:
-            symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
-            start_date: Start date (YYYY-MM-DD)
-            end_date: End date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Standardized goodwill data
         """
-        pass
+        return self._execute_api_mapped("get_goodwill_data", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
 
-    @abstractmethod
-    def get_goodwill_impairment(self, date: str) -> pd.DataFrame:
+    def get_goodwill_impairment(self, date: str | None = None, **kwargs) -> pd.DataFrame:
         """
         Get goodwill impairment expectations.
-
-        Args:
-            date: Query date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Goodwill impairment expectations
         """
-        pass
+        return self._execute_api_mapped("get_goodwill_impairment", date=date, **kwargs)
 
-    @abstractmethod
-    def get_goodwill_by_industry(self, date: str) -> pd.DataFrame:
+    def get_goodwill_by_industry(self, date: str | None = None, **kwargs) -> pd.DataFrame:
         """
         Get goodwill statistics by industry.
-
-        Args:
-            date: Query date (YYYY-MM-DD)
-
-        Returns:
-            pd.DataFrame: Industry goodwill statistics
         """
-        pass
+        return self._execute_api_mapped("get_goodwill_by_industry", date=date, **kwargs)
+
+
+class GoodwillFactory(BaseFactory["GoodwillProvider"]):
+    """Factory class for creating goodwill data providers."""
+
+    _providers: dict[str, type["GoodwillProvider"]] = {}

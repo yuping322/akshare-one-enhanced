@@ -1,11 +1,11 @@
 """
-Fund flow data module for PV.FundFlow.
+Fund flow (资金流向) data module for PV.FundFlow.
 
 This module provides interfaces to fetch fund flow data including:
-- Individual stock fund flow
-- Sector fund flow (industry and concept)
-- Main fund flow rankings
-- Industry and concept sector lists and constituents
+- Individual stock fund flow (main/small/large/medium/retail orders)
+- Sector fund flow (industry and concept sectors)
+- Main fund flow rankings by date and indicator
+- Sector constituents and listings
 """
 
 from typing import Literal
@@ -15,7 +15,7 @@ import pandas as pd
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import FundFlowFactory
-from . import eastmoney, sina  # 导入以触发 Provider 注册
+from . import eastmoney
 
 
 @api_endpoint(FundFlowFactory)
@@ -23,7 +23,7 @@ def get_stock_fund_flow(
     symbol: str,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    source: SourceType = None,
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -40,10 +40,10 @@ def get_stock_fund_flow(
 
 @api_endpoint(FundFlowFactory)
 def get_sector_fund_flow(
-    sector_type: Literal["industry", "concept"],
+    sector_type: Literal["industry", "concept"] = "industry",
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    source: SourceType = None,
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -61,73 +61,87 @@ def get_sector_fund_flow(
 @api_endpoint(FundFlowFactory)
 def get_main_fund_flow_rank(
     date: str,
-    indicator: Literal["net_inflow", "net_inflow_rate"] = "net_inflow",
-    source: SourceType = None,
+    indicator: str = "main_net_inflow",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get main fund flow rankings.
+    Get main fund flow ranking.
 
     Args:
-        date: Date in YYYY-MM-DD format
-        indicator: Ranking indicator ('net_inflow' or 'net_inflow_rate')
+        date: Query date in YYYY-MM-DD format
+        indicator: Ranking indicator (e.g., 'main_net_inflow', 'main_net_inflow_ratio')
     """
     pass
 
 
 @api_endpoint(FundFlowFactory)
 def get_industry_list(
-    source: SourceType = None,
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
-    """
-    Get list of industry sectors.
-    """
     pass
 
 
 @api_endpoint(FundFlowFactory)
 def get_industry_constituents(
     industry_code: str,
-    source: SourceType = None,
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
-    """
-    Get constituent stocks of an industry sector.
-
-    Args:
-        industry_code: Industry sector code
-    """
     pass
 
 
 @api_endpoint(FundFlowFactory)
 def get_concept_list(
-    source: SourceType = None,
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
-    """
-    Get list of concept sectors.
-    """
     pass
 
 
 @api_endpoint(FundFlowFactory)
 def get_concept_constituents(
     concept_code: str,
-    source: SourceType = None,
+    source: SourceType = "eastmoney",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    pass
+
+
+@api_endpoint(FundFlowFactory)
+def get_sector_list(
+    sector_type: Literal["industry", "concept"] = "industry",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get constituent stocks of a concept sector.
+    Get sector list.
 
     Args:
-        concept_code: Concept sector code
+        sector_type: Sector type ('industry' or 'concept')
+    """
+    pass
+
+
+@api_endpoint(FundFlowFactory)
+def get_sector_constituents(
+    sector_code: str,
+    source: SourceType = "eastmoney",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get constituent stocks of a sector.
+
+    Args:
+        sector_code: Sector code or name
     """
     pass
 
@@ -140,5 +154,7 @@ __all__ = [
     "get_industry_constituents",
     "get_concept_list",
     "get_concept_constituents",
+    "get_sector_list",
+    "get_sector_constituents",
     "FundFlowFactory",
 ]

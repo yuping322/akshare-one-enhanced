@@ -20,9 +20,22 @@ class EastmoneyBondProvider(BondProvider):
     - Realtime quotes
     """
 
-    def __init__(self):
+    _API_MAP = {
+        "get_bond_list": {
+            "ak_func": "bond_zh_cov",
+        },
+        "get_bond_hist": {
+            "ak_func": "bond_zh_hs_cov_daily",
+            "params": {"symbol": "symbol"},
+        },
+        "get_bond_realtime": {
+            "ak_func": "bond_zh_cov",
+        },
+    }
+
+    def __init__(self, **kwargs):
         """Initialize the Eastmoney bond provider."""
-        super().__init__()
+        super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         """Return the data source name."""

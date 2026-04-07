@@ -1,23 +1,25 @@
 """
-Limit Up/Down (涨停池) data module for PV.LimitUpDown.
+Limit Up/Down (涨跌停) data module for PV.LimitUpDown.
 
 This module provides interfaces to fetch limit up/down data including:
-- Limit up pool (涨停池)
-- Limit down pool (跌停池)
-- Limit up/down statistics
+- Daily limit up stock pool
+- Daily limit down stock pool
+- Limit up/down market statistics
 """
 
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import LimitUpDownFactory
+from ..factory_base import api_endpoint
+from .base import LimitUpDownFactory
+from . import eastmoney
+from . import sina
 
 
-@doc_params
+@api_endpoint(LimitUpDownFactory)
 def get_limit_up_pool(
-    date: str,
-    source: SourceType = None,
+    date: str | None = None,
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -25,21 +27,15 @@ def get_limit_up_pool(
     Get limit up pool data.
 
     Args:
-        date: Date in YYYY-MM-DD format
+        date: Query date in YYYY-MM-DD format. If None, returns latest.
     """
-    return LimitUpDownFactory.call_provider_method(
-        "get_limit_up_pool",
-        date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(LimitUpDownFactory)
 def get_limit_down_pool(
-    date: str,
-    source: SourceType = None,
+    date: str | None = None,
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -47,22 +43,16 @@ def get_limit_down_pool(
     Get limit down pool data.
 
     Args:
-        date: Date in YYYY-MM-DD format
+        date: Query date in YYYY-MM-DD format. If None, returns latest.
     """
-    return LimitUpDownFactory.call_provider_method(
-        "get_limit_down_pool",
-        date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(LimitUpDownFactory)
 def get_limit_up_stats(
-    start_date: str,
-    end_date: str,
-    source: SourceType = None,
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -73,14 +63,7 @@ def get_limit_up_stats(
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
     """
-    return LimitUpDownFactory.call_provider_method(
-        "get_limit_up_stats",
-        start_date,
-        end_date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = [

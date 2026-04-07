@@ -1,0 +1,33 @@
+# Development dependencies
+# Generated from pyproject.toml dependency groups
+# Usage: pip install -r requirements-dev.txt
+
+# Testing
+pytest>=8.4.1
+pytest-cov>=6.2.1
+pytest-timeout>=2.3.1
+pytest-mock>=3.14.0
+pytest-rerunfailures>=16.1
+pytest-snapshot>=0.9.0
+
+# Linting and formatting
+ruff>=0.12.1
+
+# Type checking
+pandas-stubs>=2.3.0.250703
+types-cachetools>=6.1.0.20250717
+types-requests>=2.32.4.20250809
+
+# Documentation
+mkdocs-material>=9.6.15
+
+# Pre-commit hooks
+pre-commit>=4.2.0
+
+# Development tools
+ty>=0.0.10
+
+# Optional: MCP server
+fastmcp>=2.11.3
+pydantic>=2.0.0
+uvicorn>=0.35.0

@@ -14,13 +14,13 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from src.akshare_one.modules.disclosure import (
+from akshare_one.modules.disclosure import (
     get_dividend_data,
     get_repurchase_data,
     get_st_delist_data,
+    DisclosureFactory,
 )
-from src.akshare_one.modules.disclosure.eastmoney import EastmoneyDisclosureProvider
-from src.akshare_one.modules.disclosure.factory import DisclosureFactory
+from akshare_one.modules.disclosure.eastmoney import EastmoneyDisclosureProvider
 
 
 class TestDisclosureFactory:

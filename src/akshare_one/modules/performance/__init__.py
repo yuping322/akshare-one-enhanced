@@ -5,52 +5,41 @@ Performance data module.
 import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import doc_params
-from .factory import PerformanceFactory
+from ..factory_base import api_endpoint
+from .base import PerformanceFactory
+from . import eastmoney
 
 
-@doc_params
+@api_endpoint(PerformanceFactory)
 def get_performance_forecast(
-    date: str = "20240331",
+    date: str,
     source: SourceType = None,
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get performance forecast (业绩预告) data.
+    Get performance forecast data.
 
     Args:
-        date: Report date in YYYYMMDD format (e.g., '20240331')
+        date: Report date (e.g., '20231231')
     """
-    return PerformanceFactory.call_provider_method(
-        "get_performance_forecast",
-        date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
-@doc_params
+@api_endpoint(PerformanceFactory)
 def get_performance_express(
-    date: str = "20240331",
+    date: str,
     source: SourceType = None,
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get performance express (业绩快报) data.
+    Get performance express data.
 
     Args:
-        date: Report date in YYYYMMDD format
+        date: Report date (e.g., '20231231')
     """
-    return PerformanceFactory.call_provider_method(
-        "get_performance_express",
-        date,
-        source=source,
-        columns=columns,
-        row_filter=row_filter,
-    )
+    pass
 
 
 __all__ = ["get_performance_forecast", "get_performance_express", "PerformanceFactory"]

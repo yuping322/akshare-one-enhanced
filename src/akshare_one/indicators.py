@@ -39,7 +39,7 @@ Provides common technical analysis indicators like:
 
 import pandas as pd
 
-from .modules.indicators.factory import IndicatorFactory
+from .modules.indicators import IndicatorFactory
 
 
 def get_sma(df: pd.DataFrame, window: int = 20, calculator_type: str = "talib") -> pd.DataFrame:

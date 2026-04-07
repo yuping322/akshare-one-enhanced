@@ -6,16 +6,14 @@ This module implements the LHB data provider using Sina as the data source.
 
 import pandas as pd
 
-from .base import DragonTigerProvider
+from .base import DragonTigerProvider, DragonTigerFactory
 
 
-class SinaLHBProvider(DragonTigerProvider):
-    """
-    LHB data provider using Sina as the data source.
-    """
+@DragonTigerFactory.register("sina")
+class SinaDragonTigerProvider(DragonTigerProvider):
+    """Sina Dragon Tiger List (龙虎榜) data provider."""
 
     def get_source_name(self) -> str:
-        """Return the data source name."""
         return "sina"
 
     def fetch_data(self) -> pd.DataFrame:
@@ -51,3 +49,5 @@ class SinaLHBProvider(DragonTigerProvider):
         """Get broker statistics from dragon tiger list from Sina."""
         self.validate_date_range(start_date, end_date)
         return pd.DataFrame(columns=["broker", "buy_count", "sell_count", "net_amount", "avg_change_pct"])
+
+SinaLHBProvider = SinaDragonTigerProvider

@@ -9,9 +9,6 @@ from .base import HKUSProvider, HKUSFactory
 
 @HKUSFactory.register("eastmoney")
 class EastmoneyHKUSProvider(HKUSProvider):
-    def __init__(self):
-        super().__init__()
-
     def get_source_name(self) -> str:
         return "eastmoney"
 

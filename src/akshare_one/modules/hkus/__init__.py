@@ -1,5 +1,5 @@
 """
-Hong Kong and US stock data module.
+Hong Kong and US stocks module.
 """
 
 import pandas as pd
@@ -7,7 +7,7 @@ import pandas as pd
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import HKUSFactory
-from . import eastmoney  # 触发 Provider 注册
+from . import eastmoney
 
 
 @api_endpoint(HKUSFactory)
@@ -17,7 +17,7 @@ def get_hk_stocks(
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
     """
-    Get HK stock list.
+    Get Hong Kong stock list.
     """
     pass
 

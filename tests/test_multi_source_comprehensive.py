@@ -11,7 +11,11 @@ from akshare_one import (
     get_hist_data_multi_source,
     get_news_data_multi_source,
 )
-from akshare_one.modules.multi_source import ExecutionResult, MultiSourceRouter
+from akshare_one.modules.multi_source import (
+    EmptyDataPolicy,
+    ExecutionResult,
+    MultiSourceRouter,
+)
 
 
 def test_multi_source_router_basic_functionality():
@@ -174,7 +178,7 @@ def test_multi_source_router_stats():
 
 def test_get_hist_data_multi_source_integration():
     """Integration test for get_hist_data_multi_source with multiple sources."""
-    with patch('akshare_one.modules.historical.factory.HistoricalDataFactory.get_provider') as mock_factory:
+    with patch('akshare_one.modules.historical.HistoricalDataFactory.get_provider') as mock_factory:
         # Mock providers to simulate different behaviors
         mock_provider1 = Mock()
         mock_provider1.get_hist_data.side_effect = Exception("Provider 1 failed")
@@ -217,7 +221,7 @@ def test_get_hist_data_multi_source_integration():
 
 def test_get_basic_info_multi_source_integration():
     """Integration test for get_basic_info_multi_source with multiple sources."""
-    with patch('akshare_one.modules.info.factory.InfoDataFactory.get_provider') as mock_factory:
+    with patch('akshare_one.modules.info.InfoDataFactory.get_provider') as mock_factory:
         # Mock providers to simulate different behaviors
         mock_provider1 = Mock()
         mock_provider1.get_basic_info.side_effect = Exception("Provider 1 failed")
@@ -257,7 +261,7 @@ def test_get_basic_info_multi_source_integration():
 
 def test_get_news_data_multi_source_integration():
     """Integration test for get_news_data_multi_source with multiple sources."""
-    with patch('akshare_one.modules.news.factory.NewsDataFactory.get_provider') as mock_factory:
+    with patch('akshare_one.modules.news.NewsDataFactory.get_provider') as mock_factory:
         # Mock providers to simulate different behaviors
         mock_provider1 = Mock()
         mock_provider1.get_news_data.side_effect = Exception("Provider 1 failed")
@@ -296,7 +300,7 @@ def test_get_news_data_multi_source_integration():
 
 def test_get_financial_data_multi_source_integration():
     """Integration test for get_financial_data_multi_source with multiple sources."""
-    with patch('akshare_one.modules.financial.factory.FinancialDataFactory.get_provider') as mock_factory:
+    with patch('akshare_one.modules.financial.FinancialDataFactory.get_provider') as mock_factory:
         # Mock providers to simulate different behaviors
         mock_provider1 = Mock()
         mock_provider1.get_balance_sheet.side_effect = Exception("Provider 1 failed")
@@ -369,3 +373,200 @@ def test_execution_result_properties():
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+# ============================================
+# EmptyDataPolicy Tests (New)
+# ============================================
+
+
+class TestEmptyDataPolicy:
+    """Test EmptyDataPolicy functionality in MultiSourceRouter."""
+
+    def test_strict_policy_empty_result_fails(self):
+        """Test STRICT policy: empty DataFrame triggers fallback."""
+        # First provider returns empty DataFrame
+        provider1 = Mock()
+        provider1.get_data.return_value = pd.DataFrame()
+
+        # Second provider returns valid data
+        provider2 = Mock()
+        provider2.get_data.return_value = pd.DataFrame({"col": [1, 2, 3]})
+
+        router = MultiSourceRouter(
+            providers=[
+                ("source1", provider1),
+                ("source2", provider2),
+            ],
+            empty_data_policy=EmptyDataPolicy.STRICT,
+        )
+
+        result = router.execute("get_data")
+
+        # Should fallback to source2
+        assert not result.empty
+        assert len(result) == 3
+        assert provider1.get_data.called
+        assert provider2.get_data.called
+
+    def test_relaxed_policy_empty_result_accepted(self):
+        """Test RELAXED policy: empty DataFrame is valid and returned immediately."""
+        # First provider returns empty DataFrame
+        provider1 = Mock()
+        provider1.get_data.return_value = pd.DataFrame()
+
+        # Second provider would return valid data (but shouldn't be called)
+        provider2 = Mock()
+        provider2.get_data.return_value = pd.DataFrame({"col": [1, 2, 3]})
+
+        router = MultiSourceRouter(
+            providers=[
+                ("source1", provider1),
+                ("source2", provider2),
+            ],
+            empty_data_policy=EmptyDataPolicy.RELAXED,
+        )
+
+        result = router.execute("get_data")
+
+        # Should return empty DataFrame from source1 (RELAXED policy)
+        assert result.empty
+        assert provider1.get_data.called
+        assert not provider2.get_data.called  # Should NOT fallback
+
+    def test_best_effort_policy_continues_on_empty(self):
+        """Test BEST_EFFORT policy: tries all sources, returns first non-empty or best available."""
+        # All providers return empty
+        provider1 = Mock()
+        provider1.get_data.return_value = pd.DataFrame()
+
+        provider2 = Mock()
+        provider2.get_data.return_value = pd.DataFrame()
+
+        router = MultiSourceRouter(
+            providers=[
+                ("source1", provider1),
+                ("source2", provider2),
+            ],
+            empty_data_policy=EmptyDataPolicy.BEST_EFFORT,
+        )
+
+        result = router.execute("get_data")
+
+        # Should return empty DataFrame (but from first source)
+        assert result.empty
+        assert provider1.get_data.called
+        assert provider2.get_data.called  # Should try all sources
+
+    def test_best_effort_policy_returns_first_non_empty(self):
+        """Test BEST_EFFORT policy: returns first non-empty result found."""
+        # First provider returns empty
+        provider1 = Mock()
+        provider1.get_data.return_value = pd.DataFrame()
+
+        # Second provider returns non-empty
+        provider2 = Mock()
+        provider2.get_data.return_value = pd.DataFrame({"col": [1, 2, 3]})
+
+        # Third provider would return data but shouldn't be called
+        provider3 = Mock()
+        provider3.get_data.return_value = pd.DataFrame({"col": [4, 5, 6]})
+
+        router = MultiSourceRouter(
+            providers=[
+                ("source1", provider1),
+                ("source2", provider2),
+                ("source3", provider3),
+            ],
+            empty_data_policy=EmptyDataPolicy.BEST_EFFORT,
+        )
+
+        result = router.execute("get_data")
+
+        # Should return non-empty from source2
+        assert not result.empty
+        assert len(result) == 3
+        assert provider1.get_data.called
+        assert provider2.get_data.called
+        assert not provider3.get_data.called  # Should stop after finding non-empty
+
+    def test_execute_with_result_relaxed_policy(self):
+        """Test execute_with_result with RELAXED policy returns is_empty=True."""
+        provider = Mock()
+        provider.get_data.return_value = pd.DataFrame()
+
+        router = MultiSourceRouter(
+            providers=[("source1", provider)],
+            empty_data_policy=EmptyDataPolicy.RELAXED,
+        )
+
+        result = router.execute_with_result("get_data")
+
+        assert result.success is True
+        assert result.is_empty is True
+        assert result.data is not None
+        assert result.data.empty
+
+    def test_execute_with_result_best_effort_all_empty(self):
+        """Test execute_with_result with BEST_EFFORT policy when all sources return empty."""
+        provider1 = Mock()
+        provider1.get_data.return_value = pd.DataFrame()
+
+        provider2 = Mock()
+        provider2.get_data.return_value = pd.DataFrame()
+
+        router = MultiSourceRouter(
+            providers=[
+                ("source1", provider1),
+                ("source2", provider2),
+            ],
+            empty_data_policy=EmptyDataPolicy.BEST_EFFORT,
+        )
+
+        result = router.execute_with_result("get_data")
+
+        assert result.success is True
+        assert result.is_empty is True
+        assert result.data is not None
+        assert result.data.empty
+        assert len(result.sources_tried) == 2
+
+    def test_default_policy_is_strict(self):
+        """Test that default policy is STRICT."""
+        provider = Mock()
+        provider.get_data.return_value = pd.DataFrame()
+
+        router = MultiSourceRouter(
+            providers=[("source1", provider)],
+            # No policy specified - should default to STRICT
+        )
+
+        result = router.execute_with_result("get_data")
+
+        # STRICT policy: empty result should fail
+        assert result.success is False
+        assert result.data is None
+        assert "Empty DataFrame" in str(result.error_details)
+
+    def test_execute_with_fallback_respects_policy(self):
+        """Test execute_with_fallback respects empty_data_policy."""
+        provider1 = Mock()
+        provider1.primary_method.return_value = pd.DataFrame()
+
+        provider2 = Mock()
+        provider2.primary_method.return_value = pd.DataFrame({"col": [1, 2, 3]})
+
+        router = MultiSourceRouter(
+            providers=[
+                ("source1", provider1),
+                ("source2", provider2),
+            ],
+            empty_data_policy=EmptyDataPolicy.STRICT,
+        )
+
+        result = router.execute_with_fallback("primary_method", "fallback_method")
+
+        assert not result.empty
+        assert len(result) == 3
+        assert provider1.primary_method.called
+        assert provider2.primary_method.called

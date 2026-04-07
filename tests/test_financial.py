@@ -1,5 +1,8 @@
 import pytest
 
+# Mark all tests in this module as integration tests (require network)
+pytestmark = pytest.mark.integration
+
 from akshare_one import (
     get_balance_sheet,
     get_cash_flow,

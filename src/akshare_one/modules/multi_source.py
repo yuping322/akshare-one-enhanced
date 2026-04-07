@@ -5,7 +5,8 @@ and falls back to the next one if the current source fails.
 """
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any, TypeVar, Optional
 
 import pandas as pd
@@ -13,6 +14,13 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
+
+
+class EmptyDataPolicy(Enum):
+    """空数据处理策略"""
+    STRICT = "strict"             # 空结果视为失败（默认）
+    RELAXED = "relaxed"           # 空结果视为合法，直接返回
+    BEST_EFFORT = "best_effort"   # 尝试所有源，返回第一个非空或合并结果
 
 
 @dataclass
@@ -25,10 +33,14 @@ class ExecutionResult:
     error: str | None
     attempts: int
     error_details: Optional[list[tuple[str, str]]] = None  # [(source, error_msg), ...]
+    is_empty: bool = False  # 标记是否为空但合法的结果
+    sources_tried: list[dict[str, Any]] = field(default_factory=list)  # 记录每个源的详细状态
 
     def __post_init__(self) -> None:
         if self.error_details is None:
             self.error_details = []
+        if self.sources_tried is None:
+            self.sources_tried = []
 
 
 class MultiSourceRouter:
@@ -55,6 +67,7 @@ class MultiSourceRouter:
         enable_logging: bool = True,
         required_columns: list[str] | None = None,
         min_rows: int = 0,
+        empty_data_policy: EmptyDataPolicy = EmptyDataPolicy.STRICT,
     ) -> None:
         """Initialize the router with a list of providers.
 
@@ -63,18 +76,21 @@ class MultiSourceRouter:
             enable_logging: Whether to log failover events
             required_columns: List of required columns in result DataFrame
             min_rows: Minimum number of rows required for valid result
+            empty_data_policy: Policy for handling empty DataFrame results
         """
         self.providers = providers
         self.enable_logging = enable_logging
         self.required_columns = required_columns or []
         self.min_rows = min_rows
+        self.empty_data_policy = empty_data_policy
         self.execution_stats: dict[str, dict[str, int]] = {}  # Track success/failure per source
 
-    def _validate_result(self, result: Any) -> bool:
+    def _validate_result(self, result: Any, is_empty_allowed: bool = False) -> bool:
         """Validate if result meets quality requirements.
 
         Args:
             result: Result to validate
+            is_empty_allowed: Whether empty DataFrame is considered valid
 
         Returns:
             bool: True if result is valid, False otherwise
@@ -85,8 +101,11 @@ class MultiSourceRouter:
         if not isinstance(result, pd.DataFrame):
             return False
 
+        # Handle empty DataFrame based on policy
         if result.empty:
-            return False
+            if is_empty_allowed:
+                return True  # Empty but allowed by policy
+            return False  # Empty and not allowed
 
         # Check minimum rows
         if len(result) < self.min_rows:
@@ -151,10 +170,15 @@ class MultiSourceRouter:
             pd.DataFrame: Result from the first successful provider
 
         Raises:
-            ValueError: If all providers fail
+            ValueError: If all providers fail (in STRICT mode)
+                       If all providers fail and no non-empty result (in BEST_EFFORT mode)
         """
         error_details: list[tuple[str, str]] = []
         import time
+
+        # Track results for BEST_EFFORT mode
+        best_result: pd.DataFrame | None = None
+        best_source: str | None = None
 
         for name, provider in self.providers:
             start_time = time.time()
@@ -163,29 +187,77 @@ class MultiSourceRouter:
                 result = method(*args, **kwargs)
                 duration_ms = (time.time() - start_time) * 1000
 
-                # Validate result
-                if self._validate_result(result):
+                # Check if result is a DataFrame
+                if not isinstance(result, pd.DataFrame):
+                    self._update_stats(name, False, duration_ms)
+                    error_details.append((name, "Result is not a DataFrame"))
+                    continue
+
+                # Handle empty DataFrame based on policy
+                if result.empty:
+                    if self.empty_data_policy == EmptyDataPolicy.RELAXED:
+                        # RELAXED: Empty result is valid, return immediately
+                        self._update_stats(name, True, duration_ms)
+                        result.attrs["source"] = name  # Set source attribution
+                        if self.enable_logging:
+                            logger.info(f"Provider '{name}' returned empty DataFrame (RELAXED policy)")
+                        return result
+
+                    elif self.empty_data_policy == EmptyDataPolicy.BEST_EFFORT:
+                        # BEST_EFFORT: Track empty result, continue trying other sources
+                        if best_result is None:
+                            best_result = result
+                            best_source = name
+                        self._update_stats(name, True, duration_ms)
+                        if self.enable_logging:
+                            logger.info(f"Provider '{name}' returned empty DataFrame, continuing to next source")
+                        continue
+
+                    else:  # STRICT (default)
+                        # STRICT: Empty result is invalid, try next source
+                        self._update_stats(name, False, duration_ms)
+                        error_details.append((name, "Empty DataFrame (STRICT policy)"))
+                        if self.enable_logging:
+                            logger.warning(
+                                f"Provider '{name}' returned empty DataFrame for '{method_name}'"
+                            )
+                        continue
+
+                # Non-empty DataFrame - validate it
+                if self._validate_result(result, is_empty_allowed=False):
                     self._update_stats(name, True, duration_ms)
+                    result.attrs["source"] = name  # Set source attribution
                     if self.enable_logging and error_details:
                         logger.info(
                             f"Successfully fetched data from '{name}' after {len(error_details)} failed attempt(s)"
                         )
                     return result
 
+                # Non-empty but invalid (missing columns or min_rows)
+                self._update_stats(name, False, duration_ms)
+                error_details.append((name, "Invalid result (missing required columns or min_rows)"))
                 if self.enable_logging:
                     logger.warning(
                         f"Provider '{name}' returned invalid result for '{method_name}' "
-                        f"(empty or missing required columns)"
+                        f"(missing required columns or insufficient rows)"
                     )
-                self._update_stats(name, False, duration_ms)
-                error_details.append((name, "Empty or invalid result"))
 
             except Exception as e:
                 duration_ms = (time.time() - start_time) * 1000
                 self._update_stats(name, False, duration_ms)
                 error_details.append((name, str(e)))
 
-        # All providers failed
+        # All providers processed - handle based on policy
+        if self.empty_data_policy == EmptyDataPolicy.BEST_EFFORT and best_result is not None:
+            # Return best available result (even if empty)
+            best_result.attrs["source"] = best_source  # Set source attribution
+            if self.enable_logging:
+                logger.info(
+                    f"Returning best available result from '{best_source}' (BEST_EFFORT policy)"
+                )
+            return best_result
+
+        # All providers failed or no valid result
         error_summary = "\n".join([f"  {source}: {error}" for source, error in error_details])
         raise ValueError(f"All data sources failed for '{method_name}':\n{error_summary}")
 
@@ -210,9 +282,14 @@ class MultiSourceRouter:
             pd.DataFrame: Result from the first successful provider
 
         Raises:
-            ValueError: If all providers fail
+            ValueError: If all providers fail (in STRICT mode)
+                       If all providers fail and no non-empty result (in BEST_EFFORT mode)
         """
         error_details: list[tuple[str, str]] = []
+
+        # Track results for BEST_EFFORT mode
+        best_result: pd.DataFrame | None = None
+        best_source: str | None = None
 
         for name, provider in self.providers:
             try:
@@ -235,11 +312,47 @@ class MultiSourceRouter:
                 method_func = getattr(provider, method)
                 result = method_func(*args, **kwargs)
 
-                if self._validate_result(result):
+                # Check if result is a DataFrame
+                if not isinstance(result, pd.DataFrame):
+                    error_msg = "Result is not a DataFrame"
+                    error_details.append((name, error_msg))
+                    self._update_stats(name, False)
+                    continue
+
+                # Handle empty DataFrame based on policy
+                if result.empty:
+                    if self.empty_data_policy == EmptyDataPolicy.RELAXED:
+                        # RELAXED: Empty result is valid, return immediately
+                        self._update_stats(name, True)
+                        if self.enable_logging:
+                            logger.info(f"Provider '{name}' returned empty DataFrame (RELAXED policy)")
+                        return result
+
+                    elif self.empty_data_policy == EmptyDataPolicy.BEST_EFFORT:
+                        # BEST_EFFORT: Track empty result, continue trying other sources
+                        if best_result is None:
+                            best_result = result
+                            best_source = name
+                        self._update_stats(name, True)
+                        if self.enable_logging:
+                            logger.info(f"Provider '{name}' returned empty DataFrame, continuing to next source")
+                        continue
+
+                    else:  # STRICT (default)
+                        # STRICT: Empty result is invalid, try next source
+                        error_msg = "Empty DataFrame (STRICT policy)"
+                        error_details.append((name, error_msg))
+                        self._update_stats(name, False)
+                        if self.enable_logging:
+                            logger.warning(f"Provider '{name}' returned empty DataFrame (STRICT policy)")
+                        continue
+
+                # Non-empty DataFrame - validate it
+                if self._validate_result(result, is_empty_allowed=False):
                     self._update_stats(name, True)
                     return result
 
-                error_msg = "Invalid result (empty or missing columns)"
+                error_msg = "Invalid result (missing required columns or min_rows)"
                 error_details.append((name, error_msg))
                 self._update_stats(name, False)
                 if self.enable_logging:
@@ -253,7 +366,16 @@ class MultiSourceRouter:
                     logger.warning(f"Provider '{name}' failed: {error_msg}")
                 continue
 
-        # All providers failed
+        # All providers processed - handle based on policy
+        if self.empty_data_policy == EmptyDataPolicy.BEST_EFFORT and best_result is not None:
+            # Return best available result (even if empty)
+            if self.enable_logging:
+                logger.info(
+                    f"Returning best available result from '{best_source}' (BEST_EFFORT policy)"
+                )
+            return best_result
+
+        # All providers failed or no valid result
         error_summary = "\n".join([f"  {source}: {error}" for source, error in error_details])
         raise ValueError(f"All providers failed for '{primary_method}' (or '{fallback_method}'):\n{error_summary}")
 
@@ -276,9 +398,16 @@ class MultiSourceRouter:
         Note:
             Unlike execute(), this method never raises an exception.
             Check ExecutionResult.success to determine if execution was successful.
+            For BEST_EFFORT mode, check ExecutionResult.is_empty to see if result is empty.
         """
         error_details: list[tuple[str, str]] = []
         attempt = 0
+        sources_tried: list[dict[str, Any]] = []
+
+        # Track results for BEST_EFFORT mode
+        best_result: pd.DataFrame | None = None
+        best_source: str | None = None
+        best_is_empty = False
 
         for name, provider in self.providers:
             attempt += 1
@@ -286,7 +415,50 @@ class MultiSourceRouter:
                 method = getattr(provider, method_name)
                 result = method(*args, **kwargs)
 
-                if self._validate_result(result):
+                # Check if result is a DataFrame
+                if not isinstance(result, pd.DataFrame):
+                    error_msg = "Result is not a DataFrame"
+                    error_details.append((name, error_msg))
+                    sources_tried.append({"source": name, "status": "error", "error": error_msg})
+                    self._update_stats(name, False)
+                    continue
+
+                # Handle empty DataFrame based on policy
+                if result.empty:
+                    if self.empty_data_policy == EmptyDataPolicy.RELAXED:
+                        # RELAXED: Empty result is valid, return immediately
+                        self._update_stats(name, True)
+                        return ExecutionResult(
+                            success=True,
+                            data=result,
+                            source=name,
+                            error=None,
+                            attempts=attempt,
+                            error_details=error_details,
+                            is_empty=True,
+                            sources_tried=sources_tried + [{"source": name, "status": "success", "is_empty": True}],
+                        )
+
+                    elif self.empty_data_policy == EmptyDataPolicy.BEST_EFFORT:
+                        # BEST_EFFORT: Track empty result, continue trying other sources
+                        if best_result is None:
+                            best_result = result
+                            best_source = name
+                            best_is_empty = True
+                        sources_tried.append({"source": name, "status": "success", "is_empty": True})
+                        self._update_stats(name, True)
+                        continue
+
+                    else:  # STRICT (default)
+                        # STRICT: Empty result is invalid, try next source
+                        error_msg = "Empty DataFrame (STRICT policy)"
+                        error_details.append((name, error_msg))
+                        sources_tried.append({"source": name, "status": "error", "error": error_msg, "is_empty": True})
+                        self._update_stats(name, False)
+                        continue
+
+                # Non-empty DataFrame - validate it
+                if self._validate_result(result, is_empty_allowed=False):
                     self._update_stats(name, True)
                     return ExecutionResult(
                         success=True,
@@ -295,18 +467,37 @@ class MultiSourceRouter:
                         error=None,
                         attempts=attempt,
                         error_details=error_details,
+                        is_empty=False,
+                        sources_tried=sources_tried + [{"source": name, "status": "success", "rows": len(result)}],
                     )
 
-                error_msg = "Invalid result (empty or missing columns)"
+                # Non-empty but invalid (missing columns or min_rows)
+                error_msg = "Invalid result (missing required columns or min_rows)"
                 error_details.append((name, error_msg))
+                sources_tried.append({"source": name, "status": "error", "error": error_msg, "rows": len(result)})
                 self._update_stats(name, False)
 
             except Exception as e:
                 error_msg = f"{type(e).__name__}: {str(e)[:100]}"
                 error_details.append((name, error_msg))
+                sources_tried.append({"source": name, "status": "error", "error": error_msg})
                 self._update_stats(name, False)
 
-        # All providers failed
+        # All providers processed - handle based on policy
+        if self.empty_data_policy == EmptyDataPolicy.BEST_EFFORT and best_result is not None:
+            # Return best available result (even if empty)
+            return ExecutionResult(
+                success=True,
+                data=best_result,
+                source=best_source,
+                error=None,
+                attempts=attempt,
+                error_details=error_details,
+                is_empty=best_is_empty,
+                sources_tried=sources_tried,
+            )
+
+        # All providers failed or no valid result
         error_summary = "\n".join([f"  {source}: {error}" for source, error in error_details])
         return ExecutionResult(
             success=False,
@@ -315,6 +506,8 @@ class MultiSourceRouter:
             error=error_summary,
             attempts=attempt,
             error_details=error_details,
+            is_empty=False,
+            sources_tried=sources_tried,
         )
 
 
@@ -345,7 +538,7 @@ def create_historical_router(
     Returns:
         MultiSourceRouter: Configured router
     """
-    from .historical.factory import HistoricalDataFactory
+    from .historical import HistoricalDataFactory
 
     if sources is None:
         sources = ["eastmoney_direct", "eastmoney", "sina", "tencent", "netease"]
@@ -394,7 +587,7 @@ def create_realtime_router(
     Returns:
         MultiSourceRouter: Configured router
     """
-    from .realtime.factory import RealtimeDataFactory
+    from .realtime import RealtimeDataFactory
 
     if sources is None:
         sources = ["eastmoney_direct", "eastmoney", "xueqiu"]
@@ -435,7 +628,7 @@ def create_financial_router(
     Returns:
         MultiSourceRouter: Configured router
     """
-    from .financial.factory import FinancialDataFactory
+    from .financial import FinancialDataFactory
 
     if sources is None:
         sources = ["eastmoney_direct", "sina"]
@@ -471,7 +664,7 @@ def create_northbound_router(
     Returns:
         MultiSourceRouter: Configured router
     """
-    from .northbound.factory import NorthboundFactory
+    from .northbound import NorthboundFactory
 
     if sources is None:
         sources = ["eastmoney", "sina"]
@@ -509,7 +702,7 @@ def create_fundflow_router(
     Returns:
         MultiSourceRouter: Configured router
     """
-    from .fundflow.factory import FundFlowFactory
+    from .fundflow import FundFlowFactory
 
     if sources is None:
         sources = ["eastmoney", "sina"]
@@ -545,7 +738,7 @@ def create_dragon_tiger_router(
     Returns:
         MultiSourceRouter: Configured router
     """
-    from .lhb.factory import DragonTigerFactory
+    from .lhb import DragonTigerFactory
 
     if sources is None:
         sources = ["eastmoney", "sina"]
@@ -581,7 +774,7 @@ def create_limit_up_down_router(
     Returns:
         MultiSourceRouter: Configured router
     """
-    from .limitup.factory import LimitUpDownFactory
+    from .limitup import LimitUpDownFactory
 
     if sources is None:
         sources = ["eastmoney", "sina"]
@@ -619,7 +812,7 @@ def create_block_deal_router(
     Returns:
         MultiSourceRouter: Configured router
     """
-    from .blockdeal.factory import BlockDealFactory
+    from .blockdeal import BlockDealFactory
 
     if sources is None:
         sources = ["eastmoney", "sina"]

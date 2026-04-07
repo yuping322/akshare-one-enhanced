@@ -2,17 +2,37 @@
 Eastmoney options data provider.
 
 This module implements the options data provider using Eastmoney as the data source.
+Note: This is a placeholder implementation. Use 'sina' source for actual data.
 """
 
 import pandas as pd
 
-from .base import OptionsDataProvider
+from .base import OptionsDataProvider, OptionsDataFactory
 
 
+@OptionsDataFactory.register("eastmoney")
 class EastmoneyOptionsProvider(OptionsDataProvider):
     """
     Options data provider using Eastmoney as the data source.
     """
+
+    _API_MAP = {
+        "get_options_chain": {
+            "ak_func": None,  # Placeholder - not implemented
+        },
+        "get_options_realtime": {
+            "ak_func": None,  # Placeholder - not implemented
+        },
+        "get_options_expirations": {
+            "ak_func": None,  # Placeholder - not implemented
+        },
+        "get_options_history": {
+            "ak_func": None,  # Placeholder - not implemented
+        },
+    }
+
+    # Note: This is a placeholder implementation.
+    # For actual options data, use source='sina' which provides full functionality.
 
     def get_source_name(self) -> str:
         """Return the data source name."""

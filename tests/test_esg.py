@@ -12,7 +12,7 @@ from akshare_one.modules.esg import (
     get_esg_rating_rank,
 )
 from akshare_one.modules.esg.eastmoney import EastmoneyESGProvider
-from akshare_one.modules.esg.factory import ESGFactory
+from akshare_one.modules.esg import ESGFactory
 
 
 class TestESGFactory:
