@@ -7,7 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import ESGProvider, ESGFactory
+from .base import ESGFactory, ESGProvider
 
 
 @ESGFactory.register("eastmoney")

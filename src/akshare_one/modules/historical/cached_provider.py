@@ -1,9 +1,9 @@
 import logging
-import pandas as pd
-from typing import Optional, List
 
-from .base import HistoricalDataProvider, HistoricalDataFactory
-from .duckdb_storage import DuckDBManager, normalize_to_jq_format
+import pandas as pd
+
+from .base import HistoricalDataFactory, HistoricalDataProvider
+from .duckdb_storage import DuckDBManager
 
 logger = logging.getLogger(__name__)
 

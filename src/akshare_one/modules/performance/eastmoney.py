@@ -4,7 +4,7 @@ Eastmoney performance data provider.
 
 import pandas as pd
 
-from .base import PerformanceProvider, PerformanceFactory
+from .base import PerformanceFactory, PerformanceProvider
 
 
 @PerformanceFactory.register("eastmoney")

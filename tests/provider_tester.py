@@ -363,7 +363,7 @@ def main():
     parser.add_argument("--test-standardization", action="store_true", help="测试字段标准化")
     parser.add_argument("--test-formatter", action="store_true", help="测试字段格式化")
     parser.add_argument("--parallel", action="store_true", help="并行测试")
-    parser.add_argument("--output-dir", default="tests/results", help="输出目录")
+    parser.add_argument("--output-dir", default=None, help="输出目录 (默认: /tmp/akshare_one/tests/results)")
 
     args = parser.parse_args()
 

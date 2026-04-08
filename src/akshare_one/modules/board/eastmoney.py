@@ -4,7 +4,7 @@ Eastmoney board data provider.
 
 import pandas as pd
 
-from .base import BoardProvider, BoardFactory
+from .base import BoardFactory, BoardProvider
 
 
 @BoardFactory.register("eastmoney")

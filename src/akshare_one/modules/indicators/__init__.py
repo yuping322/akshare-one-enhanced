@@ -9,6 +9,7 @@ from .simple import SimpleIndicatorCalculator
 
 try:
     import talib  # type: ignore[import-not-found]
+
     from .talib import TalibIndicatorCalculator
     TALIB_AVAILABLE = True
 except ImportError:
@@ -18,7 +19,7 @@ except ImportError:
 class IndicatorFactory:
     """Factory for creating indicator calculators"""
 
-    _calculators: dict[str, Type[BaseIndicatorCalculator]] = {
+    _calculators: dict[str, type[BaseIndicatorCalculator]] = {
         "simple": SimpleIndicatorCalculator,
     }
 

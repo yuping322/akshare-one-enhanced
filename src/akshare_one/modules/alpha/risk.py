@@ -3,9 +3,8 @@ src/akshare_one/modules/alpha/risk.py
 Risk management, stop-loss, and position sizing.
 """
 
-import numpy as np
 import pandas as pd
-from typing import Union, List, Optional, Dict
+
 
 def compute_atr_stop_loss(high: pd.Series, low: pd.Series, close: pd.Series, window: int = 14, multiplier: float = 2.0) -> pd.Series:
     """Calculate ATR-based trailing stop-loss."""

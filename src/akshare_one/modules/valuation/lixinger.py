@@ -6,8 +6,8 @@ This module implements valuation data provider using Lixinger OpenAPI.
 
 import pandas as pd
 
-from .base import ValuationProvider, ValuationFactory
 from ...lixinger_client import get_lixinger_client
+from .base import ValuationFactory, ValuationProvider
 
 
 @ValuationFactory.register("lixinger")

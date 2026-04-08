@@ -383,7 +383,7 @@ def main():
     parser = argparse.ArgumentParser(description="数据字典生成工具")
     parser.add_argument("--generate-all", action="store_true", help="生成所有模块的数据字典")
     parser.add_argument("--modules", help="指定模块（逗号分隔）")
-    parser.add_argument("--output-dir", default="docs", help="输出目录")
+    parser.add_argument("--output-dir", default=None, help="输出目录 (默认: /tmp/akshare_one/docs)")
 
     args = parser.parse_args()
 

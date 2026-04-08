@@ -6,9 +6,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import eastmoney, sina
 from .base import OptionsDataFactory
-from . import sina
-from . import eastmoney
 
 
 @api_endpoint(OptionsDataFactory)

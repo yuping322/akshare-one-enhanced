@@ -7,7 +7,7 @@ Note: This is a placeholder implementation. Use 'sina' source for actual data.
 
 import pandas as pd
 
-from .base import OptionsDataProvider, OptionsDataFactory
+from .base import OptionsDataFactory, OptionsDataProvider
 
 
 @OptionsDataFactory.register("eastmoney")

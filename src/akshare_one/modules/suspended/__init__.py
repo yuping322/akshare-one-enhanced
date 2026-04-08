@@ -6,8 +6,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from .base import SuspendedFactory
 from . import eastmoney
+from .base import SuspendedFactory
 
 
 @api_endpoint(SuspendedFactory)

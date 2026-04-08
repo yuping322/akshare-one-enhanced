@@ -4,7 +4,7 @@ Eastmoney ST stocks data provider.
 
 import pandas as pd
 
-from .base import STProvider, STFactory
+from .base import STFactory, STProvider
 
 
 @STFactory.register("eastmoney")

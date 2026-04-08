@@ -6,8 +6,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import eastmoney, eastmoney_direct, efinance, xueqiu
 from .base import RealtimeDataFactory
-from . import eastmoney, eastmoney_direct, xueqiu
 
 
 @api_endpoint(RealtimeDataFactory)

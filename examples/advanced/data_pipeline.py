@@ -252,7 +252,7 @@ def example_daily_pipeline():
     print("示例1：日线数据管道")
     print("=" * 60)
 
-    pipeline = DataPipeline(output_dir="data_output/example1")
+    pipeline = DataPipeline(output_dir=os.path.join("/tmp", "akshare_one", "examples", "data_pipeline", "example1"))
 
     # 添加股票
     pipeline.add_stocks(["600000", "000001", "600519"])
@@ -267,7 +267,7 @@ def example_batch_pipeline():
     print("示例2：批量数据管道")
     print("=" * 60)
 
-    pipeline = DataPipeline(output_dir="data_output/example2")
+    pipeline = DataPipeline(output_dir=os.path.join("/tmp", "akshare_one", "examples", "data_pipeline", "example2"))
 
     # 批量添加股票
     stocks = ["600000", "000001", "600519", "000858", "600036", "601318", "000333", "002415"]
@@ -287,7 +287,7 @@ def example_incremental_pipeline():
     print("示例3：增量数据更新")
     print("=" * 60)
 
-    pipeline = DataPipeline(output_dir="data_output/example3")
+    pipeline = DataPipeline(output_dir=os.path.join("/tmp", "akshare_one", "examples", "data_pipeline", "example3"))
 
     pipeline.add_stocks(["600000", "000001"])
 

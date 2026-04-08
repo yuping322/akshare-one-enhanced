@@ -4,7 +4,7 @@ from akshare_one.eastmoney.client import EastMoneyClient
 from akshare_one.eastmoney.utils import parse_realtime_data
 
 from ..cache import cache
-from .base import RealtimeDataProvider, RealtimeDataFactory
+from .base import RealtimeDataFactory, RealtimeDataProvider
 
 
 @RealtimeDataFactory.register("eastmoney_direct")

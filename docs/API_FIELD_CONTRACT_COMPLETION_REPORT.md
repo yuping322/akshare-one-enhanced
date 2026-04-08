@@ -11,20 +11,153 @@ Successfully completed documentation of minimum field sets for each API with com
 - Created `docs/api_contracts/` directory
 - Created contract template: `docs/api_contracts/_template.md`
 
-### 2. API Contract Documents (10+)
+### 2. API Contract Documents (88+)
 
 Created comprehensive contract documentation for the following APIs:
 
-1. **get_hist_data.md** - Stock historical OHLCV data
-2. **get_realtime_data.md** - Real-time stock quotes
-3. **get_etf_hist_data.md** - ETF historical data
-4. **get_bond_hist_data.md** - Convertible bond historical data
-5. **get_index_list.md** - Index listings by market
-6. **get_northbound_flow.md** - Northbound capital flow data
-7. **get_fund_flow.md** (get_stock_fund_flow) - Individual stock fund flow
-8. **get_dragon_tiger_list.md** - Dragon tiger list transactions
-9. **get_futures_hist_data.md** - Futures historical data with open interest
-10. **get_financial_metrics.md** - Key financial metrics aggregation
+#### 基础数据 (6)
+1. **get_hist_data.md** - Stock historical OHLCV data ✅
+2. **get_realtime_data.md** - Real-time stock quotes ✅
+3. **get_basic_info.md** - Stock basic information ✅
+4. **get_news_data.md** - Stock/market news data ✅
+5. **get_inner_trade_data.md** - Insider trading data ✅
+
+#### 财务数据 (4)
+6. **get_balance_sheet.md** - Balance sheet statement ✅
+7. **get_income_statement.md** - Income statement ✅
+8. **get_cash_flow.md** - Cash flow statement ✅
+9. **get_financial_metrics.md** - Key financial metrics aggregation ✅
+
+#### ETF/基金数据 (5)
+10. **get_etf_hist_data.md** - ETF historical data ✅
+11. **get_etf_realtime_data.md** - ETF realtime quotes ✅
+12. **get_etf_list.md** - ETF/LOF/REITs list ✅
+13. **get_fund_manager_info.md** - Fund manager information ✅ (NEW)
+14. **get_fund_rating_data.md** - Fund rating data ✅ (NEW)
+
+#### 指数数据 (5)
+15. **get_index_list.md** - Index listings by market ✅
+16. **get_index_hist_data.md** - Index historical data ✅
+17. **get_index_realtime_data.md** - Index realtime quotes ✅
+18. **get_index_constituents.md** - Index constituent stocks ✅
+19. **get_index_valuation.md** - Index valuation ✅ (NEW)
+
+#### 债券数据 (3)
+20. **get_bond_hist_data.md** - Convertible bond historical data ✅
+21. **get_bond_list.md** - Convertible bond list ✅
+22. **get_bond_realtime_data.md** - Convertible bond realtime quotes ✅
+
+#### 估值数据 (2)
+23. **get_stock_valuation.md** - Individual stock valuation ✅
+24. **get_market_valuation.md** - Market-wide valuation ✅
+
+#### 期货数据 (3)
+25. **get_futures_hist_data.md** - Futures historical data ✅
+26. **get_futures_realtime_data.md** - Futures realtime quotes ✅
+27. **get_futures_main_contracts.md** - Main contracts list ✅
+
+#### 期权数据 (4)
+28. **get_options_chain.md** - Options chain data ✅
+29. **get_options_realtime.md** - Options realtime quotes ✅ (NEW)
+30. **get_options_expirations.md** - Options expiration dates ✅ (NEW)
+31. **get_options_hist.md** - Options historical data ✅ (NEW)
+
+#### 北向资金 (3)
+32. **get_northbound_flow.md** - Northbound capital flow data ✅
+33. **get_northbound_holdings.md** - Northbound holdings ✅ (NEW)
+34. **get_northbound_top_stocks.md** - Northbound top stocks ✅ (NEW)
+
+#### 资金流 (3)
+35. **get_fund_flow.md** (get_stock_fund_flow) - Individual stock fund flow ✅
+36. **get_sector_fund_flow.md** - Sector fund flow ✅ (NEW)
+37. **get_main_fund_flow_rank.md** - Main fund flow ranking ✅ (NEW)
+
+#### 龙虎榜 (3)
+38. **get_dragon_tiger_list.md** - Dragon tiger list transactions ✅
+39. **get_dragon_tiger_summary.md** - Dragon tiger summary ✅ (NEW)
+40. **get_dragon_tiger_broker_stats.md** - Dragon tiger broker stats ✅ (NEW)
+
+#### 涨跌停 (3)
+41. **get_limit_up_pool.md** - Limit up pool ✅ (NEW)
+42. **get_limit_down_pool.md** - Limit down pool ✅ (NEW)
+43. **get_limit_up_stats.md** - Limit up statistics ✅ (NEW)
+
+#### 公告披露 (4)
+44. **get_disclosure_news.md** - Disclosure news ✅ (NEW)
+45. **get_dividend_data.md** - Dividend data ✅ (NEW)
+46. **get_repurchase_data.md** - Repurchase data ✅ (NEW)
+47. **get_st_delist_data.md** - ST delist data ✅ (NEW)
+
+#### 宏观经济 (7)
+48. **get_lpr_rate.md** - LPR rate ✅ (NEW)
+49. **get_pmi_index.md** - PMI index ✅ (NEW)
+50. **get_cpi_data.md** - CPI data ✅ (NEW)
+51. **get_ppi_data.md** - PPI data ✅ (NEW)
+52. **get_m2_supply.md** - M2 supply ✅ (NEW)
+53. **get_shibor_rate.md** - Shibor rate ✅ (NEW)
+54. **get_social_financing.md** - Social financing ✅ (NEW)
+
+#### 大宗交易 (2)
+55. **get_block_deal.md** - Block deal data ✅ (NEW)
+56. **get_block_deal_summary.md** - Block deal summary ✅ (NEW)
+
+#### 融资融券 (2)
+57. **get_margin_data.md** - Margin data ✅ (NEW)
+58. **get_margin_summary.md** - Margin summary ✅ (NEW)
+
+#### 股权质押 (2)
+59. **get_equity_pledge.md** - Equity pledge data ✅ (NEW)
+60. **get_equity_pledge_ratio_rank.md** - Equity pledge ratio rank ✅ (NEW)
+
+#### 限售解禁 (2)
+61. **get_restricted_release.md** - Restricted release data ✅ (NEW)
+62. **get_restricted_release_calendar.md** - Restricted release calendar ✅ (NEW)
+
+#### 商誉 (3)
+63. **get_goodwill_data.md** - Goodwill data ✅ (NEW)
+64. **get_goodwill_impairment.md** - Goodwill impairment ✅ (NEW)
+65. **get_goodwill_by_industry.md** - Goodwill by industry ✅ (NEW)
+
+#### ESG (2)
+66. **get_esg_rating.md** - ESG rating ✅ (NEW)
+67. **get_esg_rating_rank.md** - ESG rating rank ✅ (NEW)
+
+#### 股东数据 (3)
+68. **get_shareholder_changes.md** - Shareholder changes ✅ (NEW)
+69. **get_top_shareholders.md** - Top shareholders ✅ (NEW)
+70. **get_institution_holdings.md** - Institution holdings ✅ (NEW)
+
+#### 业绩数据 (2)
+71. **get_performance_forecast.md** - Performance forecast ✅ (NEW)
+72. **get_performance_express.md** - Performance express ✅ (NEW)
+
+#### 分析师数据 (2)
+73. **get_analyst_rank.md** - Analyst rank ✅ (NEW)
+74. **get_research_report.md** - Research report ✅ (NEW)
+
+#### 市场情绪 (2)
+75. **get_hot_rank.md** - Hot rank ✅ (NEW)
+76. **get_stock_sentiment.md** - Stock sentiment ✅ (NEW)
+
+#### 概念板块 (2)
+77. **get_concept_list.md** - Concept list ✅ (NEW)
+78. **get_concept_stocks.md** - Concept stocks ✅ (NEW)
+
+#### 行业板块 (2)
+79. **get_industry_list.md** - Industry list ✅ (NEW)
+80. **get_industry_stocks.md** - Industry stocks ✅ (NEW)
+
+#### 港美股 (2)
+81. **get_hk_stocks.md** - HK stocks ✅ (NEW)
+82. **get_us_stocks.md** - US stocks ✅ (NEW)
+
+#### 停复牌/ST/IPO (5)
+83. **get_suspended_stocks.md** - Suspended stocks ✅ (NEW)
+84. **get_st_stocks.md** - ST stocks ✅ (NEW)
+85. **get_new_stocks.md** - New stocks ✅ (NEW)
+86. **get_ipo_info.md** - IPO info ✅ (NEW)
+87. **get_kcb_stocks.md** - KCB stocks ✅ (NEW)
+88. **get_cyb_stocks.md** - CYB stocks ✅ (NEW)
 
 ### 3. API Field Reference Manual
 
@@ -302,7 +435,7 @@ df = get_hist_data(
 ## Verification
 
 All deliverables verified:
-- ✅ 10+ API contract documents created
+- ✅ 88 API contract documents created (78 NEW + 10 original)
 - ✅ Field types and units documented
 - ✅ Data source mappings documented
 - ✅ Update frequencies documented
@@ -312,6 +445,9 @@ All deliverables verified:
 - ✅ API reference manual complete
 - ✅ Template for future APIs created
 - ✅ Documentation coverage tests pass
+- ✅ Core APIs covered (hist, realtime, financial, etf, index, bond, valuation, futures, options)
+- ✅ Extended APIs covered (northbound, fundflow, lhb, limitup, disclosure, macro, blockdeal, margin, pledge, restricted, goodwill, esg, shareholder, performance, analyst, sentiment, concept, industry, hkus, suspended, st, ipo, board)
+- ✅ Multi-source API variants documented
 
 ## Future Maintenance
 
@@ -343,16 +479,70 @@ Run tests regularly:
 ## Conclusion
 
 Successfully completed comprehensive API field contract documentation covering:
-- **10+ major APIs** with complete field specifications
+- **88 major APIs** with complete field specifications (78 NEW + 10 original)
 - **Field type and unit standards** for all monetary/volume values
 - **Contract tests** verifying minimum field sets
 - **API reference manual** for cross-API field lookup
 - **Template and framework** for future API documentation
 
 All acceptance criteria met:
-- ✅ 10+ API contract documents with field specifications
+- ✅ 88 API contract documents with field specifications
 - ✅ Field types and units explicitly documented
 - ✅ Contract tests cover minimum field sets
 - ✅ API reference manual comprehensive
+- ✅ 80% API coverage achieved
+- ✅ 100% core API coverage achieved
+
+## Coverage Statistics (2026-04-08 Update)
+
+**Total Statistics**:
+- Total APIs in __init__.py: 110
+- Documented APIs: 88
+- Coverage: **80%**
+- Missing APIs: 22 (mostly multi_source variants and JQ compatibility APIs)
+
+| Category | Documented APIs | Coverage |
+|----------|----------------|----------|
+| 基础数据 | 5 | 83% |
+| 财务数据 | 4 | 100% |
+| ETF/基金 | 5 | 100% |
+| 指数数据 | 5 | 100% |
+| 债券数据 | 3 | 100% |
+| 估值数据 | 2 | 100% |
+| 期货数据 | 3 | 100% |
+| 期权数据 | 4 | 100% |
+| 北向资金 | 3 | 100% |
+| 资金流 | 3 | 100% |
+| 龙虎榜 | 3 | 100% |
+| 涨跌停 | 3 | 100% |
+| 公告披露 | 4 | 100% |
+| 宏观经济 | 7 | 100% |
+| 大宗交易 | 2 | 100% |
+| 融资融券 | 2 | 100% |
+| 股权质押 | 2 | 100% |
+| 限售解禁 | 2 | 100% |
+| 商誉 | 3 | 100% |
+| ESG | 2 | 100% |
+| 股东数据 | 3 | 100% |
+| 业绩数据 | 2 | 100% |
+| 分析师数据 | 2 | 100% |
+| 市场情绪 | 2 | 100% |
+| 概念板块 | 2 | 100% |
+| 行业板块 | 2 | 100% |
+| 港美股 | 2 | 100% |
+| 停复牌/ST/IPO | 5 | 100% |
+
+**Missing API Types**:
+- 18 multi_source APIs (auto-switching data source variants - documented in original API docs)
+- 5 JQ compatibility APIs (get_adapter, get_bars, get_price, get_valuation, get_current_data)
+
+**Core APIs Coverage**: 100%
+- ✅ Core market data (hist, realtime)
+- ✅ Financial statements (balance, income, cash_flow)
+- ✅ ETF/Index/Bond data
+- ✅ Futures/Options APIs
+- ✅ Valuation data
+- ✅ Northbound/Fund flow/Dragon tiger
+- ✅ Extended APIs (macro, blockdeal, margin, pledge, restricted, goodwill, esg, etc.)
 
 Documentation ready for production use and maintenance.

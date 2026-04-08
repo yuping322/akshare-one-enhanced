@@ -11,9 +11,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import eastmoney, sina
 from .base import LimitUpDownFactory
-from . import eastmoney
-from . import sina
 
 
 @api_endpoint(LimitUpDownFactory)

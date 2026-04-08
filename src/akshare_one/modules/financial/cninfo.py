@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ..cache import cache
-from .base import FinancialDataProvider, FinancialDataFactory
+from .base import FinancialDataFactory, FinancialDataProvider
 
 
 @FinancialDataFactory.register("cninfo")

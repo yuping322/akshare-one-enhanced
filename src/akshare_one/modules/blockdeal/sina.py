@@ -6,7 +6,7 @@ This module implements the block deal data provider using Sina as the data sourc
 
 import pandas as pd
 
-from .base import BlockDealProvider, BlockDealFactory
+from .base import BlockDealFactory, BlockDealProvider
 
 
 @BlockDealFactory.register("sina")

@@ -3,9 +3,10 @@ src/akshare_one/modules/alpha/backtest.py
 Backtest performance metrics and evaluation.
 """
 
+
 import numpy as np
 import pandas as pd
-from typing import Union, List, Optional, Dict
+
 
 def compute_drawdown(returns: pd.Series) -> pd.DataFrame:
     """Calculate drawdown series."""
@@ -14,7 +15,7 @@ def compute_drawdown(returns: pd.Series) -> pd.DataFrame:
     drawdown = (cum_ret - running_max) / running_max
     return pd.DataFrame({"cum_ret": cum_ret, "max_ret": running_max, "drawdown": drawdown})
 
-def get_performance_metrics(returns: pd.Series, risk_free_rate: float = 0.02) -> Dict[str, float]:
+def get_performance_metrics(returns: pd.Series, risk_free_rate: float = 0.02) -> dict[str, float]:
     """Calculate key performance metrics (Sharpe, Sortino, MDD)."""
     if len(returns) < 2: return {}
     
@@ -38,7 +39,7 @@ def get_performance_metrics(returns: pd.Series, risk_free_rate: float = 0.02) ->
         "win_rate": (returns > 0).mean()
     }
 
-def print_performance_summary(metrics: Dict[str, float]):
+def print_performance_summary(metrics: dict[str, float]):
     """Print a user-friendly performance summary."""
     print("--- Strategy Performance Summary ---")
     for k, v in metrics.items():

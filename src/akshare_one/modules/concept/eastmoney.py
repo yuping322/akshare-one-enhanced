@@ -4,7 +4,7 @@ Eastmoney concept sector data provider.
 
 import pandas as pd
 
-from .base import ConceptProvider, ConceptFactory
+from .base import ConceptFactory, ConceptProvider
 
 
 @ConceptFactory.register("eastmoney")

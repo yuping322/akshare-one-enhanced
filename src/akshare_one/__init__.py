@@ -443,9 +443,10 @@ __all__ = [
 from . import risk
 from . import strategy
 
+
 def get_basic_info(
     symbol: str,
-    source: Literal["eastmoney"] = "eastmoney",
+    source: Literal["eastmoney", "sina"] = "sina",
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -453,7 +454,7 @@ def get_basic_info(
 
     Args:
         symbol: 股票代码 (e.g. '600000')
-        source: 数据源 ('eastmoney')
+        source: 数据源 ('sina', 'eastmoney')
 
     Returns:
         pd.DataFrame:
@@ -479,7 +480,7 @@ def get_hist_data(
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
     adjust: Literal["none", "qfq", "hfq"] = "none",
-    source: Literal["eastmoney", "eastmoney_direct", "sina"] = "eastmoney_direct",
+    source: Literal["sina", "lixinger", "eastmoney", "eastmoney_direct"] = "sina",
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -492,7 +493,7 @@ def get_hist_data(
         start_date: 开始日期 (YYYY-MM-DD)
         end_date: 结束日期 (YYYY-MM-DD)
         adjust: 复权类型 ('none','qfq','hfq')
-        source: 数据源 ('eastmoney', 'eastmoney_direct', 'sina')
+        source: 数据源 ('sina', 'lixinger', 'eastmoney', 'eastmoney_direct')
 
     Returns:
         pd.DataFrame:
@@ -518,7 +519,7 @@ def get_hist_data(
 
 def get_realtime_data(
     symbol: str | None = None,
-    source: Literal["eastmoney", "eastmoney_direct", "xueqiu"] = "eastmoney_direct",
+    source: Literal["eastmoney", "eastmoney_direct", "xueqiu"] = "eastmoney",
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -527,6 +528,7 @@ def get_realtime_data(
     Args:
         symbol: 股票代码 (如 "600000")
         source: 数据源 ('eastmoney', 'eastmoney_direct', 'xueqiu')
+        注意：实时数据目前不支持 sina 数据源
 
     Returns:
         pd.DataFrame:
@@ -549,7 +551,7 @@ def get_realtime_data(
 
 def get_news_data(
     symbol: str,
-    source: Literal["eastmoney"] = "eastmoney",
+    source: Literal["eastmoney", "sina"] = "eastmoney",
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -557,7 +559,7 @@ def get_news_data(
 
     Args:
         symbol: 股票代码 (如 "300059")
-        source: 数据源 ('eastmoney')
+        source: 数据源 ('eastmoney', 'sina')
 
     Returns:
         pd.DataFrame:
@@ -635,7 +637,7 @@ def get_cash_flow(
 
 def get_financial_metrics(
     symbol: str,
-    source: Literal["eastmoney_direct"] = "eastmoney_direct",
+    source: Literal["sina", "eastmoney_direct", "lixinger"] = "sina",
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -643,7 +645,7 @@ def get_financial_metrics(
 
     Args:
         symbol: 股票代码 (如 "600600")
-        source: 数据源 ('eastmoney_direct')
+        source: 数据源 ('sina', 'eastmoney_direct', 'lixinger')
 
     Returns:
         pd.DataFrame: 财务关键指标数据
@@ -931,7 +933,7 @@ def get_basic_info_multi_source(
 
     Args:
         symbol: 股票代码 (e.g. '600000')
-        sources: 数据源列表，默认 ["eastmoney", "sina"]
+        sources: 数据源列表，默认 ["sina", "eastmoney"]
 
     Returns:
         pd.DataFrame: 股票基础信息
@@ -940,7 +942,7 @@ def get_basic_info_multi_source(
     from .modules.info import InfoDataFactory
 
     if sources is None:
-        sources = ["eastmoney", "sina"]
+        sources = ["sina", "eastmoney"]
 
     providers = []
     for source in sources:
@@ -978,7 +980,7 @@ def get_hist_data_multi_source(
         start_date: 开始日期 (YYYY-MM-DD)
         end_date: 结束日期 (YYYY-MM-DD)
         adjust: 复权类型 ('none','qfq','hfq')
-        sources: 数据源列表，默认 ["eastmoney_direct", "eastmoney", "sina"]
+        sources: 数据源列表，默认 ["sina", "lixinger", "eastmoney_direct", "eastmoney"]
 
     Returns:
         pd.DataFrame: 历史数据
@@ -987,7 +989,7 @@ def get_hist_data_multi_source(
         >>> df = get_hist_data_multi_source("600000", interval="day")
         >>> df = get_hist_data_multi_source(
         ...     "000001",
-        ...     sources=["eastmoney_direct", "sina"]  # 自定义数据源优先级
+        ...     sources=["sina", "lixinger"]  # 自定义数据源优先级
         ... )
     """
     router = create_historical_router(
@@ -1015,7 +1017,7 @@ def get_realtime_data_multi_source(
 
     Args:
         symbol: 股票代码 (如 "600000")
-        sources: 数据源列表，默认 ["eastmoney_direct", "eastmoney", "xueqiu"]
+        sources: 数据源列表，默认 ["sina", "eastmoney_direct", "eastmoney", "xueqiu"]
 
     Returns:
         pd.DataFrame: 实时行情数据
@@ -1024,7 +1026,7 @@ def get_realtime_data_multi_source(
         >>> df = get_realtime_data_multi_source("600000")
         >>> df = get_realtime_data_multi_source(
         ...     "000001",
-        ...     sources=["eastmoney_direct", "xueqiu"]
+        ...     sources=["sina", "xueqiu"]
         ... )
     """
     router = create_realtime_router(symbol=symbol, sources=sources)
@@ -1044,7 +1046,7 @@ def get_news_data_multi_source(
 
     Args:
         symbol: 股票代码 (如 "300059")
-        sources: 数据源列表，默认 ["eastmoney"]
+        sources: 数据源列表，默认 ["eastmoney", "sina"]
 
     Returns:
         pd.DataFrame: 新闻数据

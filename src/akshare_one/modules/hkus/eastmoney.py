@@ -4,7 +4,7 @@ Eastmoney HK/US stock data provider.
 
 import pandas as pd
 
-from .base import HKUSProvider, HKUSFactory
+from .base import HKUSFactory, HKUSProvider
 
 
 @HKUSFactory.register("eastmoney")

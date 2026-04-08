@@ -6,8 +6,8 @@ This module implements margin financing data provider using Lixinger OpenAPI.
 
 import pandas as pd
 
-from .base import MarginProvider, MarginFactory
 from ...lixinger_client import get_lixinger_client
+from .base import MarginFactory, MarginProvider
 
 
 @MarginFactory.register("lixinger")

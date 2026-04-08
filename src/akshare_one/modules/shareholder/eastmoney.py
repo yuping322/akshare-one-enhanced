@@ -6,7 +6,7 @@ This module implements the shareholder data provider using Eastmoney (东方财�
 
 import pandas as pd
 
-from .base import ShareholderProvider, ShareholderFactory
+from .base import ShareholderFactory, ShareholderProvider
 
 
 @ShareholderFactory.register("eastmoney")

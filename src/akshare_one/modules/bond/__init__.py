@@ -3,17 +3,18 @@ src/akshare_one/modules/bond/__init__.py
 Bond module for conversion and standard bonds.
 """
 
-from .base import BondFactory
-from . import jsl
-from . import jsl
-from ..factory_base import api_endpoint
-from typing import Optional, Any
+from typing import Any, Optional
+
 import pandas as pd
+
+from ..factory_base import api_endpoint
+from . import jsl
+from .base import BondFactory
 
 
 @api_endpoint(BondFactory, method_name="get_bond_list")
 def get_bond_list(
-    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
+    source: str | None = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
     """
     Get a comprehensive list of active conversion bonds.
@@ -26,7 +27,7 @@ def get_bond_hist_data(
     symbol: str,
     start_date: str,
     end_date: str,
-    source: Optional[str] = None,
+    source: str | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -38,7 +39,7 @@ def get_bond_hist_data(
 
 @api_endpoint(BondFactory, method_name="get_bond_spot")
 def get_bond_realtime_data(
-    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
+    source: str | None = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
     """
     Get bond realtime quotes.
@@ -49,7 +50,7 @@ def get_bond_realtime_data(
 @api_endpoint(BondFactory, method_name="get_bond_premium")
 def get_bond_premium(
     symbol: str,
-    source: Optional[str] = None,
+    source: str | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:

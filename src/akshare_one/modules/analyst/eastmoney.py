@@ -4,7 +4,7 @@ Eastmoney analyst data provider.
 
 import pandas as pd
 
-from .base import AnalystProvider, AnalystFactory
+from .base import AnalystFactory, AnalystProvider
 
 
 @AnalystFactory.register("eastmoney")

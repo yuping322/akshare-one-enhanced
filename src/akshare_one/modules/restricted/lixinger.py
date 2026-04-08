@@ -1,8 +1,9 @@
 """
 Lixinger provider for restricted stock release data.
 
-Uses cn/company/restricted-release API to provide lock-up expiry data
-as a backup to the eastmoney source.
+WARNING: The cn/company/restricted-release API endpoint may not be available in Lixinger's
+current API documentation. This provider is kept as a placeholder for future support.
+Use eastmoney provider as the primary source for restricted release data.
 """
 
 import pandas as pd
@@ -16,7 +17,8 @@ class LixingerRestrictedReleaseProvider(RestrictedReleaseProvider):
     """
     Restricted stock release data provider using Lixinger OpenAPI.
 
-    Covers cn/company/restricted-release endpoint.
+    WARNING: This endpoint (cn/company/restricted-release) may not be available.
+    The API documentation does not include this endpoint. Consider using eastmoney provider.
     """
 
     def get_source_name(self) -> str:
@@ -35,6 +37,8 @@ class LixingerRestrictedReleaseProvider(RestrictedReleaseProvider):
         """
         Get restricted stock release data from Lixinger.
 
+        WARNING: This API endpoint may not be available. Returns empty DataFrame.
+
         Args:
             symbol: Stock symbol (e.g., '600000'). If None, not supported by
                     Lixinger API — returns empty DataFrame.
@@ -46,19 +50,22 @@ class LixingerRestrictedReleaseProvider(RestrictedReleaseProvider):
                 symbol, release_date, release_shares, release_value,
                 release_type, shareholder_name
         """
+        self.logger.warning(
+            "The cn/company/restricted-release API endpoint is not documented in Lixinger's API. "
+            "This endpoint may not be available. Use eastmoney provider for restricted release data."
+        )
+
         if symbol:
             self.validate_symbol(symbol)
         self.validate_date_range(start_date, end_date)
 
-        # Lixinger requires a stockCode; market-wide query not supported
         if not symbol:
             self.logger.warning(
                 "Lixinger restricted-release API requires a stock symbol. "
                 "Market-wide query is not supported. Returning empty DataFrame."
             )
             return self.create_empty_dataframe(
-                ["symbol", "release_date", "release_shares", "release_value",
-                 "release_type", "shareholder_name"]
+                ["symbol", "release_date", "release_shares", "release_value", "release_type", "shareholder_name"]
             )
 
         client = get_lixinger_client()
@@ -73,18 +80,16 @@ class LixingerRestrictedReleaseProvider(RestrictedReleaseProvider):
         if response.get("code") != 1:
             self.logger.warning(
                 f"Lixinger restricted-release returned error for {symbol}: "
-                f"{response.get('msg')}"
+                f"{response.get('msg')}. This endpoint may not be available."
             )
             return self.create_empty_dataframe(
-                ["symbol", "release_date", "release_shares", "release_value",
-                 "release_type", "shareholder_name"]
+                ["symbol", "release_date", "release_shares", "release_value", "release_type", "shareholder_name"]
             )
 
         data = response.get("data", [])
         if not data:
             return self.create_empty_dataframe(
-                ["symbol", "release_date", "release_shares", "release_value",
-                 "release_type", "shareholder_name"]
+                ["symbol", "release_date", "release_shares", "release_value", "release_type", "shareholder_name"]
             )
 
         df = pd.DataFrame(data)
@@ -139,9 +144,6 @@ class LixingerRestrictedReleaseProvider(RestrictedReleaseProvider):
         Returns empty DataFrame.
         """
         self.logger.warning(
-            "Lixinger does not support market-wide restricted release calendar. "
-            "Use eastmoney source for this query."
+            "Lixinger does not support market-wide restricted release calendar. Use eastmoney source for this query."
         )
-        return self.create_empty_dataframe(
-            ["date", "release_stock_count", "total_release_value"]
-        )
+        return self.create_empty_dataframe(["date", "release_stock_count", "total_release_value"])

@@ -13,10 +13,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import eastmoney, lixinger, sina
 from .base import DragonTigerFactory
-from . import eastmoney
-from . import sina
-from . import lixinger
 
 
 @api_endpoint(DragonTigerFactory)

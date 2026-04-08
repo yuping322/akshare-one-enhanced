@@ -4,7 +4,7 @@ Eastmoney sentiment data provider.
 
 import pandas as pd
 
-from .base import SentimentProvider, SentimentFactory
+from .base import SentimentFactory, SentimentProvider
 
 
 @SentimentFactory.register("eastmoney")

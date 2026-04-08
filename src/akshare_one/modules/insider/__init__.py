@@ -10,10 +10,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import eastmoney, lixinger, xueqiu
 from .base import InsiderDataFactory
-from . import eastmoney
-from . import lixinger
-from . import xueqiu
 
 
 @api_endpoint(InsiderDataFactory)

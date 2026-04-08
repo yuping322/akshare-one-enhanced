@@ -229,7 +229,7 @@ class MappingConfig:
                         description=m.get("description", ""),
                     )
                 )
-            except KeyError as e:
+            except KeyError:
                 # 记录日志或跳过缺失必填字段的映射
                 continue
 

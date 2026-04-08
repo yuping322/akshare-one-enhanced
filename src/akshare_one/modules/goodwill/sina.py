@@ -6,7 +6,7 @@ This module implements the goodwill data provider using Sina as the data source.
 
 import pandas as pd
 
-from .base import GoodwillProvider, GoodwillFactory
+from .base import GoodwillFactory, GoodwillProvider
 
 
 @GoodwillFactory.register("sina")

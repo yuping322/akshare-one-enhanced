@@ -4,7 +4,7 @@ Eastmoney IPO data provider.
 
 import pandas as pd
 
-from .base import IPOProvider, IPOFactory
+from .base import IPOFactory, IPOProvider
 
 
 @IPOFactory.register("eastmoney")

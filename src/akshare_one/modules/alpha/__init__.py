@@ -3,44 +3,39 @@ src/akshare_one/modules/alpha/
 Unified Quantitative Engine for AkShare-One Enhanced.
 """
 
-from .base import (
-    normalize_factor_name,
-    global_factor_registry,
-    align_to_trade_days,
-    safe_divide,
-    FactorRegistry,
-)
-
-from .preprocess import (
-    winsorize_med,
-    standardlize,
-    neutralize,
-)
-
-from .factors import (
-    compute_market_cap,
-    compute_pb_ratio,
-    compute_momentum,
-    get_factor_values,
-)
-
-from .signals import (
-    compute_rsrs,
-    compute_ma_cross,
-    compute_breakthrough,
-    get_signal_for_sec,
-)
-
 from .backtest import (
+    compute_drawdown,
     get_performance_metrics,
     print_performance_summary,
-    compute_drawdown,
 )
-
+from .base import (
+    FactorRegistry,
+    align_to_trade_days,
+    global_factor_registry,
+    normalize_factor_name,
+    safe_divide,
+)
+from .factors import (
+    compute_market_cap,
+    compute_momentum,
+    compute_pb_ratio,
+    get_factor_values,
+)
+from .preprocess import (
+    neutralize,
+    standardlize,
+    winsorize_med,
+)
 from .risk import (
+    check_max_drawdown_limit,
     compute_atr_stop_loss,
     get_position_size_fixed_risk,
-    check_max_drawdown_limit,
+)
+from .signals import (
+    compute_breakthrough,
+    compute_ma_cross,
+    compute_rsrs,
+    get_signal_for_sec,
 )
 
 __all__ = [

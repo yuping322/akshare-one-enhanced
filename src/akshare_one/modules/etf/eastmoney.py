@@ -6,7 +6,7 @@ This module implements the ETF data provider using Eastmoney (东方财富) as t
 
 import pandas as pd
 
-from .base import ETFProvider, ETFFactory
+from .base import ETFFactory, ETFProvider
 
 
 @ETFFactory.register("eastmoney")

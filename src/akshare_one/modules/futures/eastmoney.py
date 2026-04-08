@@ -7,10 +7,10 @@ This module implements the futures data provider using Eastmoney as the data sou
 import pandas as pd
 
 from .base import (
-    HistoricalFuturesDataProvider,
-    RealtimeFuturesDataProvider,
     FuturesHistoricalFactory,
     FuturesRealtimeFactory,
+    HistoricalFuturesDataProvider,
+    RealtimeFuturesDataProvider,
 )
 
 

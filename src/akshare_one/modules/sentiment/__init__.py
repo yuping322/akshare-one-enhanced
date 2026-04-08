@@ -6,8 +6,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from .base import SentimentFactory
 from . import eastmoney
+from .base import SentimentFactory
 
 
 @api_endpoint(SentimentFactory, method_name="get_hot_rank")

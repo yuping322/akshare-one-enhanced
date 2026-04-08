@@ -3,10 +3,10 @@ src/akshare_one/modules/alpha/preprocess.py
 Factor preprocessing: Winsorization, Standardization, Neutralization.
 """
 
+
 import numpy as np
 import pandas as pd
-from typing import Union, List, Optional
-import warnings
+
 
 def _winsorize_med_series(series: pd.Series, scale: float, inclusive: bool, inf2nan: bool) -> pd.Series:
     s = series.copy()
@@ -24,7 +24,7 @@ def _winsorize_med_series(series: pd.Series, scale: float, inclusive: bool, inf2
     else: s[(s < lower) | (s > upper)] = np.nan
     return s
 
-def winsorize_med(factor_data: Union[pd.DataFrame, pd.Series], scale: float = 3.0, inclusive: bool = True, inf2nan: bool = True, axis: int = 0) -> Union[pd.DataFrame, pd.Series]:
+def winsorize_med(factor_data: pd.DataFrame | pd.Series, scale: float = 3.0, inclusive: bool = True, inf2nan: bool = True, axis: int = 0) -> pd.DataFrame | pd.Series:
     """Winsorize factor data using MAD method."""
     if isinstance(factor_data, pd.Series): return _winsorize_med_series(factor_data, scale, inclusive, inf2nan)
     df = factor_data.copy()
@@ -35,7 +35,7 @@ def winsorize_med(factor_data: Union[pd.DataFrame, pd.Series], scale: float = 3.
         for idx in df.index: df.loc[idx] = _winsorize_med_series(df.loc[idx], scale, inclusive, inf2nan=False)
     return df
 
-def standardlize(factor_data: Union[pd.DataFrame, pd.Series], inf2nan: bool = True, axis: int = 0) -> Union[pd.DataFrame, pd.Series]:
+def standardlize(factor_data: pd.DataFrame | pd.Series, inf2nan: bool = True, axis: int = 0) -> pd.DataFrame | pd.Series:
     """Standardize factor data to Z-Score (Mean=0, Std=1)."""
     df = factor_data.copy()
     if inf2nan: df = df.replace([np.inf, -np.inf], np.nan)
@@ -47,7 +47,7 @@ def standardlize(factor_data: Union[pd.DataFrame, pd.Series], inf2nan: bool = Tr
     else:
         return df.sub(df.mean(axis=1), axis=0).div(df.std(axis=1).replace(0, np.nan), axis=0)
 
-def neutralize(factor_data: Union[pd.DataFrame, pd.Series], how: Optional[List[str]] = None, market_cap: Optional[pd.Series] = None, industry_data: Optional[pd.DataFrame] = None) -> Union[pd.DataFrame, pd.Series]:
+def neutralize(factor_data: pd.DataFrame | pd.Series, how: list[str] | None = None, market_cap: pd.Series | None = None, industry_data: pd.DataFrame | None = None) -> pd.DataFrame | pd.Series:
     """Neutralize factor data against Market Cap and/or Industry."""
     if how is None: how = ["market_cap"]
     is_series = isinstance(factor_data, pd.Series)

@@ -4,7 +4,7 @@ Eastmoney suspended stocks data provider.
 
 import pandas as pd
 
-from .base import SuspendedProvider, SuspendedFactory
+from .base import SuspendedFactory, SuspendedProvider
 
 
 @SuspendedFactory.register("eastmoney")

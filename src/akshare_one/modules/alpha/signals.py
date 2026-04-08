@@ -3,11 +3,13 @@ src/akshare_one/modules/alpha/signals.py
 Market timing and stock selection signals.
 """
 
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import statsmodels.api as sm
-from typing import Union, List, Optional, Dict
+
 from ..historical import get_hist_data
+
 
 def compute_rsrs(high: pd.Series, low: pd.Series, n: int = 18, m: int = 600) -> pd.Series:
     """Calculate RSRS (Resistance Support Relative Strength) signal."""
@@ -44,7 +46,7 @@ def compute_breakthrough(high: pd.Series, low: pd.Series, close: pd.Series, wind
     signal[close < l_min] = -1
     return signal
 
-def get_signal_for_sec(symbol: str, signal_type: str = "rsrs", end_date: Optional[str] = None, **kwargs) -> int:
+def get_signal_for_sec(symbol: str, signal_type: str = "rsrs", end_date: str | None = None, **kwargs) -> int:
     """Get the latest signal for a security."""
     df = get_hist_data(symbol, end_date=end_date, count= kwargs.get('lookback', 1000))
     if df.empty: return 0

@@ -99,7 +99,7 @@ def example_export_multiple_stocks():
     start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
     stocks = ["600000", "000001", "600519", "000858", "600036"]
-    output_dir = "output/stocks"
+    output_dir = os.path.join("/tmp", "akshare_one", "examples", "output", "stocks")
     os.makedirs(output_dir, exist_ok=True)
 
     for symbol in stocks:

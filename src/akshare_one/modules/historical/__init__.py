@@ -4,8 +4,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import cached_provider, eastmoney, eastmoney_direct, efinance, lixinger, netease, sina, tencent
 from .base import HistoricalDataFactory
-from . import eastmoney, eastmoney_direct, sina, tencent, netease, cached_provider, lixinger
 
 
 @api_endpoint(HistoricalDataFactory)

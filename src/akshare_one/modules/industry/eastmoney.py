@@ -4,7 +4,7 @@ Eastmoney industry sector data provider.
 
 import pandas as pd
 
-from .base import IndustryProvider, IndustryFactory
+from .base import IndustryFactory, IndustryProvider
 
 
 @IndustryFactory.register("eastmoney")

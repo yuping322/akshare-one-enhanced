@@ -7,7 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import DisclosureProvider, DisclosureFactory
+from .base import DisclosureFactory, DisclosureProvider
 
 
 @DisclosureFactory.register("sina")

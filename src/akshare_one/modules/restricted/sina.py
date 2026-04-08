@@ -6,7 +6,7 @@ This module implements restricted release data provider using Sina as the data s
 
 import pandas as pd
 
-from .base import RestrictedReleaseProvider, RestrictedReleaseFactory
+from .base import RestrictedReleaseFactory, RestrictedReleaseProvider
 
 
 @RestrictedReleaseFactory.register("sina")

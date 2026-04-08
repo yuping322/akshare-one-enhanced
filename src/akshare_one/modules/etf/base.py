@@ -4,8 +4,10 @@ Base classes for ETF data providers.
 """
 
 import pandas as pd
+
 from ..base import BaseProvider
 from ..factory_base import BaseFactory
+
 
 class ETFProvider(BaseProvider):
     """Base class for ETF/LOF data providers."""

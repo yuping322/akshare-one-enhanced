@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ..cache import cache
-from .base import NewsDataProvider, NewsDataFactory
+from .base import NewsDataFactory, NewsDataProvider
 
 
 @NewsDataFactory.register("sina")

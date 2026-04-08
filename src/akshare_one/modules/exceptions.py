@@ -306,9 +306,7 @@ def map_to_standard_exception(error: MarketDataError, context: dict | None = Non
         standard_exception = ConnectionError(enhanced_message)
     elif isinstance(error, RateLimitError):
         standard_exception = RuntimeError(enhanced_message)
-    elif isinstance(error, NoDataError):
-        standard_exception = ValueError(enhanced_message)
-    elif isinstance(error, DataValidationError):
+    elif isinstance(error, NoDataError) or isinstance(error, DataValidationError):
         standard_exception = ValueError(enhanced_message)
     else:
         # Generic MarketDataError or unknown subclass

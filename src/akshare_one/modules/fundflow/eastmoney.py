@@ -7,7 +7,7 @@ This module implements the fund flow data provider using Eastmoney as the data s
 import pandas as pd
 
 from ...akshare_compat import call_akshare
-from .base import FundFlowProvider, FundFlowFactory
+from .base import FundFlowFactory, FundFlowProvider
 
 
 @FundFlowFactory.register("eastmoney")

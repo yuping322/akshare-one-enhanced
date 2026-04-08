@@ -7,7 +7,7 @@ and falls back to the next one if the current source fails.
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, TypeVar, Optional
+from typing import Any, TypeVar
 
 import pandas as pd
 
@@ -18,9 +18,10 @@ T = TypeVar("T")
 
 class EmptyDataPolicy(Enum):
     """空数据处理策略"""
-    STRICT = "strict"             # 空结果视为失败（默认）
-    RELAXED = "relaxed"           # 空结果视为合法，直接返回
-    BEST_EFFORT = "best_effort"   # 尝试所有源，返回第一个非空或合并结果
+
+    STRICT = "strict"  # 空结果视为失败（默认）
+    RELAXED = "relaxed"  # 空结果视为合法，直接返回
+    BEST_EFFORT = "best_effort"  # 尝试所有源，返回第一个非空或合并结果
 
 
 @dataclass
@@ -32,7 +33,7 @@ class ExecutionResult:
     source: str | None
     error: str | None
     attempts: int
-    error_details: Optional[list[tuple[str, str]]] = None  # [(source, error_msg), ...]
+    error_details: list[tuple[str, str]] | None = None  # [(source, error_msg), ...]
     is_empty: bool = False  # 标记是否为空但合法的结果
     sources_tried: list[dict[str, Any]] = field(default_factory=list)  # 记录每个源的详细状态
 
@@ -218,9 +219,7 @@ class MultiSourceRouter:
                         self._update_stats(name, False, duration_ms)
                         error_details.append((name, "Empty DataFrame (STRICT policy)"))
                         if self.enable_logging:
-                            logger.warning(
-                                f"Provider '{name}' returned empty DataFrame for '{method_name}'"
-                            )
+                            logger.warning(f"Provider '{name}' returned empty DataFrame for '{method_name}'")
                         continue
 
                 # Non-empty DataFrame - validate it
@@ -252,9 +251,7 @@ class MultiSourceRouter:
             # Return best available result (even if empty)
             best_result.attrs["source"] = best_source  # Set source attribution
             if self.enable_logging:
-                logger.info(
-                    f"Returning best available result from '{best_source}' (BEST_EFFORT policy)"
-                )
+                logger.info(f"Returning best available result from '{best_source}' (BEST_EFFORT policy)")
             return best_result
 
         # All providers failed or no valid result
@@ -370,9 +367,7 @@ class MultiSourceRouter:
         if self.empty_data_policy == EmptyDataPolicy.BEST_EFFORT and best_result is not None:
             # Return best available result (even if empty)
             if self.enable_logging:
-                logger.info(
-                    f"Returning best available result from '{best_source}' (BEST_EFFORT policy)"
-                )
+                logger.info(f"Returning best available result from '{best_source}' (BEST_EFFORT policy)")
             return best_result
 
         # All providers failed or no valid result
@@ -541,7 +536,7 @@ def create_historical_router(
     from .historical import HistoricalDataFactory
 
     if sources is None:
-        sources = ["eastmoney_direct", "eastmoney", "sina", "tencent", "netease"]
+        sources = ["sina", "lixinger", "eastmoney_direct", "eastmoney", "tencent", "netease"]
 
     if required_columns is None:
         required_columns = ["timestamp", "open", "high", "low", "close", "volume"]
@@ -590,7 +585,7 @@ def create_realtime_router(
     from .realtime import RealtimeDataFactory
 
     if sources is None:
-        sources = ["eastmoney_direct", "eastmoney", "xueqiu"]
+        sources = ["sina", "eastmoney_direct", "eastmoney", "xueqiu"]
 
     if required_columns is None:
         required_columns = ["symbol", "price", "timestamp"]
@@ -621,7 +616,7 @@ def create_financial_router(
 
     Args:
         symbol: Stock symbol
-        sources: List of source names to try (default: ["eastmoney_direct", "sina"])
+        sources: List of source names to try (default: ["sina", "eastmoney_direct", "lixinger"])
         required_columns: Required columns in result
         min_rows: Minimum rows required for valid result
 
@@ -631,7 +626,7 @@ def create_financial_router(
     from .financial import FinancialDataFactory
 
     if sources is None:
-        sources = ["eastmoney_direct", "sina"]
+        sources = ["sina", "eastmoney_direct", "lixinger"]
 
     providers = []
 
@@ -667,7 +662,7 @@ def create_northbound_router(
     from .northbound import NorthboundFactory
 
     if sources is None:
-        sources = ["eastmoney", "sina"]
+        sources = ["sina", "eastmoney"]
 
     providers = []
 
@@ -695,7 +690,7 @@ def create_fundflow_router(
 
     Args:
         symbol: Stock symbol (optional for sector/rank queries)
-        sources: List of source names to try (default: ["eastmoney", "sina"])
+        sources: List of source names to try (default: ["sina", "eastmoney"])
         required_columns: Required columns in result
         min_rows: Minimum rows required for valid result
 
@@ -705,7 +700,7 @@ def create_fundflow_router(
     from .fundflow import FundFlowFactory
 
     if sources is None:
-        sources = ["eastmoney", "sina"]
+        sources = ["sina", "eastmoney"]
 
     providers = []
 
@@ -731,7 +726,7 @@ def create_dragon_tiger_router(
     """Create a router for dragon tiger list data with multiple sources.
 
     Args:
-        sources: List of source names to try (default: ["eastmoney", "sina"])
+        sources: List of source names to try (default: ["sina", "eastmoney"])
         required_columns: Required columns in result
         min_rows: Minimum rows required for valid result
 
@@ -741,7 +736,7 @@ def create_dragon_tiger_router(
     from .lhb import DragonTigerFactory
 
     if sources is None:
-        sources = ["eastmoney", "sina"]
+        sources = ["sina", "eastmoney"]
 
     providers = []
 
@@ -767,7 +762,7 @@ def create_limit_up_down_router(
     """Create a router for limit up/down data with multiple sources.
 
     Args:
-        sources: List of source names to try (default: ["eastmoney", "sina"])
+        sources: List of source names to try (default: ["sina", "eastmoney"])
         required_columns: Required columns in result
         min_rows: Minimum rows required for valid result
 
@@ -777,7 +772,7 @@ def create_limit_up_down_router(
     from .limitup import LimitUpDownFactory
 
     if sources is None:
-        sources = ["eastmoney", "sina"]
+        sources = ["sina", "eastmoney"]
 
     providers = []
 
@@ -805,7 +800,7 @@ def create_block_deal_router(
 
     Args:
         symbol: Stock symbol (optional)
-        sources: List of source names to try (default: ["eastmoney", "sina"])
+        sources: List of source names to try (default: ["sina", "eastmoney"])
         required_columns: Required columns in result
         min_rows: Minimum rows required for valid result
 
@@ -815,7 +810,7 @@ def create_block_deal_router(
     from .blockdeal import BlockDealFactory
 
     if sources is None:
-        sources = ["eastmoney", "sina"]
+        sources = ["sina", "eastmoney"]
 
     providers = []
 

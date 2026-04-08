@@ -6,7 +6,7 @@ This module implements the bond data provider using Eastmoney (东方财富) as 
 
 import pandas as pd
 
-from .base import BondProvider, BondFactory
+from .base import BondFactory, BondProvider
 
 
 @BondFactory.register("eastmoney")

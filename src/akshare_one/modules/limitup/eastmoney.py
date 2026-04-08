@@ -7,7 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import LimitUpDownProvider, LimitUpDownFactory
+from .base import LimitUpDownFactory, LimitUpDownProvider
 
 
 @LimitUpDownFactory.register("eastmoney")

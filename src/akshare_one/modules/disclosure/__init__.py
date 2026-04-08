@@ -12,8 +12,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import eastmoney, lixinger, sina
 from .base import DisclosureFactory
-from . import eastmoney, sina, lixinger
 
 
 @api_endpoint(DisclosureFactory)

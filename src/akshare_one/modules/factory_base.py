@@ -6,8 +6,9 @@ the common factory pattern used across all data provider modules.
 """
 
 import inspect
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 import pandas as pd
 
@@ -282,7 +283,7 @@ class BaseFactory(Generic[T]):
         Returns:
             MultiSourceRouter instance
         """
-        from .multi_source import MultiSourceRouter, EmptyDataPolicy
+        from .multi_source import EmptyDataPolicy, MultiSourceRouter
 
         if sources is None:
             sources = cls.list_sources()

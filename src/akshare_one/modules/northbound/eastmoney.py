@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from ..field_naming import FieldType
-from .base import NorthboundProvider, NorthboundFactory
+from .base import NorthboundFactory, NorthboundProvider
 
 
 @NorthboundFactory.register("eastmoney")

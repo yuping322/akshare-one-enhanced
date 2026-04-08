@@ -5,7 +5,7 @@ import requests
 
 from akshare_one.modules.cache import cache
 
-from .base import FinancialDataProvider, FinancialDataFactory
+from .base import FinancialDataFactory, FinancialDataProvider
 
 logger = logging.getLogger(__name__)
 

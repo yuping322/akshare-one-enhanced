@@ -5,7 +5,7 @@ import pandas as pd
 from ...akshare_compat import call_akshare
 from ...logging_config import get_logger, log_api_request
 from ..cache import cache
-from .base import HistoricalDataProvider, HistoricalDataFactory
+from .base import HistoricalDataFactory, HistoricalDataProvider
 
 
 @HistoricalDataFactory.register("eastmoney")

@@ -3,16 +3,15 @@ src/akshare_one/modules/alpha/base.py
 Alpha computation infrastructure.
 """
 
-import os
-import pickle
-import warnings
-from typing import Callable, Dict, List, Optional, Union
-import pandas as pd
+from collections.abc import Callable
+
 import numpy as np
-from ..date import get_trade_dates_between, is_trade_date
+import pandas as pd
+
+from ..date import get_trade_dates_between
 
 # Alias map: JQ style -> Internal normalized name
-FACTOR_ALIAS_MAP: Dict[str, str] = {
+FACTOR_ALIAS_MAP: dict[str, str] = {
     "PE_ratio": "pe_ratio", "pe_ratio": "pe_ratio",
     "PB_ratio": "pb_ratio", "pb_ratio": "pb_ratio",
     "PS_ratio": "ps_ratio", "ps_ratio": "ps_ratio",
@@ -27,7 +26,7 @@ def normalize_factor_name(name: str) -> str:
     if name in FACTOR_ALIAS_MAP: return FACTOR_ALIAS_MAP[name]
     return name.lower()
 
-def get_trade_days(start_date: str, end_date: str) -> List[str]:
+def get_trade_days(start_date: str, end_date: str) -> list[str]:
     """Get trade days between two dates."""
     try:
         return get_trade_dates_between(start_date, end_date)
@@ -35,7 +34,7 @@ def get_trade_days(start_date: str, end_date: str) -> List[str]:
         dates = pd.date_range(start=start_date, end=end_date, freq="B")
         return [d.strftime("%Y-%m-%d") for d in dates]
 
-def align_to_trade_days(df: pd.DataFrame, date_col: str = "date", start_date: Optional[str] = None, end_date: Optional[str] = None, fill_method: str = "ffill") -> pd.DataFrame:
+def align_to_trade_days(df: pd.DataFrame, date_col: str = "date", start_date: str | None = None, end_date: str | None = None, fill_method: str = "ffill") -> pd.DataFrame:
     """Align DataFrame to trade days index."""
     if df is None or df.empty: return df
     df = df.copy()
@@ -51,23 +50,23 @@ def align_to_trade_days(df: pd.DataFrame, date_col: str = "date", start_date: Op
 class FactorRegistry:
     """Registry for factor computation functions."""
     def __init__(self):
-        self._factors: Dict[str, Callable] = {}
-        self._metadata: Dict[str, Dict] = {}
+        self._factors: dict[str, Callable] = {}
+        self._metadata: dict[str, dict] = {}
 
-    def register(self, name: str, func: Callable, window: Optional[int] = None, dependencies: Optional[List[str]] = None, description: str = ""):
+    def register(self, name: str, func: Callable, window: int | None = None, dependencies: list[str] | None = None, description: str = ""):
         norm_name = normalize_factor_name(name)
         self._factors[norm_name] = func
         self._metadata[norm_name] = {"window": window, "dependencies": dependencies or [], "description": description}
 
-    def get(self, name: str) -> Optional[Callable]:
+    def get(self, name: str) -> Callable | None:
         return self._factors.get(normalize_factor_name(name))
 
-    def list_factors(self) -> List[str]:
+    def list_factors(self) -> list[str]:
         return list(self._factors.keys())
 
 global_factor_registry = FactorRegistry()
 
-def safe_divide(a: Union[float, np.ndarray, pd.Series], b: Union[float, np.ndarray, pd.Series]):
+def safe_divide(a: float | np.ndarray | pd.Series, b: float | np.ndarray | pd.Series):
     """Safe division returning NaN for zero denominator."""
     with np.errstate(divide="ignore", invalid="ignore"):
         return np.where((b == 0) | np.isnan(b), np.nan, np.divide(a, b))

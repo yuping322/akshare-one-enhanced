@@ -5,7 +5,7 @@ import pandas as pd
 
 from ...logging_config import get_logger, log_api_request
 from ..cache import cache
-from .base import RealtimeDataProvider, RealtimeDataFactory
+from .base import RealtimeDataFactory, RealtimeDataProvider
 
 
 @RealtimeDataFactory.register("eastmoney")

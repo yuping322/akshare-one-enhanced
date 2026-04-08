@@ -6,7 +6,7 @@ This module implements the valuation data provider using Eastmoney (东方财富
 
 import pandas as pd
 
-from .base import ValuationProvider, ValuationFactory
+from .base import ValuationFactory, ValuationProvider
 
 
 @ValuationFactory.register("eastmoney")

@@ -6,7 +6,7 @@ This module implements the limit up/down data provider using Sina as the data so
 
 import pandas as pd
 
-from .base import LimitUpDownProvider, LimitUpDownFactory
+from .base import LimitUpDownFactory, LimitUpDownProvider
 
 
 @LimitUpDownFactory.register("sina")

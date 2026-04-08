@@ -15,7 +15,7 @@ import pandas as pd
 from akshare_one.mappings.mapping_utils import get_option_underlying_patterns
 
 from ..cache import cache
-from .base import OptionsDataProvider, OptionsDataFactory
+from .base import OptionsDataFactory, OptionsDataProvider
 
 
 @OptionsDataFactory.register("sina")

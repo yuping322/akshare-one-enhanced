@@ -7,7 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
-from .base import DragonTigerProvider, DragonTigerFactory
+from .base import DragonTigerFactory, DragonTigerProvider
 
 
 @DragonTigerFactory.register("eastmoney")

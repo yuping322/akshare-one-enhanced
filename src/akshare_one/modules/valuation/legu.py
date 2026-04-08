@@ -6,7 +6,7 @@ This module implements the valuation data provider using Legu as the data source
 
 import pandas as pd
 
-from .base import ValuationProvider, ValuationFactory
+from .base import ValuationFactory, ValuationProvider
 
 
 @ValuationFactory.register("legu")

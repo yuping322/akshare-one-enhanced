@@ -5,6 +5,7 @@ from typing import Any, TypeVar
 
 import pandas as pd
 from cachetools import TTLCache, cached
+
 from ..metrics import get_stats_collector
 
 F = TypeVar("F", bound=Callable[..., Any])

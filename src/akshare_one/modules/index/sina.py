@@ -6,7 +6,7 @@ This module implements the index data provider using Sina Finance (新浪财经)
 
 import pandas as pd
 
-from .base import IndexProvider, IndexFactory
+from .base import IndexFactory, IndexProvider
 
 
 @IndexFactory.register("sina")

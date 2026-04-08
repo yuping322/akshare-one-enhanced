@@ -7,7 +7,7 @@ This module implements the macro data provider using official sources
 
 import pandas as pd
 
-from .base import MacroProvider, MacroFactory
+from .base import MacroFactory, MacroProvider
 
 
 @MacroFactory.register("official")

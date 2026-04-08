@@ -11,8 +11,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from .base import GoodwillFactory
 from . import eastmoney, sina
+from .base import GoodwillFactory
 
 
 @api_endpoint(GoodwillFactory)

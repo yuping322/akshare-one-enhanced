@@ -14,8 +14,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from .base import FuturesHistoricalFactory, FuturesRealtimeFactory, FuturesDataFactory
-from . import sina, eastmoney
+from . import eastmoney, sina
+from .base import FuturesDataFactory, FuturesHistoricalFactory, FuturesRealtimeFactory
 
 
 @api_endpoint(FuturesHistoricalFactory, method_name="get_hist_data")

@@ -5,6 +5,7 @@ This module defines the abstract interface for fund flow data providers.
 """
 
 from typing import Any
+
 import pandas as pd
 
 from ..base import BaseProvider

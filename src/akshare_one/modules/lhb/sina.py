@@ -6,7 +6,7 @@ This module implements the LHB data provider using Sina as the data source.
 
 import pandas as pd
 
-from .base import DragonTigerProvider, DragonTigerFactory
+from .base import DragonTigerFactory, DragonTigerProvider
 
 
 @DragonTigerFactory.register("sina")

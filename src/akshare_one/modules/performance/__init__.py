@@ -6,8 +6,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from .base import PerformanceFactory
 from . import eastmoney, lixinger
+from .base import PerformanceFactory
 
 
 @api_endpoint(PerformanceFactory)

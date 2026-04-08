@@ -7,7 +7,7 @@ This module implements the block deal data provider using Eastmoney as the data 
 import pandas as pd
 
 from ...akshare_compat import call_akshare
-from .base import BlockDealProvider, BlockDealFactory
+from .base import BlockDealFactory, BlockDealProvider
 
 
 @BlockDealFactory.register("eastmoney")

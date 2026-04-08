@@ -3,41 +3,43 @@ src/akshare_one/modules/alpha/factors.py
 Factor calculation implementations.
 """
 
-import pandas as pd
+
 import numpy as np
-from typing import Union, List, Optional, Dict
-from .base import global_factor_registry, safe_divide, align_to_trade_days
+import pandas as pd
+
 from ..historical import get_hist_data
 from ..valuation import get_stock_valuation
+from .base import global_factor_registry
 
-def compute_market_cap(symbol: str, end_date: Optional[str] = None, count: int = 1, **kwargs) -> Union[float, pd.Series]:
+
+def compute_market_cap(symbol: str, end_date: str | None = None, count: int = 1, **kwargs) -> float | pd.Series:
     """Total Market Cap factor."""
     df = get_stock_valuation(symbol, end_date=end_date)
     if df.empty or 'market_cap' not in df.columns: return np.nan
     res = df.tail(count)['market_cap']
     return res.iloc[0] if count == 1 else res
 
-def compute_pb_ratio(symbol: str, end_date: Optional[str] = None, count: int = 1, **kwargs) -> Union[float, pd.Series]:
+def compute_pb_ratio(symbol: str, end_date: str | None = None, count: int = 1, **kwargs) -> float | pd.Series:
     """PB Ratio factor."""
     df = get_stock_valuation(symbol, end_date=end_date)
     if df.empty or 'pb' not in df.columns: return np.nan
     res = df.tail(count)['pb']
     return res.iloc[0] if count == 1 else res
 
-def compute_pe_ratio(symbol: str, end_date: Optional[str] = None, count: int = 1, **kwargs) -> Union[float, pd.Series]:
+def compute_pe_ratio(symbol: str, end_date: str | None = None, count: int = 1, **kwargs) -> float | pd.Series:
     """PE Ratio factor."""
     df = get_stock_valuation(symbol, end_date=end_date)
     if df.empty or 'pe' not in df.columns: return np.nan
     res = df.tail(count)['pe']
     return res.iloc[0] if count == 1 else res
 
-def compute_momentum(symbol: str, end_date: Optional[str] = None, window: int = 20, **kwargs) -> float:
+def compute_momentum(symbol: str, end_date: str | None = None, window: int = 20, **kwargs) -> float:
     """Price Momentum factor."""
     df = get_hist_data(symbol, end_date=end_date, count=window + 1)
     if len(df) < window: return np.nan
     return (df['close'].iloc[-1] / df['close'].iloc[0]) - 1
 
-def compute_volatility(symbol: str, end_date: Optional[str] = None, window: int = 20, **kwargs) -> float:
+def compute_volatility(symbol: str, end_date: str | None = None, window: int = 20, **kwargs) -> float:
     """Price Volatility factor."""
     df = get_hist_data(symbol, end_date=end_date, count=window)
     if len(df) < window: return np.nan
@@ -50,7 +52,7 @@ global_factor_registry.register("pe_ratio", compute_pe_ratio, description="Price
 global_factor_registry.register("momentum", compute_momentum, window=20, description="N-day Price Momentum")
 global_factor_registry.register("volatility", compute_volatility, window=20, description="Annualized Volatility")
 
-def get_factor_values(securities: List[str], factor_names: List[str], end_date: str, count: int = 1) -> pd.DataFrame:
+def get_factor_values(securities: list[str], factor_names: list[str], end_date: str, count: int = 1) -> pd.DataFrame:
     """Calculate multiple factors for a list of securities."""
     results = {}
     for sec in securities:

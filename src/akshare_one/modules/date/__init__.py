@@ -4,11 +4,14 @@ Core date and trade calendar utilities.
 """
 
 import datetime
-from datetime import date, datetime as dt, timedelta
-from typing import Union, Literal, Optional, List
-import pandas as pd
-import akshare as ak
+from datetime import date, timedelta
+from datetime import datetime as dt
 from functools import lru_cache
+from typing import List, Literal, Optional, Union
+
+import akshare as ak
+import pandas as pd
+
 
 @lru_cache(maxsize=1)
 def get_all_trade_days():
@@ -22,16 +25,14 @@ def get_all_trade_days():
     return []
 
 def transform_date(
-    date_input: Union[str, date, dt, pd.Timestamp],
+    date_input: str | date | dt | pd.Timestamp,
     output_type: Literal['date', 'datetime', 'str', 'timestamp'] = 'date'
-) -> Union[date, dt, str, pd.Timestamp]:
+) -> date | dt | str | pd.Timestamp:
     """Convert various date formats."""
     result_date = None
     if isinstance(date_input, date) and not isinstance(date_input, dt):
         result_date = date_input
-    elif isinstance(date_input, dt):
-        result_date = date_input.date()
-    elif isinstance(date_input, pd.Timestamp):
+    elif isinstance(date_input, dt) or isinstance(date_input, pd.Timestamp):
         result_date = date_input.date()
     elif isinstance(date_input, str):
         date_str = date_input.strip()
@@ -51,15 +52,15 @@ def transform_date(
     return result_date
 
 def get_trade_dates_between(
-    start_date: Union[str, date, dt, pd.Timestamp],
-    end_date: Union[str, date, dt, pd.Timestamp]
-) -> List[date]:
+    start_date: str | date | dt | pd.Timestamp,
+    end_date: str | date | dt | pd.Timestamp
+) -> list[date]:
     start = transform_date(start_date, 'date')
     end = transform_date(end_date, 'date')
     trade_days = get_all_trade_days()
     return [d for d in trade_days if start <= d <= end]
 
-def is_trade_date(check_date: Union[str, date, dt, pd.Timestamp]) -> bool:
+def is_trade_date(check_date: str | date | dt | pd.Timestamp) -> bool:
     d = transform_date(check_date, 'date')
     return d in get_all_trade_days()
 

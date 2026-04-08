@@ -4,15 +4,12 @@ Market sentiment, valuation, and macroeconomic indicators.
 """
 
 import logging
-import pandas as pd
-import numpy as np
+
 import akshare as ak
-from datetime import datetime
-from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
-def compute_crowding_ratio(date: Optional[str] = None, threshold: float = 0.05) -> Dict[str, float]:
+def compute_crowding_ratio(date: str | None = None, threshold: float = 0.05) -> dict[str, float]:
     """Calculate market crowding (ratio of top turnover stocks)."""
     try:
         df = ak.stock_zh_a_spot_em()
@@ -28,7 +25,7 @@ def compute_crowding_ratio(date: Optional[str] = None, threshold: float = 0.05) 
         logger.warning(f"compute_crowding_ratio failed: {e}")
         return {"ratio": 0, "desc": "failed", "error": str(e)}
 
-def compute_fed_model(index_code: str = "000300", bond_rate: Optional[float] = None) -> Dict[str, float]:
+def compute_fed_model(index_code: str = "000300", bond_rate: float | None = None) -> dict[str, float]:
     """Calculate FED model: 1/PE - Long-term Bond Yield."""
     try:
         df = ak.stock_a_pe_and_pb(symbol="沪深300")
@@ -44,14 +41,14 @@ def compute_fed_model(index_code: str = "000300", bond_rate: Optional[float] = N
         logger.warning(f"compute_fed_model failed: {e}")
         return {"fed": 0, "error": str(e)}
 
-def compute_graham_index(index_code: str = "000300") -> Dict[str, float]:
+def compute_graham_index(index_code: str = "000300") -> dict[str, float]:
     """Calculate Graham Index: (1/PE) / Bond Yield."""
     res = compute_fed_model(index_code=index_code)
     if res.get("pe", 0) == 0: return {"graham": 0}
     graham = (1.0 / res["pe"]) / res["bond_rate"]
     return {"graham": graham}
 
-def compute_below_net_ratio() -> Dict[str, float]:
+def compute_below_net_ratio() -> dict[str, float]:
     """Calculate ratio of stocks trading below book value (PB < 1)."""
     try:
         df = ak.stock_zh_a_spot_em()

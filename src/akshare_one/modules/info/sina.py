@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ..cache import cache
-from .base import InfoDataProvider, InfoDataFactory
+from .base import InfoDataFactory, InfoDataProvider
 
 
 @InfoDataFactory.register("sina")

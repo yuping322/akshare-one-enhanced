@@ -3,18 +3,19 @@ src/akshare_one/modules/etf/__init__.py
 ETF and fund data module.
 """
 
-from .base import ETFFactory
-from . import eastmoney
-from . import lixinger
-from ..factory_base import api_endpoint
-from typing import Optional, List, Any
+from typing import Any, List, Optional
+
 import pandas as pd
+
+from ..factory_base import api_endpoint
+from . import eastmoney, lixinger
+from .base import ETFFactory
 
 
 @api_endpoint(ETFFactory)
 def get_etf_list(
     fund_type: str = "etf",
-    source: Optional[str] = None,
+    source: str | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ):
@@ -30,7 +31,7 @@ def get_etf_hist_data(
     start_date: str,
     end_date: str,
     interval: str = "daily",
-    source: Optional[str] = None,
+    source: str | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
@@ -42,7 +43,7 @@ def get_etf_hist_data(
 
 @api_endpoint(ETFFactory, method_name="get_etf_spot")
 def get_etf_realtime_data(
-    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
+    source: str | None = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
     """
     Get all ETF realtime quotes.
@@ -52,7 +53,7 @@ def get_etf_realtime_data(
 
 @api_endpoint(ETFFactory, method_name="get_fund_manager")
 def get_fund_manager_info(
-    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
+    source: str | None = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
     """
     Get fund manager information.
@@ -62,7 +63,7 @@ def get_fund_manager_info(
 
 @api_endpoint(ETFFactory, method_name="get_fund_rating")
 def get_fund_rating_data(
-    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
+    source: str | None = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
     """
     Get fund ratings.
@@ -73,7 +74,7 @@ def get_fund_rating_data(
 @api_endpoint(ETFFactory)
 def get_fund_nav(
     symbol: str,
-    source: Optional[str] = None,
+    source: str | None = None,
     columns: list[str] | None = None,
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:

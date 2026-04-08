@@ -4,6 +4,7 @@ Base classes for bond data providers.
 """
 
 import pandas as pd
+
 from ..base import BaseProvider
 from ..factory_base import BaseFactory
 

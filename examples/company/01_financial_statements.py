@@ -15,6 +15,7 @@
 注意：本示例仅供学习参考，不构成投资建议
 """
 
+import os
 import pandas as pd
 from akshare_one import (
     get_balance_sheet,
@@ -332,15 +333,18 @@ def example_data_filtering():
     # 导出到CSV
     print("\n将财务数据导出到CSV文件...")
     try:
+        output_dir = os.path.join("/tmp", "akshare_one", "examples", "financial")
+        os.makedirs(output_dir, exist_ok=True)
+
         df_balance = get_balance_sheet(symbol="600519", source="sina")
         df_income = get_income_statement(symbol="600519", source="sina")
         df_cashflow = get_cash_flow(symbol="600519", source="sina")
 
-        df_balance.to_csv("balance_sheet_600519.csv", index=False, encoding="utf-8-sig")
-        df_income.to_csv("income_statement_600519.csv", index=False, encoding="utf-8-sig")
-        df_cashflow.to_csv("cashflow_600519.csv", index=False, encoding="utf-8-sig")
+        df_balance.to_csv(os.path.join(output_dir, "balance_sheet_600519.csv"), index=False, encoding="utf-8-sig")
+        df_income.to_csv(os.path.join(output_dir, "income_statement_600519.csv"), index=False, encoding="utf-8-sig")
+        df_cashflow.to_csv(os.path.join(output_dir, "cashflow_600519.csv"), index=False, encoding="utf-8-sig")
 
-        print("已导出以下文件：")
+        print(f"已导出以下文件到 {output_dir}:")
         print("  - balance_sheet_600519.csv")
         print("  - income_statement_600519.csv")
         print("  - cashflow_600519.csv")

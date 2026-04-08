@@ -10,8 +10,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import eastmoney, legu, lixinger
 from .base import ValuationFactory
-from . import legu, eastmoney, lixinger
 
 
 @api_endpoint(ValuationFactory)

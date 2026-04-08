@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ..cache import cache
-from .base import HistoricalDataProvider, HistoricalDataFactory
+from .base import HistoricalDataFactory, HistoricalDataProvider
 
 
 @HistoricalDataFactory.register("tencent")

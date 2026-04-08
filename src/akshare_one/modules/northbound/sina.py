@@ -6,7 +6,7 @@ This module implements the northbound capital data provider using Sina as the da
 
 import pandas as pd
 
-from .base import NorthboundProvider, NorthboundFactory
+from .base import NorthboundFactory, NorthboundProvider
 
 
 @NorthboundFactory.register("sina")

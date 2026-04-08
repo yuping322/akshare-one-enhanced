@@ -3,10 +3,11 @@ src/akshare_one/modules/industry/sw_provider.py
 Shenwan (SW) index-based industry data provider.
 """
 
+
 import akshare as ak
 import pandas as pd
-from typing import List, Optional
-from .base import IndustryProvider, IndustryFactory
+
+from .base import IndustryFactory, IndustryProvider
 
 SW_LEVEL1_CODES = {
     "农林牧渔": "801010", "采掘": "801020", "化工": "801030", "钢铁": "801040", 
@@ -36,7 +37,7 @@ class SWIndustryProvider(IndustryProvider):
             return df[["symbol", "name"]]
         except Exception: return pd.DataFrame()
 
-    def get_industry_stocks_jq(self, industry_name: str) -> List[str]:
+    def get_industry_stocks_jq(self, industry_name: str) -> list[str]:
         """JQ-compatible stock symbols for a given Shenwan industry."""
         df = self.get_industry_stocks(industry_name)
         if df.empty: return []

@@ -8,7 +8,6 @@ with built-in JSON compatibility, parameter validation, and metadata support.
 import contextlib
 import re
 import time
-from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 from typing import Any, TypeAlias
@@ -148,7 +147,7 @@ class BaseProvider:
             )
 
             # 返回空 DataFrame 而不是硬失败
-            self.logger.warning(f"Returning empty DataFrame due to AkShare API failure")
+            self.logger.warning("Returning empty DataFrame due to AkShare API failure")
             raw_df = pd.DataFrame()
 
         # 3. 数据标准化与过滤

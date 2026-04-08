@@ -1,10 +1,8 @@
-import os
 import logging
-import time
+import os
 import threading
-import hashlib
-from typing import Optional, List, Tuple, Dict, Any
 from contextlib import contextmanager
+
 import pandas as pd
 
 try:
@@ -15,7 +13,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Process-level singleton cache
-_SINGLETON_CACHE: Dict[str, "DuckDBManager"] = {}
+_SINGLETON_CACHE: dict[str, "DuckDBManager"] = {}
 _SINGLETON_LOCK = threading.Lock()
 
 

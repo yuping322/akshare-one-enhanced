@@ -6,7 +6,7 @@ This module implements the index data provider using Eastmoney (东方财富) as
 
 import pandas as pd
 
-from .base import IndexProvider, IndexFactory
+from .base import IndexFactory, IndexProvider
 
 
 @IndexFactory.register("eastmoney")

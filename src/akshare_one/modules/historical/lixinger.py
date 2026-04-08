@@ -6,8 +6,8 @@ This module implements historical/K-line data provider using Lixinger OpenAPI.
 
 import pandas as pd
 
-from .base import HistoricalDataProvider, HistoricalDataFactory
 from ...lixinger_client import get_lixinger_client
+from .base import HistoricalDataFactory, HistoricalDataProvider
 
 
 @HistoricalDataFactory.register("lixinger")
