@@ -30,8 +30,9 @@ class TestNewsData:
         now = datetime.now(timezone.utc)
         one_year_ago = now - timedelta(days=365)
 
-        # 验证新闻发布时间在合理范围内
-        assert all(one_year_ago <= ts <= now for ts in df["publish_time"])
+        assert not df.empty, "No news data returned"
+        for ts in df["publish_time"]:
+            assert one_year_ago <= ts <= now + timedelta(hours=12), f"Timestamp {ts} is outside valid range"
 
     def test_news_content_quality(self):
         """测试新闻内容质量"""

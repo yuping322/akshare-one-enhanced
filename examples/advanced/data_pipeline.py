@@ -55,7 +55,7 @@ class DataPipeline:
                     start_date=start_date,
                     end_date=end_date,
                     adjust="qfq",
-                    source="eastmoney_direct",
+                    source="sina",
                 )
 
                 if not df.empty:
@@ -78,7 +78,7 @@ class DataPipeline:
         for symbol in self.stocks:
             try:
                 print(f"  获取 {symbol}...")
-                df = get_realtime_data(symbol=symbol, source="eastmoney_direct")
+                df = get_realtime_data(symbol=symbol, source="sina")
 
                 if not df.empty:
                     realtime_data[symbol] = df

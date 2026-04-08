@@ -35,7 +35,7 @@ def example_etf_hist_data():
             start_date=start_date,
             end_date=end_date,
             adjust="none",
-            source="eastmoney_direct",
+            source="sina",
         )
         print(f"\n获取到 {len(df)} 条ETF日线数据")
         print("\n最近5天的数据：")
@@ -51,7 +51,7 @@ def example_etf_realtime():
     print("=" * 60)
 
     try:
-        df = get_realtime_data(symbol="510300", source="eastmoney_direct")
+        df = get_realtime_data(symbol="510300", source="sina")
         print("\n沪深300ETF实时行情：")
         print(df.to_string(index=False))
     except Exception as e:
@@ -97,7 +97,7 @@ def example_multiple_etfs():
     for symbol, name in etf_list:
         print(f"\n{name} ({symbol})：")
         try:
-            df = get_realtime_data(symbol=symbol, source="eastmoney_direct")
+            df = get_realtime_data(symbol=symbol, source="sina")
             if not df.empty:
                 latest = df.iloc[0]
                 print(f"  最新价: {latest['price']:.3f}")
@@ -124,7 +124,7 @@ def example_etf_minute_data():
             interval_multiplier=15,
             start_date=start_date,
             end_date=end_date,
-            source="eastmoney_direct",
+            source="sina",
         )
         print(f"\n获取到 {len(df)} 条15分钟数据")
         print("\n最近10条数据：")

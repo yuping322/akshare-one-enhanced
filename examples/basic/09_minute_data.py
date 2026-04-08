@@ -37,21 +37,27 @@ def print_data_summary(df: pd.DataFrame, title: str):
     print(f"数据量: {len(df)} 条")
 
     if len(df) > 0:
-        print(f"时间范围: {df['timestamp'].min()} 至 {df['timestamp'].max()}")
+        if "timestamp" in df.columns:
+            print(f"时间范围: {df['timestamp'].min()} 至 {df['timestamp'].max()}")
         print(f"\n前5条数据:")
         print(df.head().to_string(index=False))
         print(f"\n后5条数据:")
         print(df.tail().to_string(index=False))
 
         print(f"\n价格统计:")
-        print(f"  开盘价范围: {df['open'].min():.2f} - {df['open'].max():.2f}")
-        print(f"  收盘价范围: {df['close'].min():.2f} - {df['close'].max():.2f}")
-        print(f"  最高价范围: {df['high'].min():.2f} - {df['high'].max():.2f}")
-        print(f"  最低价范围: {df['low'].min():.2f} - {df['low'].max():.2f}")
+        if "open" in df.columns and not df["open"].isna().all():
+            print(f"  开盘价范围: {df['open'].min():.2f} - {df['open'].max():.2f}")
+        if "close" in df.columns and not df["close"].isna().all():
+            print(f"  收盘价范围: {df['close'].min():.2f} - {df['close'].max():.2f}")
+        if "high" in df.columns and not df["high"].isna().all():
+            print(f"  最高价范围: {df['high'].min():.2f} - {df['high'].max():.2f}")
+        if "low" in df.columns and not df["low"].isna().all():
+            print(f"  最低价范围: {df['low'].min():.2f} - {df['low'].max():.2f}")
         print(f"\n成交量统计:")
-        print(f"  平均成交量: {df['volume'].mean():.0f} 手")
-        print(f"  最大成交量: {df['volume'].max():.0f} 手")
-        print(f"  最小成交量: {df['volume'].min():.0f} 手")
+        if "volume" in df.columns and not df["volume"].isna().all():
+            print(f"  平均成交量: {df['volume'].mean():.0f} 手")
+            print(f"  最大成交量: {df['volume'].max():.0f} 手")
+            print(f"  最小成交量: {df['volume'].min():.0f} 手")
     else:
         print("警告: 未获取到数据")
 
@@ -73,7 +79,7 @@ def example_5min_data():
             start_date=start_date,
             end_date=end_date,
             adjust="none",
-            source="eastmoney_direct",
+            source="sina",
         )
         print_data_summary(df, "5分钟K线数据")
     except Exception as e:
@@ -97,7 +103,7 @@ def example_15min_data():
             start_date=start_date,
             end_date=end_date,
             adjust="none",
-            source="eastmoney_direct",
+            source="sina",
         )
         print_data_summary(df, "15分钟K线数据")
     except Exception as e:
@@ -121,7 +127,7 @@ def example_30min_data():
             start_date=start_date,
             end_date=end_date,
             adjust="none",
-            source="eastmoney_direct",
+            source="sina",
         )
         print_data_summary(df, "30分钟K线数据")
     except Exception as e:
@@ -145,7 +151,7 @@ def example_60min_data():
             start_date=start_date,
             end_date=end_date,
             adjust="none",
-            source="eastmoney_direct",
+            source="sina",
         )
         print_data_summary(df, "60分钟K线数据")
     except Exception as e:
@@ -174,7 +180,7 @@ def example_visualization():
             start_date=start_date,
             end_date=end_date,
             adjust="none",
-            source="eastmoney_direct",
+            source="sina",
         )
         if len(df) == 0:
             print("未获取到数据，无法可视化")
@@ -250,7 +256,7 @@ def example_different_stocks():
                 start_date=start_date,
                 end_date=end_date,
                 adjust="none",
-                source="eastmoney_direct",
+                source="sina",
             )
             if len(df) > 0:
                 results.append(

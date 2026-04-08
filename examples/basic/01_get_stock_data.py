@@ -35,7 +35,7 @@ def example_daily_data():
             start_date=start_date,
             end_date=end_date,
             adjust="none",
-            source="eastmoney_direct",
+            source="sina",
         )
         print(f"\n获取到 {len(df)} 条日线数据")
         print("\n最近5天的数据：")
@@ -70,7 +70,7 @@ def example_minute_data():
             start_date=start_date,
             end_date=end_date,
             adjust="none",
-            source="eastmoney_direct",
+            source="sina",
         )
         print(f"\n获取到 {len(df)} 条5分钟数据")
         print("\n最近10条数据：")
@@ -91,7 +91,7 @@ def example_weekly_monthly():
 
     try:
         df_week = get_hist_data(
-            symbol="600519", interval="week", start_date=start_date, end_date=end_date, source="eastmoney_direct"
+            symbol="600519", interval="week", start_date=start_date, end_date=end_date, source="sina"
         )
         print(f"\n周线数据：{len(df_week)} 条")
         print(df_week.head().to_string(index=False))
@@ -100,7 +100,7 @@ def example_weekly_monthly():
 
     try:
         df_month = get_hist_data(
-            symbol="600519", interval="month", start_date=start_date, end_date=end_date, source="eastmoney_direct"
+            symbol="600519", interval="month", start_date=start_date, end_date=end_date, source="sina"
         )
         print(f"\n月线数据：{len(df_month)} 条")
         print(df_month.head().to_string(index=False))
@@ -125,7 +125,7 @@ def example_adjusted_data():
             start_date=start_date,
             end_date=end_date,
             adjust="none",
-            source="eastmoney_direct",
+            source="sina",
         )
     except Exception as e:
         print(f"获取不复权数据失败: {e}")
@@ -138,7 +138,7 @@ def example_adjusted_data():
             start_date=start_date,
             end_date=end_date,
             adjust="qfq",
-            source="eastmoney_direct",
+            source="sina",
         )
     except Exception as e:
         print(f"获取前复权数据失败: {e}")
@@ -151,7 +151,7 @@ def example_adjusted_data():
             start_date=start_date,
             end_date=end_date,
             adjust="hfq",
-            source="eastmoney_direct",
+            source="sina",
         )
     except Exception as e:
         print(f"获取后复权数据失败: {e}")
@@ -189,7 +189,7 @@ def example_multi_source():
             interval="day",
             start_date=start_date,
             end_date=end_date,
-            sources=["eastmoney_direct", "eastmoney", "sina"],
+            sources=["sina"],
         )
         print(f"\n获取到 {len(df)} 条数据")
         print("\n数据预览：")

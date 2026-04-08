@@ -24,25 +24,19 @@ def example_shanghai_index():
     print("场景1：获取上证指数历史数据")
     print("=" * 60)
 
-    # 获取上证指数(000001)最近一年的日线数据
-    df = get_index_hist_data(
-        symbol="000001", start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
-    )
+    try:
+        df = get_index_hist_data(
+            symbol="000001", start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
+        )
 
-    print(f"\n获取到 {len(df)} 条上证指数日线数据")
-    print("\n最近5个交易日的数据：")
-    print(df.head().to_string(index=False))
+        if df.empty:
+            print("无上证指数数据返回")
+            return
 
-    # 数据包含以下字段：
-    # - timestamp: 时间戳
-    # - open: 开盘价
-    # - high: 最高价
-    # - low: 最低价
-    # - close: 收盘价
-    # - volume: 成交量
-    # - amount: 成交额
+        print(f"\n获取到 {len(df)} 条上证指数日线数据")
+        print("\n最近5个交易日的数据：")
+        print(df.head().to_string(index=False))
 
-    if not df.empty:
         latest = df.iloc[-1]
         print(f"\n最新数据：")
         print(f"  日期: {latest['timestamp']}")
@@ -50,6 +44,11 @@ def example_shanghai_index():
         print(f"  最高: {latest['high']:.2f}")
         print(f"  最低: {latest['low']:.2f}")
         print(f"  成交量: {latest['volume']:,.0f}")
+    except ConnectionError as e:
+        print(f"网络连接错误：{e}")
+        print("提示：请检查网络连接或稍后重试")
+    except Exception as e:
+        print(f"发生错误：{e}")
 
 
 def example_shenzhen_index():
@@ -58,23 +57,31 @@ def example_shenzhen_index():
     print("场景2：获取深证成指数据")
     print("=" * 60)
 
-    # 获取深证成指(399001)最近一年的日线数据
-    df = get_index_hist_data(
-        symbol="399001", start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
-    )
+    try:
+        df = get_index_hist_data(
+            symbol="399001", start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
+        )
 
-    print(f"\n获取到 {len(df)} 条深证成指日线数据")
-    print("\n最近5个交易日的数据：")
-    print(df.head().to_string(index=False))
+        if df.empty:
+            print("无深证成指数据返回")
+            return
 
-    if not df.empty:
-        # 计算涨跌幅
-        df["change_pct"] = df["close"].pct_change() * 100
-        latest = df.iloc[-1]
-        print(f"\n最新数据：")
-        print(f"  日期: {latest['timestamp']}")
-        print(f"  收盘: {latest['close']:.2f}")
-        print(f"  涨跌幅: {latest['change_pct']:.2f}%")
+        print(f"\n获取到 {len(df)} 条深证成指日线数据")
+        print("\n最近5个交易日的数据：")
+        print(df.head().to_string(index=False))
+
+        if not df.empty:
+            df["change_pct"] = df["close"].pct_change() * 100
+            latest = df.iloc[-1]
+            print(f"\n最新数据：")
+            print(f"  日期: {latest['timestamp']}")
+            print(f"  收盘: {latest['close']:.2f}")
+            print(f"  涨跌幅: {latest['change_pct']:.2f}%")
+    except ConnectionError as e:
+        print(f"网络连接错误：{e}")
+        print("提示：请检查网络连接或稍后重试")
+    except Exception as e:
+        print(f"发生错误：{e}")
 
 
 def example_chinext_index():
@@ -83,23 +90,31 @@ def example_chinext_index():
     print("场景3：获取创业板指数数据")
     print("=" * 60)
 
-    # 获取创业板指(399006)最近一年的日线数据
-    df = get_index_hist_data(
-        symbol="399006", start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
-    )
+    try:
+        df = get_index_hist_data(
+            symbol="399006", start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
+        )
 
-    print(f"\n获取到 {len(df)} 条创业板指日线数据")
-    print("\n最近5个交易日的数据：")
-    print(df.head().to_string(index=False))
+        if df.empty:
+            print("无创业板指数据返回")
+            return
 
-    if not df.empty:
-        # 计算统计信息
-        print(f"\n统计信息：")
-        print(f"  最高价: {df['high'].max():.2f}")
-        print(f"  最低价: {df['low'].min():.2f}")
-        print(f"  平均价: {df['close'].mean():.2f}")
-        print(f"  最大涨幅: {df['close'].pct_change().max() * 100:.2f}%")
-        print(f"  最大跌幅: {df['close'].pct_change().min() * 100:.2f}%")
+        print(f"\n获取到 {len(df)} 条创业板指日线数据")
+        print("\n最近5个交易日的数据：")
+        print(df.head().to_string(index=False))
+
+        if not df.empty:
+            print(f"\n统计信息：")
+            print(f"  最高价: {df['high'].max():.2f}")
+            print(f"  最低价: {df['low'].min():.2f}")
+            print(f"  平均价: {df['close'].mean():.2f}")
+            print(f"  最大涨幅: {df['close'].pct_change().max() * 100:.2f}%")
+            print(f"  最大跌幅: {df['close'].pct_change().min() * 100:.2f}%")
+    except ConnectionError as e:
+        print(f"网络连接错误：{e}")
+        print("提示：请检查网络连接或稍后重试")
+    except Exception as e:
+        print(f"发生错误：{e}")
 
 
 def example_csi300_index():
@@ -108,21 +123,32 @@ def example_csi300_index():
     print("场景4：获取沪深300指数数据")
     print("=" * 60)
 
-    # 获取沪深300(000300)最近一年的日线数据
-    df = get_index_hist_data(
-        symbol="000300", start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
-    )
+    try:
+        df = get_index_hist_data(
+            symbol="000300", start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
+        )
 
-    print(f"\n获取到 {len(df)} 条沪深300指数日线数据")
-    print("\n最近5个交易日的数据：")
-    print(df.head().to_string(index=False))
+        if df.empty:
+            print("无沪深300指数数据返回")
+            return
 
-    if not df.empty:
-        # 获取实时行情
-        print("\n获取沪深300实时行情：")
-        realtime_df = get_index_realtime_data(symbol="000300", source="eastmoney")
-        if not realtime_df.empty:
-            print(realtime_df.to_string(index=False))
+        print(f"\n获取到 {len(df)} 条沪深300指数日线数据")
+        print("\n最近5个交易日的数据：")
+        print(df.head().to_string(index=False))
+
+        if not df.empty:
+            print("\n获取沪深300实时行情：")
+            try:
+                realtime_df = get_index_realtime_data(symbol="000300", source="eastmoney")
+                if not realtime_df.empty:
+                    print(realtime_df.to_string(index=False))
+            except Exception as e:
+                print(f"获取实时行情失败: {e}")
+    except ConnectionError as e:
+        print(f"网络连接错误：{e}")
+        print("提示：请检查网络连接或稍后重试")
+    except Exception as e:
+        print(f"发生错误：{e}")
 
 
 def example_index_comparison():
@@ -131,21 +157,21 @@ def example_index_comparison():
     print("场景5：指数走势对比分析")
     print("=" * 60)
 
-    # 定义要对比的指数
     indices = {"上证指数": "000001", "深证成指": "399001", "创业板指": "399006", "沪深300": "000300"}
 
-    # 获取各指数数据
     print("\n正在获取各指数数据...")
     data = {}
     for name, symbol in indices.items():
-        df = get_index_hist_data(
-            symbol=symbol, start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
-        )
-        if not df.empty:
-            data[name] = df
-            print(f"  {name}: {len(df)} 条数据")
+        try:
+            df = get_index_hist_data(
+                symbol=symbol, start_date="2024-01-01", end_date="2024-12-31", interval="daily", source="eastmoney"
+            )
+            if not df.empty:
+                data[name] = df
+                print(f"  {name}: {len(df)} 条数据")
+        except Exception as e:
+            print(f"  {name}: 获取失败 ({e})")
 
-    # 对比分析
     if data:
         print("\n各指数最新数据对比：")
         print("-" * 60)
@@ -160,7 +186,6 @@ def example_index_comparison():
                 print(f"  期间涨跌幅: {change_pct:.2f}%")
                 print()
 
-        # 找出表现最强和最弱的指数
         performance = {}
         for name, df in data.items():
             if not df.empty:
@@ -182,12 +207,21 @@ def example_index_list():
     print("额外场景：获取指数列表")
     print("=" * 60)
 
-    # 获取中国A股指数列表
-    df = get_index_list(category="cn", source="eastmoney")
+    try:
+        df = get_index_list(category="cn", source="eastmoney")
 
-    print(f"\n获取到 {len(df)} 个指数")
-    print("\n前10个指数：")
-    print(df.head(10).to_string(index=False))
+        if df.empty:
+            print("无指数数据返回")
+            return
+
+        print(f"\n获取到 {len(df)} 个指数")
+        print("\n前10个指数：")
+        print(df.head(10).to_string(index=False))
+    except ConnectionError as e:
+        print(f"网络连接错误：{e}")
+        print("提示：请检查网络连接或稍后重试")
+    except Exception as e:
+        print(f"发生错误：{e}")
 
     # 数据包含以下字段：
     # - symbol: 指数代码

@@ -75,7 +75,7 @@ class AlertSystem:
         # 首先获取历史平均成交量
         try:
             df = get_hist_data(
-                symbol=symbol, interval="day", start_date="2024-01-01", end_date="2024-12-31", source="eastmoney_direct"
+                symbol=symbol, interval="day", start_date="2024-01-01", end_date="2024-12-31", source="sina"
             )
             avg_volume = df["volume"].mean() if not df.empty else 0
         except (ValueError, ConnectionError) as e:
@@ -105,7 +105,7 @@ class AlertSystem:
 
             try:
                 # 获取实时数据
-                df = get_realtime_data(symbol=symbol, source="eastmoney_direct")
+                df = get_realtime_data(symbol=symbol, source="sina")
 
                 if df.empty:
                     continue

@@ -19,6 +19,7 @@ import pytest
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestHistDataContract:
     """Contract tests for get_hist_data API."""
@@ -28,7 +29,7 @@ class TestHistDataContract:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -44,7 +45,7 @@ class TestHistDataContract:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -62,7 +63,7 @@ class TestHistDataContract:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -89,6 +90,7 @@ class TestHistDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestRealtimeDataContract:
     """Contract tests for get_realtime_data API."""
@@ -149,6 +151,7 @@ class TestRealtimeDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestETFHistDataContract:
     """Contract tests for get_etf_hist_data API."""
@@ -200,6 +203,7 @@ class TestETFHistDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestBondHistDataContract:
     """Contract tests for get_bond_hist_data API."""
@@ -236,6 +240,7 @@ class TestBondHistDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestIndexListContract:
     """Contract tests for get_index_list API."""
@@ -272,6 +277,7 @@ class TestIndexListContract:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestNorthboundFlowContract:
     """Contract tests for get_northbound_flow API."""
@@ -281,7 +287,7 @@ class TestNorthboundFlowContract:
         from akshare_one import get_northbound_flow
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         df = get_northbound_flow(start_date=start_date, end_date=end_date)
 
@@ -297,7 +303,7 @@ class TestNorthboundFlowContract:
         from akshare_one import get_northbound_flow
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         df = get_northbound_flow(start_date=start_date, end_date=end_date)
 
@@ -314,6 +320,7 @@ class TestNorthboundFlowContract:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestFundFlowContract:
     """Contract tests for get_stock_fund_flow API."""
@@ -323,7 +330,7 @@ class TestFundFlowContract:
         from akshare_one import get_stock_fund_flow
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         df = get_stock_fund_flow(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -339,7 +346,7 @@ class TestFundFlowContract:
         from akshare_one import get_stock_fund_flow
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         df = get_stock_fund_flow(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -403,6 +410,7 @@ class TestDragonTigerContract:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestFuturesHistDataContract:
     """Contract tests for get_futures_hist_data API."""
@@ -440,6 +448,7 @@ class TestFuturesHistDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestFinancialMetricsContract:
     """Contract tests for get_financial_metrics API."""
@@ -475,6 +484,7 @@ class TestFinancialMetricsContract:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestCrossAPIConsistency:
     """Test consistency across related APIs."""
@@ -523,6 +533,7 @@ class TestCrossAPIConsistency:
 
 
 @pytest.mark.contract
+@pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestFieldNameStandardization:
     """Test that field names follow standardized conventions."""
@@ -532,7 +543,7 @@ class TestFieldNameStandardization:
         from akshare_one import get_hist_data, get_realtime_data, get_northbound_flow
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         apis_to_test = [
             get_hist_data(symbol="600000", start_date=start_date, end_date=end_date),
@@ -555,7 +566,7 @@ class TestFieldNameStandardization:
         from akshare_one import get_hist_data, get_etf_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         # Historical APIs should use 'timestamp' or 'date' for time field
         df_stock = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)

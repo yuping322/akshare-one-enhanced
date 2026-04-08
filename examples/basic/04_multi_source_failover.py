@@ -36,12 +36,15 @@ def example_basic_failover():
         interval="day",
         start_date="2024-01-01",
         end_date="2024-12-31",
-        sources=["eastmoney_direct", "eastmoney", "sina"],  # 优先级从高到低
+        sources=["sina"],
     )
 
-    print(f"\n成功获取 {len(df)} 条历史数据")
-    print("\n数据预览：")
-    print(df.head().to_string(index=False))
+    if df.empty:
+        print("\n警告: 未获取到数据")
+    else:
+        print(f"\n成功获取 {len(df)} 条历史数据")
+        print("\n数据预览：")
+        print(df.head().to_string(index=False))
 
 
 def example_custom_source_priority():
@@ -54,8 +57,11 @@ def example_custom_source_priority():
     # 例如：优先使用东方财富直连，其次使用雪球
     df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
 
-    print("\n使用自定义优先级获取的实时数据：")
-    print(df.to_string(index=False))
+    if df.empty:
+        print("\n警告: 未获取到实时数据")
+    else:
+        print("\n使用自定义优先级获取的实时数据：")
+        print(df.to_string(index=False))
 
 
 def example_financial_data_failover():
@@ -67,9 +73,12 @@ def example_financial_data_failover():
     # 获取财务指标，自动切换数据源
     df = get_financial_metrics_multi_source(symbol="600600", sources=["eastmoney_direct", "sina", "cninfo"])
 
-    print(f"\n成功获取 {len(df)} 条财务指标数据")
-    print("\n财务指标预览：")
-    print(df.head().to_string(index=False))
+    if df.empty:
+        print("\n警告: 未获取到财务指标数据")
+    else:
+        print(f"\n成功获取 {len(df)} 条财务指标数据")
+        print("\n财务指标预览：")
+        print(df.head().to_string(index=False))
 
 
 def example_failover_logging():
@@ -87,7 +96,7 @@ def example_failover_logging():
         interval="day",
         start_date="2024-12-01",
         end_date="2024-12-31",
-        sources=["invalid_source", "eastmoney_direct", "sina"],  # 第一个会失败
+        sources=["invalid_source", "sina"],  # 第一个会失败
     )
 
     if not df.empty:
@@ -139,9 +148,12 @@ def example_source_comparison():
             )
 
             print(f"\n数据源 {source}:")
-            print(f"  数据条数: {len(df)}")
-            if not df.empty:
-                print(f"  最新收盘价: {df.iloc[-1]['close']:.2f}")
+            if df.empty:
+                print("  数据条数: 0 (无数据)")
+            else:
+                print(f"  数据条数: {len(df)}")
+                if "close" in df.columns and len(df) > 0:
+                    print(f"  最新收盘价: {df.iloc[-1]['close']:.2f}")
 
         except Exception as e:
             print(f"\n数据源 {source}: 失败 - {e}")

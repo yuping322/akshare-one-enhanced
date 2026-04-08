@@ -125,8 +125,8 @@ class TestNorthboundHoldingsIntegration:
     def test_get_northbound_holdings_specific_stock(self):
         """Test fetching northbound holdings for a specific stock."""
         symbol = "600000"
-        end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_northbound_holdings(symbol=symbol, start_date=start_date, end_date=end_date)
 

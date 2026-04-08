@@ -123,11 +123,32 @@ class BaseFactory(Generic[T]):
         return decorator
 
     @classmethod
-    def create(cls, name: str, providers: dict[str, type[T]] | None = None) -> type["BaseFactory[T]"]:
+    def create(cls, source: str, **kwargs) -> T:
         """
-        创建一个子 Factory 类。
+        Create a provider instance for the specified data source.
+
+        This is a convenience method that combines factory class creation
+        with provider instantiation in one call.
+
+        Args:
+            source: Data source name (e.g., 'eastmoney', 'sina')
+            **kwargs: Additional parameters passed to the provider constructor
+
+        Returns:
+            Provider instance
+
+        Example:
+            >>> provider = FundFlowFactory.create('eastmoney', symbol='600000')
         """
-        return type(f"{name}Factory", (cls,), {"_providers": providers or {}})
+        if source not in cls._providers:
+            available = ", ".join(cls._providers.keys())
+            internal_error = InvalidParameterError(
+                f"Unsupported data source: '{source}'. Available sources: {available}"
+            )
+            raise map_to_standard_exception(internal_error, {"source": source})
+
+        provider_class = cls._providers[source]
+        return provider_class(**kwargs)
 
     @classmethod
     def get_provider(cls, source: str, **kwargs) -> T:

@@ -18,6 +18,8 @@ from akshare_one.modules.etf import (
 from akshare_one.modules.etf.base import ETFProvider
 from akshare_one.modules.etf.eastmoney import EastmoneyETFProvider
 
+pytestmark = pytest.mark.integration
+
 
 class TestProviderBasics:
     """Test basic provider functionality."""
@@ -40,7 +42,6 @@ class TestProviderBasics:
 class TestGetETFHistData:
     """Test get_etf_hist_data function."""
 
-    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_get_etf_hist_data_eastmoney(self):
         """Test getting ETF historical data from eastmoney."""
         df = get_etf_hist_data(
@@ -56,7 +57,6 @@ class TestGetETFHistData:
         if not df.empty:
             assert "close" in df.columns
 
-    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_get_etf_hist_data_with_filter(self):
         """Test ETF historical data with row filter."""
         df = get_etf_hist_data(
@@ -75,7 +75,6 @@ class TestGetETFHistData:
 class TestGetETFRealtimeData:
     """Test get_etf_realtime_data function."""
 
-    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_get_etf_realtime_data_eastmoney(self):
         """Test getting ETF realtime data from eastmoney."""
         df = get_etf_realtime_data(source="eastmoney")
@@ -87,7 +86,6 @@ class TestGetETFRealtimeData:
             assert "symbol" in df.columns
 
     @pytest.mark.skip(reason="sina source not supported")
-    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_get_etf_realtime_data_sina(self):
         """Test getting ETF realtime data from sina."""
         df = get_etf_realtime_data(source="sina")
@@ -99,7 +97,6 @@ class TestGetETFRealtimeData:
 class TestGetETFList:
     """Test get_etf_list function."""
 
-    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_get_etf_list_all(self):
         """Test getting all ETF list."""
         df = get_etf_list(fund_type="all", source="eastmoney")
@@ -107,7 +104,6 @@ class TestGetETFList:
         assert df is not None
         assert isinstance(df, pd.DataFrame)
 
-    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_get_etf_list_stock(self):
         """Test getting stock ETF list."""
         df = get_etf_list(fund_type="stock", source="eastmoney")
@@ -119,7 +115,6 @@ class TestGetETFList:
 class TestGetFundManagerInfo:
     """Test get_fund_manager_info function."""
 
-    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_get_fund_manager_info(self):
         """Test getting fund manager info."""
         df = get_fund_manager_info(source="eastmoney")
@@ -131,7 +126,6 @@ class TestGetFundManagerInfo:
 class TestGetFundRatingData:
     """Test get_fund_rating_data function."""
 
-    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_get_fund_rating_data(self):
         """Test getting fund rating data."""
         df = get_fund_rating_data(source="eastmoney")

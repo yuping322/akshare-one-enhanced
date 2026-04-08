@@ -65,7 +65,7 @@ class RuntimeResourcePack:
         },
     }
 
-    DEFAULT_RUNTIME_BASE = "strategy_outputs"
+    DEFAULT_RUNTIME_BASE = Path("data") / "runtime_outputs"
 
     _current_strategy_name: Optional[str] = None
     _lock = threading.Lock()
@@ -76,9 +76,7 @@ class RuntimeResourcePack:
         runtime_base: Optional[Union[str, Path]] = None,
         auto_create: bool = True,
     ):
-        self.strategy_name = (
-            strategy_name or self._get_current_strategy_name() or "default"
-        )
+        self.strategy_name = strategy_name or self._get_current_strategy_name() or "default"
         self.runtime_base = Path(runtime_base or self._get_default_runtime_base())
         self.strategy_dir = self.runtime_base / self.strategy_name
         self.input_dir = self.strategy_dir / "input"
@@ -178,9 +176,7 @@ class RuntimeResourcePack:
         target_path = (base_dir / filepath).resolve()
 
         if not str(target_path).startswith(str(base_dir.resolve())):
-            raise ValueError(
-                f"路径越界: '{filepath}' 不在允许的目录范围内。允许目录: {base_dir}"
-            )
+            raise ValueError(f"路径越界: '{filepath}' 不在允许的目录范围内。允许目录: {base_dir}")
 
         return target_path
 
@@ -306,19 +302,13 @@ class RuntimeResourcePack:
             with open(target_path, "r", encoding="utf-8") as f:
                 return f.read()
 
-    def list_input_resources(
-        self, resource_type: Optional[str] = None
-    ) -> List[Dict[str, str]]:
+    def list_input_resources(self, resource_type: Optional[str] = None) -> List[Dict[str, str]]:
         return self._list_resources(self.input_dir, resource_type)
 
-    def list_output_resources(
-        self, resource_type: Optional[str] = None
-    ) -> List[Dict[str, str]]:
+    def list_output_resources(self, resource_type: Optional[str] = None) -> List[Dict[str, str]]:
         return self._list_resources(self.output_dir, resource_type)
 
-    def _list_resources(
-        self, base_dir: Path, resource_type: Optional[str] = None
-    ) -> List[Dict[str, str]]:
+    def _list_resources(self, base_dir: Path, resource_type: Optional[str] = None) -> List[Dict[str, str]]:
         resources = []
 
         if resource_type:
@@ -405,9 +395,7 @@ class RuntimeResourcePack:
 
         output_by_type = {}
         for rt in self.RESOURCE_TYPES["output"].keys():
-            output_by_type[rt] = len(
-                [r for r in output_resources if r.get("type") == rt]
-            )
+            output_by_type[rt] = len([r for r in output_resources if r.get("type") == rt])
 
         summary = {
             "strategy_name": self.strategy_name,

@@ -15,7 +15,16 @@ class SinaFinancialReport(FinancialDataProvider):
 
     def __init__(self, symbol: str, **kwargs) -> None:
         super().__init__(symbol, **kwargs)
-        self.stock = f"sh{symbol}" if not symbol.startswith(("sh", "sz", "bj")) else symbol
+        if symbol.startswith(("sh", "sz", "bj")):
+            self.stock = symbol
+        elif symbol.startswith("6"):
+            self.stock = f"sh{symbol}"
+        elif symbol.startswith(("0", "3")):
+            self.stock = f"sz{symbol}"
+        elif symbol.startswith(("4", "8")):
+            self.stock = f"bj{symbol}"
+        else:
+            self.stock = f"sh{symbol}"
 
     @cache(
         "financial_cache",
@@ -26,7 +35,7 @@ class SinaFinancialReport(FinancialDataProvider):
         try:
             raw_df = ak.stock_financial_report_sina(stock=self.stock, symbol="资产负债表")
             df = self._clean_balance_data(raw_df)
-            return self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
+            return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
         except Exception as e:
             raise ValueError(f"Failed to get balance sheet for symbol {self.symbol}: {str(e)}") from e
 
@@ -39,7 +48,7 @@ class SinaFinancialReport(FinancialDataProvider):
         try:
             raw_df = ak.stock_financial_report_sina(stock=self.stock, symbol="利润表")
             df = self._clean_income_data(raw_df)
-            return self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
+            return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
         except Exception as e:
             raise ValueError(f"Failed to get income statement for symbol {self.symbol}: {str(e)}") from e
 
@@ -52,7 +61,7 @@ class SinaFinancialReport(FinancialDataProvider):
         try:
             raw_df = ak.stock_financial_report_sina(stock=self.stock, symbol="现金流量表")
             df = self._clean_cash_data(raw_df)
-            return self.standardize_and_filter(df, "sina", columns=columns, row_filter=row_filter)
+            return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
         except Exception as e:
             raise ValueError(f"Failed to get cash flow statement for symbol {self.symbol}: {str(e)}") from e
 
@@ -74,7 +83,9 @@ class SinaFinancialReport(FinancialDataProvider):
             raw_df = self.map_source_fields(raw_df, "sina")
             date_col = "report_date" if "report_date" in raw_df.columns else "date"
             if date_col in raw_df.columns:
-                raw_df[date_col] = pd.to_datetime(raw_df[date_col], format="%Y%m%d")
+                raw_df["report_date"] = pd.to_datetime(raw_df[date_col], format="%Y%m%d")
+                if date_col != "report_date":
+                    raw_df = raw_df.drop(columns=[date_col])
 
         # Define column mappings and required columns
         column_mapping = {
@@ -128,11 +139,16 @@ class SinaFinancialReport(FinancialDataProvider):
         # After mapping, the date column might be named 'date' or 'report_date'
         date_col = "report_date" if "report_date" in raw_df.columns else "date"
         if date_col in raw_df.columns:
-            raw_df[date_col] = pd.to_datetime(raw_df[date_col], format="%Y%m%d")
+            raw_df["report_date"] = pd.to_datetime(raw_df[date_col], format="%Y%m%d")
+            if date_col != "report_date":
+                raw_df["date"] = raw_df["report_date"]
+            else:
+                raw_df["date"] = raw_df["report_date"]
 
         # Select only required columns that exist
         required_columns = [
             "report_date",
+            "date",
             "currency",
             "total_assets",
             "current_assets",
@@ -239,7 +255,10 @@ class SinaFinancialReport(FinancialDataProvider):
             raw_df = self.map_source_fields(raw_df, "sina")
             # After mapping, the date column might be named 'date' or 'report_date'
             date_col = "report_date" if "report_date" in raw_df.columns else "date"
-            raw_df[date_col] = pd.to_datetime(raw_df[date_col], format="%Y%m%d")
+            if date_col in raw_df.columns:
+                raw_df["report_date"] = pd.to_datetime(raw_df[date_col], format="%Y%m%d")
+                if date_col != "report_date":
+                    raw_df = raw_df.drop(columns=[date_col])
 
         # Define column mappings and required columns
         column_mapping = {

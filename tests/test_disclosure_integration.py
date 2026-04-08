@@ -76,8 +76,8 @@ class TestDisclosureNewsIntegration:
     @pytest.mark.timeout(180)
     def test_get_disclosure_news_dividend_category(self):
         """Test fetching disclosure news filtered by dividend category."""
-        end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_disclosure_news(symbol=None, start_date=start_date, end_date=end_date, category="dividend")
 
@@ -96,8 +96,8 @@ class TestDisclosureNewsIntegration:
     @pytest.mark.timeout(180)
     def test_get_disclosure_news_repurchase_category(self):
         """Test fetching disclosure news filtered by repurchase category."""
-        end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_disclosure_news(symbol=None, start_date=start_date, end_date=end_date, category="repurchase")
 
@@ -116,8 +116,8 @@ class TestDisclosureNewsIntegration:
     @pytest.mark.timeout(180)
     def test_get_disclosure_news_st_category(self):
         """Test fetching disclosure news filtered by ST category."""
-        end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        end_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_disclosure_news(symbol=None, start_date=start_date, end_date=end_date, category="st")
 

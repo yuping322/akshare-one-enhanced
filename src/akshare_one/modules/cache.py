@@ -3,6 +3,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar
 
+import pandas as pd
 from cachetools import TTLCache, cached
 from ..metrics import get_stats_collector
 
@@ -29,6 +30,20 @@ CACHE_CONFIG: dict[str, TTLCache[Any, Any]] = {
 }
 
 
+def clear_cache(cache_key: str | None = None) -> None:
+    """Clear cache(s).
+
+    Args:
+        cache_key: If provided, clear only this cache. If None, clear all caches.
+    """
+    if cache_key is not None:
+        if cache_key in CACHE_CONFIG:
+            CACHE_CONFIG[cache_key].clear()
+    else:
+        for cache in CACHE_CONFIG.values():
+            cache.clear()
+
+
 def cache(cache_key: str, key: Callable[..., Any] | None = None) -> Callable[[F], F]:
     def decorator(func: F) -> F:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -52,15 +67,19 @@ def cache(cache_key: str, key: Callable[..., Any] | None = None) -> Callable[[F]
                     if key is not None:
                         result = cached(CACHE_CONFIG[cache_key], key=key)(func)(*args, **kwargs)
                         stats_collector.record_cache_hit(cache_key)
-                        return result
                     else:
                         result = cached(CACHE_CONFIG[cache_key])(func)(*args, **kwargs)
                         stats_collector.record_cache_hit(cache_key)
-                        return result
+                    if isinstance(result, pd.DataFrame):
+                        return result.copy()
+                    return result
                 except KeyError:
                     # 缓存未命中
                     stats_collector.record_cache_miss(cache_key)
-                    return func(*args, **kwargs)
+                    result = func(*args, **kwargs)
+                    if isinstance(result, pd.DataFrame):
+                        return result.copy()
+                    return result
             return func(*args, **kwargs)
 
         return wrapper  # type: ignore

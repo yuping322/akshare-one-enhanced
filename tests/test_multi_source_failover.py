@@ -27,7 +27,7 @@ class TestMultiSourceFailover:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         with patch(
             "akshare_one.modules.historical.eastmoney_direct.EastMoneyDirectHistorical.get_hist_data"
@@ -47,9 +47,7 @@ class TestMultiSourceFailover:
         """Test realtime data handles source failures gracefully."""
         from akshare_one import get_realtime_data
 
-        with patch(
-            "akshare_one.modules.realtime.eastmoney.EastmoneyRealtime.get_current_data"
-        ) as mock_primary:
+        with patch("akshare_one.modules.realtime.eastmoney.EastmoneyRealtime.get_current_data") as mock_primary:
             mock_primary.side_effect = Exception("Primary source unavailable")
 
             try:
@@ -62,9 +60,7 @@ class TestMultiSourceFailover:
         from akshare_one import get_hist_data, get_realtime_data
 
         with pytest.raises((ValueError, KeyError)):
-            get_hist_data(
-                symbol="600000", start_date="2024-01-01", end_date="2024-01-31", source="invalid"
-            )
+            get_hist_data(symbol="600000", start_date="2024-01-01", end_date="2024-01-31", source="invalid")
 
         with pytest.raises((ValueError, KeyError)):
             get_realtime_data(symbol="600000", source="invalid")
@@ -79,11 +75,9 @@ class TestSourceAvailability:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
-        df = get_hist_data(
-            symbol="600000", start_date=start_date, end_date=end_date, source="eastmoney_direct"
-        )
+        df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date, source="eastmoney_direct")
 
         assert df is not None
         if not df.empty:
@@ -94,7 +88,7 @@ class TestSourceAvailability:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date, source="sina")
 
@@ -218,7 +212,7 @@ class TestDataQuality:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -241,7 +235,7 @@ class TestDataQuality:
         from akshare_one import get_hist_data
 
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=7)
+        start_date = end_date - timedelta(days=3)
 
         df = get_hist_data(
             symbol="600000",

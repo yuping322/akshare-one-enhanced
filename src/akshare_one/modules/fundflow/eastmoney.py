@@ -54,10 +54,10 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
                 fallback_func="stock_fund_flow_individual",  # Fallback for older versions
             )
         except Exception as e:
-            self.logger.warning(f"Failed to fetch stock fund flow for {symbol}: {e}")
-            return pd.DataFrame()
+            self.logger.error(f"Failed to fetch stock fund flow for {symbol}: {e}")
+            raise RuntimeError(f"Failed to fetch stock fund flow data: {str(e)}") from e
 
-        df = self.standardize_and_filter(raw_df, "eastmoney", **kwargs)
+        df = self.standardize_and_filter(raw_df, source="eastmoney", **kwargs)
         if not df.empty:
             df["symbol"] = symbol
             if "date" in df.columns:
@@ -83,10 +83,8 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
 
         df = self.standardize_and_filter(raw_df, "eastmoney", **kwargs)
         if not df.empty:
-            df["sector_type"] = sector_type
-            from datetime import datetime
-
-            df["date"] = datetime.now().strftime("%Y-%m-%d")
+            if "date" in df.columns:
+                df = df[(df["date"] >= start_date) & (df["date"] <= end_date)]
         return df
 
     def get_main_fund_flow_rank(self, date: str, indicator: str, **kwargs) -> pd.DataFrame:

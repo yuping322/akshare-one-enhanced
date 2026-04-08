@@ -168,17 +168,19 @@ def example_export_to_csv(df_all=None):
     df_export["export_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # 添加市场分类列
-    df_export["market"] = df_export["symbol"].apply(
-        lambda x: "科创板"
-        if x.startswith("688")
-        else "创业板"
-        if x.startswith("30")
-        else "深市"
-        if x.startswith(("0", "3"))
-        else "沪市"
-        if x.startswith("6")
-        else "其他"
-    )
+    def classify_market(symbol):
+        if symbol.startswith("688"):
+            return "科创板"
+        elif symbol.startswith("30"):
+            return "创业板"
+        elif symbol.startswith(("0", "3")):
+            return "深市"
+        elif symbol.startswith("6"):
+            return "沪市"
+        else:
+            return "其他"
+
+    df_export["market"] = df_export["symbol"].apply(classify_market)
 
     # 按涨跌幅排序
     df_sorted = df_export.sort_values("pct_change", ascending=False)
@@ -276,12 +278,14 @@ def example_statistics(df_all=None):
     # 涨幅前10
     print(f"\n涨幅前10股票：")
     df_top10 = df_all.nlargest(10, "pct_change")
-    print(df_top10[["symbol", "price", "pct_change"]].to_string(index=False))
+    if not df_top10.empty:
+        print(df_top10[["symbol", "price", "pct_change"]].to_string(index=False))
 
     # 跌幅前10
     print(f"\n跌幅前10股票：")
     df_bottom10 = df_all.nsmallest(10, "pct_change")
-    print(df_bottom10[["symbol", "price", "pct_change"]].to_string(index=False))
+    if not df_bottom10.empty:
+        print(df_bottom10[["symbol", "price", "pct_change"]].to_string(index=False))
 
 
 def main():

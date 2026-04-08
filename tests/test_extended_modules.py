@@ -6,6 +6,8 @@ These modules provide data for special stock categories.
 import pandas as pd
 import pytest
 
+pytestmark = pytest.mark.integration
+
 
 class TestBoardModule:
     """Test board module (科创板/创业板)."""

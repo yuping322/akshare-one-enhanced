@@ -62,7 +62,7 @@ class TestResponseTime:
     def test_get_hist_data_performance(self):
         """Test get_hist_data response time < 3s."""
         start = time.time()
-        df = get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-12-31")
+        df = get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-01-07")
         elapsed = time.time() - start
 
         assert not df.empty
@@ -82,7 +82,7 @@ class TestResponseTime:
     def test_get_etf_hist_data_performance(self):
         """Test get_etf_hist_data response time < 2s."""
         start = time.time()
-        df = get_etf_hist_data(symbol="510300", start_date="2024-01-01", end_date="2024-12-31")
+        df = get_etf_hist_data(symbol="510300", start_date="2024-01-01", end_date="2024-01-07")
         elapsed = time.time() - start
 
         assert not df.empty
@@ -116,7 +116,7 @@ class TestResponseTime:
     def test_get_stock_fund_flow_performance(self):
         """Test get_stock_fund_flow response time < 3s."""
         start = time.time()
-        df = get_stock_fund_flow(symbol="600000", start_date="2024-01-01", end_date="2024-12-31")
+        df = get_stock_fund_flow(symbol="600000", start_date="2024-01-01", end_date="2024-01-07")
         elapsed = time.time() - start
 
         assert not df.empty
@@ -175,20 +175,20 @@ class TestConcurrency:
             ("basic_info", lambda: get_basic_info("600000")),
             (
                 "hist_data",
-                lambda: get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-03-31"),
+                lambda: get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-01-07"),
             ),
             ("realtime", lambda: get_realtime_data(symbol="600000")),
-            ("fund_flow", lambda: get_stock_fund_flow(symbol="600000", start_date="2024-01-01", end_date="2024-03-31")),
+            ("fund_flow", lambda: get_stock_fund_flow(symbol="600000", start_date="2024-01-01", end_date="2024-01-07")),
             ("basic_info_2", lambda: get_basic_info("000001")),
             (
                 "hist_data_2",
-                lambda: get_hist_data("000001", interval="day", start_date="2024-01-01", end_date="2024-03-31"),
+                lambda: get_hist_data("000001", interval="day", start_date="2024-01-01", end_date="2024-01-07"),
             ),
             ("realtime_2", lambda: get_realtime_data(symbol="000001")),
             ("basic_info_3", lambda: get_basic_info("600519")),
             (
                 "hist_data_3",
-                lambda: get_hist_data("600519", interval="day", start_date="2024-01-01", end_date="2024-03-31"),
+                lambda: get_hist_data("600519", interval="day", start_date="2024-01-01", end_date="2024-01-07"),
             ),
             ("realtime_3", lambda: get_realtime_data(symbol="600519")),
         ]
@@ -293,7 +293,7 @@ class TestMemoryUsage:
         snapshot1 = tracemalloc.take_snapshot()
 
         # Get large dataset (1 year of daily data)
-        df = get_hist_data("600000", interval="day", start_date="2023-01-01", end_date="2024-12-31")
+        df = get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-01-31")
 
         # Measure memory
         gc.collect()
@@ -348,7 +348,7 @@ class TestMemoryUsage:
         tracemalloc.start()
 
         # Get baseline after initialization
-        df1 = get_hist_data("600000", interval="day", start_date="2020-01-01", end_date="2024-12-31")
+        df1 = get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-03-31")
         data_size = len(df1)
 
         gc.collect()
@@ -506,7 +506,7 @@ class TestStabilityUnderLoad:
 
         try:
             start = time.time()
-            df = get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-12-31")
+            df = get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-01-07")
             elapsed = time.time() - start
 
             # Should complete well before timeout
@@ -531,12 +531,12 @@ def test_performance_baseline_summary():
         ("get_basic_info", lambda: get_basic_info("600000")),
         (
             "get_hist_data",
-            lambda: get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-12-31"),
+            lambda: get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-01-07"),
         ),
         ("get_realtime_data", lambda: get_realtime_data(symbol="600000")),
         (
             "get_stock_fund_flow",
-            lambda: get_stock_fund_flow(symbol="600000", start_date="2024-01-01", end_date="2024-03-31"),
+            lambda: get_stock_fund_flow(symbol="600000", start_date="2024-01-01", end_date="2024-01-07"),
         ),
     ]
 

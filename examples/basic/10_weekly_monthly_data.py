@@ -34,7 +34,7 @@ def example_weekly_data():
             start_date=start_date,
             end_date=end_date,
             adjust="qfq",
-            source="eastmoney_direct",
+            source="sina",
         )
         print(f"\n获取到 {len(df)} 条周线数据")
         print("\n数据字段：", list(df.columns))
@@ -64,7 +64,7 @@ def example_monthly_data():
             start_date=start_date,
             end_date=end_date,
             adjust="qfq",
-            source="eastmoney_direct",
+            source="sina",
         )
         print(f"\n获取到 {len(df)} 条月线数据")
         print("\n最近12个月数据：")
@@ -99,7 +99,7 @@ def example_compare_intervals():
             start_date=start_date,
             end_date=end_date,
             adjust="qfq",
-            source="eastmoney_direct",
+            source="sina",
         )
         df_week = get_hist_data(
             symbol=symbol,
@@ -107,7 +107,7 @@ def example_compare_intervals():
             start_date=start_date,
             end_date=end_date,
             adjust="qfq",
-            source="eastmoney_direct",
+            source="sina",
         )
         df_month = get_hist_data(
             symbol=symbol,
@@ -115,7 +115,7 @@ def example_compare_intervals():
             start_date=start_date,
             end_date=end_date,
             adjust="qfq",
-            source="eastmoney_direct",
+            source="sina",
         )
 
         print(f"\n数据量对比：")
@@ -158,7 +158,7 @@ def example_period_returns():
             start_date=start_date,
             end_date=end_date,
             adjust="qfq",
-            source="eastmoney_direct",
+            source="sina",
         )
         df_week = get_hist_data(
             symbol=symbol,
@@ -166,7 +166,7 @@ def example_period_returns():
             start_date=start_date,
             end_date=end_date,
             adjust="qfq",
-            source="eastmoney_direct",
+            source="sina",
         )
         df_month = get_hist_data(
             symbol=symbol,
@@ -174,7 +174,7 @@ def example_period_returns():
             start_date=start_date,
             end_date=end_date,
             adjust="qfq",
-            source="eastmoney_direct",
+            source="sina",
         )
 
         print(f"\n股票代码: {symbol}")

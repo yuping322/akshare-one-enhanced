@@ -75,10 +75,11 @@ def main():
     # 5. Demonstrate error tracking
     print("\n5. Demonstrating error tracking...")
     try:
-        # This will fail
+        # This will fail due to invalid source
         get_realtime_data(source="invalid_source")
     except Exception as e:
-        logger.error(f"Expected error: {e}")
+        logger.error(f"Expected error (invalid source): {e}")
+        logger.info("Error handling demonstration: invalid source correctly caught")
 
     # 6. Show final statistics
     print("\n6. Final statistics:")

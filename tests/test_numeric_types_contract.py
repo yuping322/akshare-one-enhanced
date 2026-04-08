@@ -22,6 +22,7 @@ import pytest
 try:
     from hypothesis import given, settings
     from hypothesis import strategies as st
+
     HYPOTHESIS_AVAILABLE = True
 except ImportError:
     HYPOTHESIS_AVAILABLE = False
@@ -35,15 +36,11 @@ from akshare_one.modules.base import BaseProvider
 # Test Data Generators (Hypothesis Strategies)
 # ============================================================================
 
+
 @st.composite
 def valid_price_values(draw):
     """Generate valid price values (positive floats)."""
-    return draw(st.floats(
-        min_value=0.01,
-        max_value=10000.0,
-        allow_nan=False,
-        allow_infinity=False
-    ))
+    return draw(st.floats(min_value=0.01, max_value=10000.0, allow_nan=False, allow_infinity=False))
 
 
 @st.composite
@@ -55,39 +52,25 @@ def valid_volume_values(draw):
 @st.composite
 def valid_amount_values(draw):
     """Generate valid amount values (non-negative floats)."""
-    return draw(st.floats(
-        min_value=0.0,
-        max_value=10**15,
-        allow_nan=False,
-        allow_infinity=False
-    ))
+    return draw(st.floats(min_value=0.0, max_value=10**15, allow_nan=False, allow_infinity=False))
 
 
 @st.composite
 def valid_pct_change_values(draw):
     """Generate valid percentage change values (can be negative)."""
-    return draw(st.floats(
-        min_value=-100.0,
-        max_value=1000.0,
-        allow_nan=False,
-        allow_infinity=False
-    ))
+    return draw(st.floats(min_value=-100.0, max_value=1000.0, allow_nan=False, allow_infinity=False))
 
 
 @st.composite
 def valid_ratio_values(draw):
     """Generate valid ratio values (positive floats)."""
-    return draw(st.floats(
-        min_value=0.0,
-        max_value=1000.0,
-        allow_nan=False,
-        allow_infinity=False
-    ))
+    return draw(st.floats(min_value=0.0, max_value=1000.0, allow_nan=False, allow_infinity=False))
 
 
 # ============================================================================
 # Contract Test 1: Numeric Column Types Correctness
 # ============================================================================
+
 
 @pytest.mark.integration
 @pytest.mark.flaky(reruns=3, reruns_delay=2)
@@ -116,11 +99,11 @@ class TestNumericColumnTypesContract:
         for col in price_columns:
             if col in df.columns:
                 # Allow both float64 and float32 (both are valid float types)
-                assert pd.api.types.is_float_dtype(df[col]), \
+                assert pd.api.types.is_float_dtype(df[col]), (
                     f"Price column '{col}' must be float type, got {df[col].dtype}"
+                )
                 # Check for reasonable precision
-                assert df[col].dtype.itemsize >= 4, \
-                    f"Price column '{col}' must have at least 32-bit precision"
+                assert df[col].dtype.itemsize >= 4, f"Price column '{col}' must have at least 32-bit precision"
 
     @pytest.mark.integration
     def test_volume_columns_are_numeric(self):
@@ -134,11 +117,11 @@ class TestNumericColumnTypesContract:
 
         if "volume" in df.columns:
             # Volume can be int64 or float64 (both are acceptable)
-            assert pd.api.types.is_numeric_dtype(df["volume"]), \
+            assert pd.api.types.is_numeric_dtype(df["volume"]), (
                 f"Volume column must be numeric, got {df['volume'].dtype}"
+            )
             # Check for reasonable precision
-            assert df["volume"].dtype.itemsize >= 4, \
-                "Volume column must have at least 32-bit precision"
+            assert df["volume"].dtype.itemsize >= 4, "Volume column must have at least 32-bit precision"
 
     @pytest.mark.integration
     def test_amount_columns_are_float64(self):
@@ -151,8 +134,9 @@ class TestNumericColumnTypesContract:
             pytest.skip("No realtime data available")
 
         if "amount" in df.columns:
-            assert pd.api.types.is_float_dtype(df["amount"]), \
+            assert pd.api.types.is_float_dtype(df["amount"]), (
                 f"Amount column must be float type, got {df['amount'].dtype}"
+            )
 
     @pytest.mark.integration
     def test_pct_change_columns_are_float64(self):
@@ -167,8 +151,9 @@ class TestNumericColumnTypesContract:
         pct_columns = ["pct_change", "change_pct"]
         for col in pct_columns:
             if col in df.columns:
-                assert pd.api.types.is_float_dtype(df[col]), \
+                assert pd.api.types.is_float_dtype(df[col]), (
                     f"Percentage change column '{col}' must be float type, got {df[col].dtype}"
+                )
 
     @pytest.mark.integration
     def test_ratio_columns_are_float64(self):
@@ -184,8 +169,9 @@ class TestNumericColumnTypesContract:
         ratio_columns = ["pe_ratio", "pb_ratio", "turnover_rate"]
         for col in ratio_columns:
             if col in df.columns:
-                assert pd.api.types.is_float_dtype(df[col]), \
+                assert pd.api.types.is_float_dtype(df[col]), (
                     f"Ratio column '{col}' must be float type, got {df[col].dtype}"
+                )
 
     @pytest.mark.integration
     def test_shares_columns_are_numeric(self):
@@ -200,8 +186,9 @@ class TestNumericColumnTypesContract:
         shares_columns = ["total_shares", "float_shares"]
         for col in shares_columns:
             if col in df.columns:
-                assert pd.api.types.is_numeric_dtype(df[col]), \
+                assert pd.api.types.is_numeric_dtype(df[col]), (
                     f"Shares column '{col}' must be numeric, got {df[col].dtype}"
+                )
 
     @given(price=valid_price_values())
     @settings(max_examples=50)
@@ -235,6 +222,7 @@ class TestNumericColumnTypesContract:
 # Contract Test 2: Unit Conversion Correctness
 # ============================================================================
 
+
 class TestUnitConversionContract:
     """
     Contract tests for unit conversion.
@@ -253,8 +241,7 @@ class TestUnitConversionContract:
 
         for value in test_values:
             result = converter.convert_amount(value, "yuan", "yuan")
-            assert result == value, \
-                f"Yuan to yuan conversion failed: {value} -> {result}"
+            assert result == value, f"Yuan to yuan conversion failed: {value} -> {result}"
 
     def test_wan_yuan_to_yuan_multiplier(self):
         """Contract: Converting wan_yuan to yuan should multiply by 10,000."""
@@ -265,8 +252,9 @@ class TestUnitConversionContract:
         for value in test_values:
             result = converter.convert_amount(value, "wan_yuan", "yuan")
             expected = value * 10000
-            assert result == expected, \
+            assert result == expected, (
                 f"Wan_yuan to yuan conversion failed: {value} wan_yuan -> {result} yuan (expected {expected})"
+            )
 
     def test_yi_yuan_to_yuan_multiplier(self):
         """Contract: Converting yi_yuan to yuan should multiply by 100,000,000."""
@@ -277,8 +265,9 @@ class TestUnitConversionContract:
         for value in test_values:
             result = converter.convert_amount(value, "yi_yuan", "yuan")
             expected = value * 100000000
-            assert result == expected, \
+            assert result == expected, (
                 f"Yi_yuan to yuan conversion failed: {value} yi_yuan -> {result} yuan (expected {expected})"
+            )
 
     def test_yuan_to_wan_yuan_divisor(self):
         """Contract: Converting yuan to wan_yuan should divide by 10,000."""
@@ -289,8 +278,9 @@ class TestUnitConversionContract:
         for value in test_values:
             result = converter.convert_amount(value, "yuan", "wan_yuan")
             expected = value / 10000
-            assert result == expected, \
+            assert result == expected, (
                 f"Yuan to wan_yuan conversion failed: {value} yuan -> {result} wan_yuan (expected {expected})"
+            )
 
     def test_yuan_to_yi_yuan_divisor(self):
         """Contract: Converting yuan to yi_yuan should divide by 100,000,000."""
@@ -301,8 +291,9 @@ class TestUnitConversionContract:
         for value in test_values:
             result = converter.convert_amount(value, "yuan", "yi_yuan")
             expected = value / 100000000
-            assert result == expected, \
+            assert result == expected, (
                 f"Yuan to yi_yuan conversion failed: {value} yuan -> {result} yi_yuan (expected {expected})"
+            )
 
     @given(amount=valid_amount_values(), from_unit=st.sampled_from(["yuan", "wan_yuan", "yi_yuan"]))
     @settings(max_examples=100)
@@ -321,22 +312,15 @@ class TestUnitConversionContract:
             assert abs(back - amount) < 1e-10
         else:
             relative_error = abs(back - amount) / amount
-            assert relative_error < 1e-9, \
-                f"Roundtrip conversion lost precision: {amount} -> {result} -> {back}"
+            assert relative_error < 1e-9, f"Roundtrip conversion lost precision: {amount} -> {result} -> {back}"
 
     def test_dataframe_unit_conversion_applies_to_all_rows(self):
         """Contract: DataFrame unit conversion should apply to all rows."""
         converter = UnitConverter()
 
-        df = pd.DataFrame({
-            "amount": [1, 10, 100, 1000],
-            "balance": [5, 50, 500, 5000]
-        })
+        df = pd.DataFrame({"amount": [1, 10, 100, 1000], "balance": [5, 50, 500, 5000]})
 
-        amount_fields = {
-            "amount": "wan_yuan",
-            "balance": "yi_yuan"
-        }
+        amount_fields = {"amount": "wan_yuan", "balance": "yi_yuan"}
 
         result = converter.convert_dataframe_amounts(df, amount_fields)
 
@@ -348,15 +332,9 @@ class TestUnitConversionContract:
         """Contract: NaN values should be preserved during unit conversion."""
         converter = UnitConverter()
 
-        df = pd.DataFrame({
-            "amount": [100, np.nan, 300],
-            "balance": [np.nan, 200, np.nan]
-        })
+        df = pd.DataFrame({"amount": [100, np.nan, 300], "balance": [np.nan, 200, np.nan]})
 
-        amount_fields = {
-            "amount": "wan_yuan",
-            "balance": "yi_yuan"
-        }
+        amount_fields = {"amount": "wan_yuan", "balance": "yi_yuan"}
 
         result = converter.convert_dataframe_amounts(df, amount_fields)
 
@@ -384,6 +362,7 @@ class TestUnitConversionContract:
 # ============================================================================
 # Contract Test 3: Boundary Value Handling
 # ============================================================================
+
 
 class TestBoundaryValueHandling:
     """
@@ -444,8 +423,7 @@ class TestBoundaryValueHandling:
         for i, val in enumerate(large_values):
             result = standardized["amount"][i]
             if result is not None:
-                assert abs(result - val) / val < 1e-6, \
-                    f"Large amount value lost precision: {val} -> {result}"
+                assert abs(result - val) / val < 1e-6, f"Large amount value lost precision: {val} -> {result}"
 
     def test_small_price_values(self):
         """Contract: Small price values should maintain precision."""
@@ -459,8 +437,7 @@ class TestBoundaryValueHandling:
         for i, val in enumerate(small_values):
             result = standardized["close"][i]
             if result is not None:
-                assert abs(result - val) < 1e-8, \
-                    f"Small price value lost precision: {val} -> {result}"
+                assert abs(result - val) < 1e-8, f"Small price value lost precision: {val} -> {result}"
 
     def test_scientific_notation_values(self):
         """Contract: Scientific notation values should be handled correctly."""
@@ -474,8 +451,7 @@ class TestBoundaryValueHandling:
         for i, val in enumerate(scientific_values):
             result = standardized["amount"][i]
             if result is not None:
-                assert abs(result - val) / val < 1e-9, \
-                    f"Scientific notation value lost precision: {val} -> {result}"
+                assert abs(result - val) / val < 1e-9, f"Scientific notation value lost precision: {val} -> {result}"
 
     def test_float_precision_maintenance(self):
         """Contract: Float precision should be maintained for monetary values."""
@@ -491,8 +467,7 @@ class TestBoundaryValueHandling:
             result = standardized["close"][i]
             if result is not None:
                 # Check that first 6 decimal places are preserved
-                assert abs(result - val) < 1e-6, \
-                    f"Float precision lost: {val} -> {result}"
+                assert abs(result - val) < 1e-6, f"Float precision lost: {val} -> {result}"
 
     @given(value=st.floats(min_value=1e-10, max_value=1e-10, allow_nan=False, allow_infinity=False))
     @settings(max_examples=20)
@@ -526,6 +501,7 @@ class TestBoundaryValueHandling:
 # Contract Test 4: NaN/Infinity Handling
 # ============================================================================
 
+
 class TestNaNInfinityHandling:
     """
     Contract tests for NaN/Infinity handling.
@@ -538,10 +514,7 @@ class TestNaNInfinityHandling:
 
     def test_nan_replaced_with_none(self):
         """Contract: NaN values should be replaced with None."""
-        df = pd.DataFrame({
-            "close": [10.5, np.nan, 20.5],
-            "volume": [100, np.nan, 300]
-        })
+        df = pd.DataFrame({"close": [10.5, np.nan, 20.5], "volume": [100, np.nan, 300]})
 
         standardized = BaseProvider.ensure_json_compatible(df)
 
@@ -557,10 +530,7 @@ class TestNaNInfinityHandling:
 
     def test_infinity_replaced_with_none(self):
         """Contract: Infinity values should be replaced with None."""
-        df = pd.DataFrame({
-            "close": [10.5, np.inf, 20.5],
-            "amount": [1000, -np.inf, 3000]
-        })
+        df = pd.DataFrame({"close": [10.5, np.inf, 20.5], "amount": [1000, -np.inf, 3000]})
 
         standardized = BaseProvider.ensure_json_compatible(df)
 
@@ -576,9 +546,7 @@ class TestNaNInfinityHandling:
 
     def test_negative_infinity_replaced_with_none(self):
         """Contract: Negative Infinity should be replaced with None."""
-        df = pd.DataFrame({
-            "pct_change": [5.5, -np.inf, 10.5]
-        })
+        df = pd.DataFrame({"pct_change": [5.5, -np.inf, 10.5]})
 
         standardized = BaseProvider.ensure_json_compatible(df)
 
@@ -591,10 +559,7 @@ class TestNaNInfinityHandling:
 
     def test_mixed_nan_and_infinity(self):
         """Contract: Mixed NaN and Infinity values should all be replaced with None."""
-        df = pd.DataFrame({
-            "close": [np.nan, np.inf, -np.inf, 10.5],
-            "volume": [100, np.nan, np.inf, 400]
-        })
+        df = pd.DataFrame({"close": [np.nan, np.inf, -np.inf, 10.5], "volume": [100, np.nan, np.inf, 400]})
 
         standardized = BaseProvider.ensure_json_compatible(df)
 
@@ -611,10 +576,7 @@ class TestNaNInfinityHandling:
 
     def test_all_nan_column(self):
         """Contract: Column with all NaN values should be handled."""
-        df = pd.DataFrame({
-            "close": [np.nan, np.nan, np.nan],
-            "volume": [100, 200, 300]
-        })
+        df = pd.DataFrame({"close": [np.nan, np.nan, np.nan], "volume": [100, 200, 300]})
 
         standardized = BaseProvider.ensure_json_compatible(df)
 
@@ -626,10 +588,7 @@ class TestNaNInfinityHandling:
 
     def test_all_infinity_column(self):
         """Contract: Column with all Infinity values should be handled."""
-        df = pd.DataFrame({
-            "amount": [np.inf, np.inf, np.inf],
-            "close": [10.5, 20.5, 30.5]
-        })
+        df = pd.DataFrame({"amount": [np.inf, np.inf, np.inf], "close": [10.5, 20.5, 30.5]})
 
         standardized = BaseProvider.ensure_json_compatible(df)
 
@@ -641,26 +600,17 @@ class TestNaNInfinityHandling:
 
     def test_replace_nan_with_none_utility(self):
         """Contract: Utility function should handle NaN/Infinity correctly."""
-        test_values = [
-            (np.nan, None),
-            (np.inf, None),
-            (-np.inf, None),
-            (10.5, 10.5),
-            (0, 0),
-            (-5.5, -5.5)
-        ]
+        test_values = [(np.nan, None), (np.inf, None), (-np.inf, None), (10.5, 10.5), (0, 0), (-5.5, -5.5)]
 
         for input_val, expected_val in test_values:
             result = BaseProvider.replace_nan_with_none(input_val)
-            assert result == expected_val, \
+            assert result == expected_val, (
                 f"replace_nan_with_none failed for {input_val}: got {result}, expected {expected_val}"
+            )
 
     @given(
         value=st.one_of(
-            st.just(np.nan),
-            st.just(np.inf),
-            st.just(-np.inf),
-            st.floats(allow_nan=False, allow_infinity=False)
+            st.just(np.nan), st.just(np.inf), st.just(-np.inf), st.floats(allow_nan=False, allow_infinity=False)
         )
     )
     @settings(max_examples=50)
@@ -682,6 +632,7 @@ class TestNaNInfinityHandling:
 # Contract Test 5: Numeric Precision Range
 # ============================================================================
 
+
 class TestNumericPrecisionRange:
     """
     Contract tests for numeric precision range.
@@ -692,6 +643,7 @@ class TestNumericPrecisionRange:
     - Volume precision: exact for integer counts
     """
 
+    @pytest.mark.integration
     def test_price_decimal_precision(self):
         """Contract: Price values should maintain at least 2 decimal places."""
         from akshare_one import get_hist_data
@@ -716,9 +668,11 @@ class TestNumericPrecisionRange:
                         str_val = str(val)
                         if "." in str_val:
                             decimal_places = len(str_val.split(".")[-1])
-                            assert decimal_places <= 6, \
+                            assert decimal_places <= 6, (
                                 f"Price value {val} has excessive decimal places ({decimal_places})"
+                            )
 
+    @pytest.mark.integration
     def test_volume_is_integer_like(self):
         """Contract: Volume values should be integer-like (no fractional shares)."""
         from akshare_one import get_hist_data
@@ -735,8 +689,7 @@ class TestNumericPrecisionRange:
                 # Volume should be integer-like
                 for val in non_null.head(10):
                     # Check that value is close to an integer
-                    assert val == int(val) or abs(val - int(val)) < 1e-6, \
-                        f"Volume value {val} is not integer-like"
+                    assert val == int(val) or abs(val - int(val)) < 1e-6, f"Volume value {val} is not integer-like"
 
     def test_amount_precision_for_large_values(self):
         """Contract: Large amount values should maintain reasonable precision."""
@@ -757,8 +710,7 @@ class TestNumericPrecisionRange:
             expected = 100000000
 
             relative_error = abs(result - expected) / expected
-            assert relative_error < 1e-9, \
-                f"Amount precision lost for large value: {value} {unit} -> {result} yuan"
+            assert relative_error < 1e-9, f"Amount precision lost for large value: {value} {unit} -> {result} yuan"
 
     def test_percentage_precision(self):
         """Contract: Percentage values should maintain reasonable precision."""
@@ -771,8 +723,7 @@ class TestNumericPrecisionRange:
         # Precision should be maintained to at least 2 decimal places
         for i, val in enumerate(test_pct_values):
             result = standardized["pct_change"][i]
-            assert abs(result - val) < 1e-6, \
-                f"Percentage precision lost: {val} -> {result}"
+            assert abs(result - val) < 1e-6, f"Percentage precision lost: {val} -> {result}"
 
     def test_ratio_precision(self):
         """Contract: Ratio values should maintain reasonable precision."""
@@ -785,28 +736,23 @@ class TestNumericPrecisionRange:
         # Precision should be maintained to at least 2 decimal places
         for i, val in enumerate(test_ratio_values):
             result = standardized["pe_ratio"][i]
-            assert abs(result - val) < 1e-6, \
-                f"Ratio precision lost: {val} -> {result}"
+            assert abs(result - val) < 1e-6, f"Ratio precision lost: {val} -> {result}"
 
-    @given(
-        price1=valid_price_values(),
-        price2=valid_price_values()
-    )
+    @given(price1=valid_price_values(), price2=valid_price_values())
     @settings(max_examples=50)
     def test_price_comparison_precision(self, price1, price2):
         """Property: Price comparisons should be accurate within precision."""
-        df = pd.DataFrame({
-            "high": [max(price1, price2)],
-            "low": [min(price1, price2)]
-        })
+        df = pd.DataFrame({"high": [max(price1, price2)], "low": [min(price1, price2)]})
 
         standardized = BaseProvider.ensure_json_compatible(df)
 
         # High should be >= Low (within floating point precision)
         if standardized["high"][0] is not None and standardized["low"][0] is not None:
-            assert standardized["high"][0] >= standardized["low"][0] - 1e-6, \
+            assert standardized["high"][0] >= standardized["low"][0] - 1e-6, (
                 f"Price comparison failed: high {standardized['high'][0]} < low {standardized['low'][0]}"
+            )
 
+    @pytest.mark.integration
     def test_numeric_column_statistics(self):
         """Contract: Numeric columns should support basic statistics."""
         from akshare_one import get_hist_data
@@ -832,6 +778,7 @@ class TestNumericPrecisionRange:
 # ============================================================================
 # Contract Test 6: Integration with Real API Data
 # ============================================================================
+
 
 class TestRealAPIDataNumericContract:
     """
@@ -930,6 +877,7 @@ class TestRealAPIDataNumericContract:
 # Summary Statistics
 # ============================================================================
 
+
 def test_numeric_types_contract_summary():
     """
     Summary test to document all numeric type contracts being validated.
@@ -944,7 +892,7 @@ def test_numeric_types_contract_summary():
             "amount_columns_are_float64",
             "pct_change_columns_are_float64",
             "ratio_columns_are_float64",
-            "shares_columns_are_numeric"
+            "shares_columns_are_numeric",
         ],
         "unit_conversion": [
             "yuan_to_yuan_is_identity",
@@ -952,7 +900,7 @@ def test_numeric_types_contract_summary():
             "yi_yuan_to_yuan_multiplier_100000000",
             "yuan_to_wan_yuan_divisor_10000",
             "yuan_to_yi_yuan_divisor_100000000",
-            "unit_conversion_preserves_precision"
+            "unit_conversion_preserves_precision",
         ],
         "boundary_values": [
             "zero_price_valid",
@@ -961,7 +909,7 @@ def test_numeric_types_contract_summary():
             "large_volume_values",
             "large_amount_values",
             "small_price_values",
-            "scientific_notation_values"
+            "scientific_notation_values",
         ],
         "nan_infinity_handling": [
             "nan_replaced_with_none",
@@ -969,15 +917,15 @@ def test_numeric_types_contract_summary():
             "negative_infinity_replaced_with_none",
             "mixed_nan_and_infinity",
             "all_nan_column",
-            "all_infinity_column"
+            "all_infinity_column",
         ],
         "precision_range": [
             "price_decimal_precision",
             "volume_is_integer_like",
             "amount_precision_for_large_values",
             "percentage_precision",
-            "ratio_precision"
-        ]
+            "ratio_precision",
+        ],
     }
 
     # Just verify the contract categories exist

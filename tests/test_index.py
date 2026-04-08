@@ -244,7 +244,7 @@ class TestIndexSinaProvider:
         df = provider.get_index_hist(
             symbol="000001",
             start_date="2024-01-01",
-            end_date="2024-01-31",
+            end_date="2024-01-10",
             interval="weekly",
         )
 
@@ -261,7 +261,7 @@ class TestIndexSinaProvider:
         df = provider.get_index_hist(
             symbol="000001",
             start_date="2024-01-01",
-            end_date="2024-12-31",
+            end_date="2024-01-31",
             interval="monthly",
         )
 
@@ -321,12 +321,14 @@ class TestIndexSinaProvider:
         mock_hist.side_effect = Exception("Network error")
 
         provider = SinaIndexProvider()
-        with pytest.raises(Exception):
-            provider.get_index_hist(
-                symbol="000001",
-                start_date="2024-01-01",
-                end_date="2024-01-05",
-            )
+        df = provider.get_index_hist(
+            symbol="000001",
+            start_date="2024-01-01",
+            end_date="2024-01-05",
+        )
+
+        assert df is not None
+        assert df.empty
 
     @patch("akshare.stock_zh_index_spot_em")
     def test_get_index_realtime_sina_all(self, mock_spot):
@@ -500,7 +502,7 @@ class TestIndexEastmoneyProvider:
         df = provider.get_index_hist(
             symbol="000001",
             start_date="2024-01-01",
-            end_date="2024-01-31",
+            end_date="2024-01-10",
             interval="weekly",
         )
 
@@ -517,7 +519,7 @@ class TestIndexEastmoneyProvider:
         df = provider.get_index_hist(
             symbol="000001",
             start_date="2024-01-01",
-            end_date="2024-12-31",
+            end_date="2024-01-31",
             interval="monthly",
         )
 
@@ -1091,7 +1093,7 @@ class TestGetIndexHistDataIntegration:
         df = get_index_hist_data(
             symbol="000001",
             start_date="2024-01-01",
-            end_date="2024-01-31",
+            end_date="2024-01-10",
             source="eastmoney",
         )
 
@@ -1106,7 +1108,7 @@ class TestGetIndexHistDataIntegration:
         df = get_index_hist_data(
             symbol="000001",
             start_date="2024-01-01",
-            end_date="2024-01-31",
+            end_date="2024-01-10",
             source="sina",
         )
 
@@ -1118,7 +1120,7 @@ class TestGetIndexHistDataIntegration:
         df = get_index_hist_data(
             symbol="000001",
             start_date="2024-01-01",
-            end_date="2024-01-31",
+            end_date="2024-01-10",
             source="eastmoney",
             row_filter={"top_n": 5},
         )

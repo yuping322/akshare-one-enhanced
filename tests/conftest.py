@@ -170,6 +170,16 @@ def pytest_runtest_makereport(item, call):
 
 
 # Shared fixtures
+@pytest.fixture(autouse=True)
+def clear_financial_cache():
+    """Clear financial cache before each test to ensure test isolation."""
+    from akshare_one.modules.cache import clear_cache
+
+    clear_cache("financial_cache")
+    yield
+    clear_cache("financial_cache")
+
+
 @pytest.fixture
 def rate_limiter():
     """Fixture providing rate limiter for integration tests."""
@@ -212,7 +222,7 @@ def sample_symbols():
 @pytest.fixture
 def sample_date_range():
     """Fixture providing sample date range for testing."""
-    return {"start_date": "2024-01-01", "end_date": "2024-01-31"}
+    return {"start_date": "2024-01-25", "end_date": "2024-01-31"}
 
 
 @pytest.fixture

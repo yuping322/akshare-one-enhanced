@@ -24,11 +24,13 @@ FilterType: TypeAlias = dict[str, Any] | None
 
 class MarketType(Enum):
     """市场类型枚举"""
-    A_STOCK = "a_stock"      # A股：6位数字（600000, 000001）
-    BOND = "bond"           # 债券：sh/sz + 6位数字（sh113050, sz123456）
-    ETF = "etf"             # ETF：6位数字（510050, 159915）
-    FUTURES = "futures"     # 期货：字母+数字（CU2405, AG2506）
-    INDEX = "index"         # 指数：数字（000001, 000300）
+
+    A_STOCK = "a_stock"  # A股：6位数字（600000, 000001）
+    BOND = "bond"  # 债券：sh/sz + 6位数字（sh113050, sz123456）
+    ETF = "etf"  # ETF：6位数字（510050, 159915）
+    FUTURES = "futures"  # 期货：字母+数字（CU2405, AG2506）
+    INDEX = "index"  # 指数：数字（000001, 000300）
+
 
 from ..akshare_compat import get_adapter
 from ..error_codes import ErrorCode
@@ -68,9 +70,9 @@ class BaseProvider:
                 "context": {
                     "log_type": "provider_init",
                     "provider": self.__class__.__name__,
-                    "kwargs": {k: v for k, v in kwargs.items() if k not in ['password', 'api_key', 'token']}
+                    "kwargs": {k: v for k, v in kwargs.items() if k not in ["password", "api_key", "token"]},
                 }
-            }
+            },
         )
 
         # Initialize AkShare compatibility adapter
@@ -121,11 +123,7 @@ class BaseProvider:
         start_time = time.time()
         try:
             # 使用适配器调用，自动处理函数名变更
-            raw_df = self.akshare_adapter.call(
-                ak_func_name,
-                fallback_func=fallback_func,
-                **ak_params
-            )
+            raw_df = self.akshare_adapter.call(ak_func_name, fallback_func=fallback_func, **ak_params)
 
             # Log successful API call
             duration_ms = (time.time() - start_time) * 1000
@@ -136,7 +134,7 @@ class BaseProvider:
                 params=ak_params,
                 duration_ms=duration_ms,
                 status="success",
-                rows=len(raw_df) if not raw_df.empty else 0
+                rows=len(raw_df) if not raw_df.empty else 0,
             )
         except Exception as e:
             # Log API call error
@@ -146,7 +144,7 @@ class BaseProvider:
                 e,
                 source=self.get_source_name(),
                 endpoint=method_name,
-                additional_context={"ak_func": ak_func_name, "params": ak_params, "duration_ms": duration_ms}
+                additional_context={"ak_func": ak_func_name, "params": ak_params, "duration_ms": duration_ms},
             )
 
             # 返回空 DataFrame 而不是硬失败
@@ -243,7 +241,7 @@ class BaseProvider:
             raise InvalidParameterError(
                 "Symbol cannot be empty",
                 error_code=ErrorCode.INVALID_SYMBOL_EMPTY,
-                context={"market_type": market_type.value}
+                context={"market_type": market_type.value},
             )
 
         # Validation patterns for different market types
@@ -260,7 +258,7 @@ class BaseProvider:
             raise InvalidParameterError(
                 f"Unsupported market type: {market_type}",
                 error_code=ErrorCode.INVALID_MARKET_TYPE,
-                context={"market_type": market_type.value}
+                context={"market_type": market_type.value},
             )
 
         if not re.match(pattern, symbol):
@@ -274,7 +272,7 @@ class BaseProvider:
             raise InvalidParameterError(
                 f"Invalid symbol format for {market_type.value}: {symbol}. Expected format like {examples.get(market_type, 'unknown')}",
                 error_code=ErrorCode.INVALID_SYMBOL_FORMAT,
-                context={"symbol": symbol, "market_type": market_type.value}
+                context={"symbol": symbol, "market_type": market_type.value},
             )
 
     @staticmethod
@@ -293,7 +291,7 @@ class BaseProvider:
             raise InvalidParameterError(
                 f"{param_name} cannot be empty",
                 error_code=ErrorCode.INVALID_DATE_EMPTY,
-                context={"param_name": param_name}
+                context={"param_name": param_name},
             )
 
         try:
@@ -302,7 +300,7 @@ class BaseProvider:
             raise InvalidParameterError(
                 f"Invalid {param_name} format: {date_str}. Expected YYYY-MM-DD format. Error: {e}",
                 error_code=ErrorCode.INVALID_DATE_FORMAT,
-                context={"param_name": param_name, "date_str": date_str}
+                context={"param_name": param_name, "date_str": date_str},
             ) from None
 
     @staticmethod
@@ -327,7 +325,7 @@ class BaseProvider:
             raise InvalidParameterError(
                 f"start_date ({start_date}) must be <= end_date ({end_date})",
                 error_code=ErrorCode.INVALID_DATE_RANGE,
-                context={"start_date": start_date, "end_date": end_date}
+                context={"start_date": start_date, "end_date": end_date},
             )
 
     @staticmethod
@@ -404,7 +402,7 @@ class BaseProvider:
                 df[col] = df[col].astype(str)
                 # Only apply zfill to values that look like stock codes (all digits)
                 # This avoids zfilling placeholder values like 'ALL', 'SH', 'SZ', etc.
-                mask = df[col].str.match(r'^\d+$', na=False)
+                mask = df[col].str.match(r"^\d+$", na=False)
                 df.loc[mask, col] = df.loc[mask, col].str.zfill(6)
 
         return df
@@ -786,6 +784,8 @@ class BaseProvider:
             pd.DataFrame: Processed DataFrame
         """
         if df.empty:
+            if columns:
+                return pd.DataFrame(columns=columns)
             return df
 
         # 1. Map fields

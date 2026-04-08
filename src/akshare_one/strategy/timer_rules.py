@@ -43,19 +43,20 @@ _TIME_RULE_PRECISION_WARNED = set()
 # 全局交易日历缓存
 _TRADING_DAYS_CACHE: Optional[Set[date]] = None
 _TRADING_DAYS_LIST_CACHE: Optional[List[date]] = None
-_CACHE_FILE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "trading_days_cache.pkl")
+_CACHE_FILE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "cache", "trading_days_cache.pkl")
 
 
 def _fetch_trading_days_from_akshare() -> List[date]:
     """从akshare获取真实A股交易日历"""
     try:
         import akshare as ak
+
         df = ak.tool_trade_date_hist_sina()
         if df is not None and not df.empty:
             # 列名可能是 'trade_date'
             date_col = None
             for col in df.columns:
-                if 'date' in col.lower():
+                if "date" in col.lower():
                     date_col = col
                     break
             if date_col is None:
@@ -109,6 +110,7 @@ def get_real_trading_days(force_update: bool = False) -> List[date]:
 
     # 从akshare获取
     import pandas as pd
+
     days_list = _fetch_trading_days_from_akshare()
 
     if not days_list:
@@ -124,10 +126,7 @@ def get_real_trading_days(force_update: bool = False) -> List[date]:
     try:
         os.makedirs(os.path.dirname(_CACHE_FILE_PATH), exist_ok=True)
         with open(_CACHE_FILE_PATH, "wb") as f:
-            pickle.dump({
-                "trading_days": days_list,
-                "timestamp": datetime.now().timestamp()
-            }, f)
+            pickle.dump({"trading_days": days_list, "timestamp": datetime.now().timestamp()}, f)
         logger.info(f"交易日历已缓存到 {_CACHE_FILE_PATH}")
     except Exception as e:
         logger.warning(f"保存交易日历缓存失败: {e}")
@@ -201,9 +200,7 @@ def parse_time_rule(rule: str) -> Tuple[str, Optional[time], Optional[int]]:
         try:
             offset = int(rule.split("+")[1].replace("m", "").replace("min", "").strip())
             base_time = MARKET_OPEN_TIME
-            target_dt = datetime.combine(date.today(), base_time) + timedelta(
-                minutes=offset
-            )
+            target_dt = datetime.combine(date.today(), base_time) + timedelta(minutes=offset)
             return ("open_offset", target_dt.time(), offset)
         except (ValueError, IndexError):
             warnings.warn(f"无法解析偏移规则: {rule}")
@@ -213,9 +210,7 @@ def parse_time_rule(rule: str) -> Tuple[str, Optional[time], Optional[int]]:
         try:
             offset = int(rule.split("-")[1].replace("m", "").replace("min", "").strip())
             base_time = MARKET_OPEN_TIME
-            target_dt = datetime.combine(date.today(), base_time) - timedelta(
-                minutes=offset
-            )
+            target_dt = datetime.combine(date.today(), base_time) - timedelta(minutes=offset)
             return ("open_offset", target_dt.time(), -offset)
         except (ValueError, IndexError):
             warnings.warn(f"无法解析偏移规则: {rule}")
@@ -225,9 +220,7 @@ def parse_time_rule(rule: str) -> Tuple[str, Optional[time], Optional[int]]:
         try:
             offset = int(rule.split("+")[1].replace("m", "").replace("min", "").strip())
             base_time = MARKET_CLOSE_TIME
-            target_dt = datetime.combine(date.today(), base_time) + timedelta(
-                minutes=offset
-            )
+            target_dt = datetime.combine(date.today(), base_time) + timedelta(minutes=offset)
             return ("close_offset", target_dt.time(), offset)
         except (ValueError, IndexError):
             warnings.warn(f"无法解析偏移规则: {rule}")
@@ -237,9 +230,7 @@ def parse_time_rule(rule: str) -> Tuple[str, Optional[time], Optional[int]]:
         try:
             offset = int(rule.split("-")[1].replace("m", "").replace("min", "").strip())
             base_time = MARKET_CLOSE_TIME
-            target_dt = datetime.combine(date.today(), base_time) - timedelta(
-                minutes=offset
-            )
+            target_dt = datetime.combine(date.today(), base_time) - timedelta(minutes=offset)
             return ("close_offset", target_dt.time(), -offset)
         except (ValueError, IndexError):
             warnings.warn(f"无法解析偏移规则: {rule}")
@@ -497,9 +488,7 @@ def check_monthly_trigger(
     if not is_trading_day(current_date, trading_days):
         return False
 
-    target_date = get_nth_trading_day_in_month(
-        current_date.month, current_date.year, target_day, trading_days
-    )
+    target_date = get_nth_trading_day_in_month(current_date.month, current_date.year, target_day, trading_days)
 
     if target_date is None or target_date != current_date:
         return False
@@ -507,10 +496,7 @@ def check_monthly_trigger(
     if last_executed is None:
         return True
 
-    if (
-        last_executed.year == current_date.year
-        and last_executed.month == current_date.month
-    ):
+    if last_executed.year == current_date.year and last_executed.month == current_date.month:
         return False
 
     return True
@@ -550,16 +536,12 @@ def should_execute_timer(
 
     elif frequency == "weekly":
         target_weekday = weekday if weekday is not None else 1
-        if not check_weekly_trigger(
-            current_date, last_executed, target_weekday, trading_days
-        ):
+        if not check_weekly_trigger(current_date, last_executed, target_weekday, trading_days):
             return (False, "not_target_weekday_or_same_week")
 
     elif frequency == "monthly":
         target_day = day if day is not None else 1
-        if not check_monthly_trigger(
-            current_date, last_executed, target_day, trading_days
-        ):
+        if not check_monthly_trigger(current_date, last_executed, target_day, trading_days):
             return (False, "not_target_day_or_same_month")
 
     else:
@@ -569,9 +551,7 @@ def should_execute_timer(
         return (True, "no_time_check")
 
     rule_type, target_time, offset = parse_time_rule(time_rule)
-    time_match = check_bar_time_match(
-        current_time, rule_type, target_time, bar_resolution_minutes, time_rule
-    )
+    time_match = check_bar_time_match(current_time, rule_type, target_time, bar_resolution_minutes, time_rule)
 
     if not time_match:
         return (False, f"time_not_match: current={current_time}, rule={time_rule}")
@@ -614,27 +594,19 @@ class TradingDayCalendar:
             return dt in self._trading_days_set
         return is_trading_day(dt, self._trading_days)
 
-    def get_nth_trading_day_in_month(
-        self, year: int, month: int, n: int
-    ) -> Optional[date]:
+    def get_nth_trading_day_in_month(self, year: int, month: int, n: int) -> Optional[date]:
         """获取月内第 N 个交易日"""
         cache_key = (year, month)
         if cache_key not in self._month_cache:
             if self._trading_days is not None:
-                self._month_cache[cache_key] = [
-                    d for d in self._trading_days if d.year == year and d.month == month
-                ]
+                self._month_cache[cache_key] = [d for d in self._trading_days if d.year == year and d.month == month]
             else:
                 # 使用真实交易日历
                 real_days = get_real_trading_days()
                 if real_days:
-                    self._month_cache[cache_key] = [
-                        d for d in real_days if d.year == year and d.month == month
-                    ]
+                    self._month_cache[cache_key] = [d for d in real_days if d.year == year and d.month == month]
                 else:
-                    self._month_cache[cache_key] = _generate_approx_trading_days(
-                        year, month
-                    )
+                    self._month_cache[cache_key] = _generate_approx_trading_days(year, month)
 
         month_days = self._month_cache[cache_key]
         if not month_days:

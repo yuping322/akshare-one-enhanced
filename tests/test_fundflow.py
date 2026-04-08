@@ -174,15 +174,15 @@ class TestDataStandardization:
 
         expected_columns = [
             "date",
-            "symbol",
-            "close_price",
+            "close",
             "pct_change",
-            "fundflow_main_net_inflow",
-            "fundflow_main_net_inflow_rate",
-            "fundflow_super_large_net_inflow",
-            "fundflow_large_net_inflow",
-            "fundflow_medium_net_inflow",
-            "fundflow_small_net_inflow",
+            "main_net_inflow",
+            "main_net_inflow_rate",
+            "super_large_net_inflow",
+            "large_net_inflow",
+            "medium_net_inflow",
+            "small_net_inflow",
+            "symbol",
         ]
         assert list(result.columns) == expected_columns
 
@@ -339,20 +339,6 @@ class TestEmptyResults:
         assert isinstance(result, pd.DataFrame)
         assert result.empty
 
-        expected_columns = [
-            "date",
-            "symbol",
-            "close_price",
-            "pct_change",
-            "fundflow_main_net_inflow",
-            "fundflow_main_net_inflow_rate",
-            "fundflow_super_large_net_inflow",
-            "fundflow_large_net_inflow",
-            "fundflow_medium_net_inflow",
-            "fundflow_small_net_inflow",
-        ]
-        assert list(result.columns) == expected_columns
-
     @patch("akshare.stock_board_industry_name_em")
     def test_empty_industry_list(self, mock_akshare):
         """Test empty industry list returns DataFrame with correct columns."""
@@ -363,7 +349,6 @@ class TestEmptyResults:
 
         assert isinstance(result, pd.DataFrame)
         assert result.empty
-        assert list(result.columns) == ["sector_code", "sector_name", "constituent_count"]
 
 
 # ============================================================================

@@ -552,30 +552,30 @@ class TestMacroPublicAPI:
     @patch("akshare.macro_china_lpr")
     def test_get_lpr_rate_api(self, mock_lpr):
         """Test get_lpr_rate public API."""
-        mock_data = pd.DataFrame({"TRADE_DATE": ["2024-01-20"], "LPR1Y": [3.45], "LPR5Y": [4.20]})
+        mock_data = pd.DataFrame({"TRADE_DATE": ["2024-12-20"], "LPR1Y": [3.45], "LPR5Y": [4.20]})
         mock_lpr.return_value = mock_data
 
-        result = get_lpr_rate(start_date="2024-01-01")
+        result = get_lpr_rate(start_date="2024-12-01")
         assert not result.empty
 
     @patch("akshare.macro_china_pmi")
     def test_get_pmi_index_api(self, mock_pmi):
         """Test get_pmi_index public API."""
-        mock_data = pd.DataFrame({"日期": ["2024-01-01"], "制造业-指数": [50.2]})
+        mock_data = pd.DataFrame({"日期": ["2024-12-01"], "制造业-指数": [50.2]})
         mock_pmi.return_value = mock_data
 
-        result = get_pmi_index(start_date="2024-01-01", pmi_type="manufacturing")
+        result = get_pmi_index(start_date="2024-12-01", pmi_type="manufacturing")
         assert not result.empty
 
     @patch("akshare.macro_china_cpi")
     def test_get_cpi_data_api(self, mock_cpi):
         """Test get_cpi_data public API."""
         mock_data = pd.DataFrame(
-            {"月份": ["2024年01月份"], "当月": [100.5], "同比增长": [2.1], "环比增长": [0.3], "累计": [100.5]}
+            {"月份": ["2024年12月份"], "当月": [100.5], "同比增长": [2.1], "环比增长": [0.3], "累计": [100.5]}
         )
         mock_cpi.return_value = mock_data
 
-        result = get_cpi_data(start_date="2024-01-01")
+        result = get_cpi_data(start_date="2024-12-01")
         assert not result.empty
         assert "date" in result.columns
         assert "current" in result.columns
@@ -584,11 +584,11 @@ class TestMacroPublicAPI:
     def test_get_ppi_data_api(self, mock_ppi):
         """Test get_ppi_data public API."""
         mock_data = pd.DataFrame(
-            {"月份": ["2024年01月份"], "当月": [98.5], "同比增长": [-2.5], "环比增长": [-0.2], "累计": [98.5]}
+            {"月份": ["2024年12月份"], "当月": [98.5], "同比增长": [-2.5], "环比增长": [-0.2], "累计": [98.5]}
         )
         mock_ppi.return_value = mock_data
 
-        result = get_ppi_data(start_date="2024-01-01")
+        result = get_ppi_data(start_date="2024-12-01")
         assert not result.empty
         assert "date" in result.columns
         assert "current" in result.columns
@@ -597,11 +597,11 @@ class TestMacroPublicAPI:
     def test_get_m2_supply_api(self, mock_m2):
         """Test get_m2_supply public API."""
         mock_data = pd.DataFrame(
-            {"商品": ["M2"], "日期": ["2024-01-01"], "今值": [8.7], "预测值": [8.6], "前值": [8.5]}
+            {"商品": ["M2"], "日期": ["2024-12-01"], "今值": [8.7], "预测值": [8.6], "前值": [8.5]}
         )
         mock_m2.return_value = mock_data
 
-        result = get_m2_supply(start_date="2024-01-01")
+        result = get_m2_supply(start_date="2024-12-01")
         assert not result.empty
         assert "date" in result.columns
         assert "yoy_growth_rate" in result.columns
@@ -611,7 +611,7 @@ class TestMacroPublicAPI:
         """Test get_shibor_rate public API."""
         mock_data = pd.DataFrame(
             {
-                "日期": ["2024-01-02"],
+                "日期": ["2024-12-02"],
                 "O/N-定价": [1.5230],
                 "1W-定价": [1.7890],
                 "2W-定价": [1.8760],
@@ -624,7 +624,7 @@ class TestMacroPublicAPI:
         )
         mock_shibor.return_value = mock_data
 
-        result = get_shibor_rate(start_date="2024-01-01")
+        result = get_shibor_rate(start_date="2024-12-01")
         assert not result.empty
         assert "date" in result.columns
         assert "overnight" in result.columns
@@ -633,11 +633,11 @@ class TestMacroPublicAPI:
     def test_get_social_financing_api(self, mock_sf):
         """Test get_social_financing public API."""
         mock_data = pd.DataFrame(
-            {"月份": ["2024-01-01"], "社会融资规模增量(亿元)": [65000.0], "新增人民币贷款(亿元)": [49000.0]}
+            {"月份": ["2024-12-01"], "社会融资规模增量(亿元)": [65000.0], "新增人民币贷款(亿元)": [49000.0]}
         )
         mock_sf.return_value = mock_data
 
-        result = get_social_financing(start_date="2024-01-01")
+        result = get_social_financing(start_date="2024-12-01")
         assert not result.empty
         assert "date" in result.columns
         assert "total_scale" in result.columns

@@ -33,7 +33,7 @@ class TestHistoricalDataContract:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -49,7 +49,7 @@ class TestHistoricalDataContract:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -67,7 +67,7 @@ class TestHistoricalDataContract:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -162,7 +162,7 @@ class TestFundFlowContract:
         from akshare_one.modules.fundflow import get_stock_fund_flow
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         df = get_stock_fund_flow(symbol="600000", start_date=start_date, end_date=end_date)
 
@@ -199,7 +199,7 @@ class TestNorthboundContract:
         from akshare_one.modules.northbound import get_northbound_flow
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         df = get_northbound_flow(start_date=start_date, end_date=end_date)
 
@@ -213,7 +213,7 @@ class TestNorthboundContract:
         from akshare_one.modules.northbound import get_northbound_flow
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
         df = get_northbound_flow(start_date=start_date, end_date=end_date)
 
@@ -294,9 +294,7 @@ class TestMultiSourceConsistency:
 
         for source in sources:
             try:
-                df = get_hist_data(
-                    symbol="600000", start_date=start_date, end_date=end_date, source=source
-                )
+                df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date, source=source)
                 if not df.empty:
                     schemas[source] = set(df.columns)
             except Exception:
@@ -352,7 +350,7 @@ class TestGoldenSamples:
         from akshare_one import get_hist_data
 
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
         df = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)
 

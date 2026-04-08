@@ -33,7 +33,7 @@ def example_export_to_csv():
             interval="day",
             start_date=start_date,
             end_date=end_date,
-            sources=["eastmoney_direct", "eastmoney", "sina"],
+            sources=["sina"],
         )
         output_dir = "output"
         os.makedirs(output_dir, exist_ok=True)
@@ -62,14 +62,18 @@ def example_export_to_excel():
             interval="day",
             start_date=start_date,
             end_date=end_date,
-            sources=["eastmoney_direct", "eastmoney", "sina"],
+            sources=["sina"],
         )
+        if df.empty:
+            print("\n警告: 未获取到数据")
+            return
         output_dir = "output"
         os.makedirs(output_dir, exist_ok=True)
         filename = f"{output_dir}/000001_daily_recent.xlsx"
         df_excel = df.copy()
-        if df_excel["timestamp"].dt.tz is not None:
-            df_excel["timestamp"] = df_excel["timestamp"].dt.tz_convert(None)
+        if "timestamp" in df_excel.columns:
+            if hasattr(df_excel["timestamp"].dt, "tz") and df_excel["timestamp"].dt.tz is not None:
+                df_excel["timestamp"] = df_excel["timestamp"].dt.tz_convert(None)
         df_excel.to_excel(filename, index=False, engine="openpyxl")
         print(f"\n数据已导出到: {filename}")
         print(f"数据条数: {len(df)}")
@@ -85,6 +89,9 @@ def example_export_with_formatting():
 
     try:
         df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
+        if df.empty:
+            print("\n警告: 未获取到数据")
+            return
         df["export_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         df_sorted = df.sort_values("pct_change", ascending=False)
         df_formatted = df_sorted.rename(
@@ -133,8 +140,11 @@ def example_export_multiple_stocks():
                 interval="day",
                 start_date=start_date,
                 end_date=end_date,
-                sources=["eastmoney_direct", "eastmoney", "sina"],
+                sources=["sina"],
             )
+            if df.empty:
+                print(f"  警告: 未获取到数据")
+                continue
             filename = f"{output_dir}/{symbol}_recent.csv"
             df.to_csv(filename, index=False, encoding="utf-8-sig")
             print(f"  已导出: {filename} ({len(df)} 条数据)")
@@ -157,7 +167,7 @@ def example_export_with_statistics():
             interval="day",
             start_date=start_date,
             end_date=end_date,
-            sources=["eastmoney_direct", "eastmoney", "sina"],
+            sources=["sina"],
         )
         df["pct_change"] = df["close"].pct_change() * 100
         df["ma5"] = df["close"].rolling(window=5).mean()
@@ -220,8 +230,12 @@ def example_export_to_multiple_formats():
         interval="day",
         start_date="2024-01-01",
         end_date="2024-12-31",
-        sources=["eastmoney_direct", "eastmoney", "sina"],
+        sources=["sina"],
     )
+
+    if df.empty:
+        print("\n警告: 未获取到数据")
+        return
 
     # 创建输出目录
     output_dir = "output"
@@ -237,8 +251,9 @@ def example_export_to_multiple_formats():
     # 导出Excel（需要移除时区信息）
     excel_file = f"{output_dir}/{base_name}.xlsx"
     df_excel = df.copy()
-    if df_excel["timestamp"].dt.tz is not None:
-        df_excel["timestamp"] = df_excel["timestamp"].dt.tz_convert(None)
+    if "timestamp" in df_excel.columns:
+        if hasattr(df_excel["timestamp"].dt, "tz") and df_excel["timestamp"].dt.tz is not None:
+            df_excel["timestamp"] = df_excel["timestamp"].dt.tz_convert(None)
     df_excel.to_excel(excel_file, index=False, engine="openpyxl")
     print(f"Excel: {excel_file}")
 

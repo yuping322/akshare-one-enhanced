@@ -43,43 +43,35 @@ class AkShareAdapter:
         "stock_zh_a_hist": "stock_zh_a_hist",  # Current
         "stock_zh_a_daily": "stock_zh_a_hist",  # Deprecated in 1.12+ -> Current
         "stock_zh_a_daily_hfq": "stock_zh_a_hist",  # Deprecated in 1.12+ -> Current
-
         # ETF data
         "fund_etf_hist_sina": "fund_etf_hist_sina",  # Current
         "fund_etf_fund_daily_em": "fund_etf_hist_sina",  # Fallback
-
         # Block deal (大宗交易)
         "stock_dzjy_mrtj": "stock_dzjy_mrtj",  # Current (daily statistics)
         "stock_dzjy_mrmx": "stock_dzjy_mrmx",  # Current (transaction details)
         "stock_dzjy_sctj": "stock_dzjy_mrtj",  # Deprecated in 1.13+ -> Current
-
         # Fund flow (资金流)
         "stock_individual_fund_flow": "stock_individual_fund_flow",  # Current
         "stock_individual_fund_flow_rank": "stock_individual_fund_flow_rank",  # Current
         "stock_sector_fund_flow_rank": "stock_sector_fund_flow_rank",  # Current
         "stock_fund_flow_individual": "stock_individual_fund_flow",  # Deprecated in 1.13+ -> Current
-
         # Board/Industry/Concept (板块)
         "stock_board_industry_name_em": "stock_board_industry_name_em",  # Current
         "stock_board_industry_cons_em": "stock_board_industry_cons_em",  # Current
         "stock_board_concept_name_em": "stock_board_concept_name_em",  # Current
         "stock_board_concept_cons_em": "stock_board_concept_cons_em",  # Current
-
         # KCB/CYB Board (科创板/创业板)
         "stock_kcb_spot_em": "stock_kcb_spot_em",  # Current
         "stock_kcb_spot": "stock_kcb_spot_em",  # Fallback alias
         "stock_cyb_spot_em": "stock_cyb_spot_em",  # Current
         "stock_cyb_spot": "stock_cyb_spot_em",  # Fallback alias
-
         # Real-time data
         "stock_zh_a_spot_em": "stock_zh_a_spot_em",  # Current
         "stock_zh_a_spot": "stock_zh_a_spot_em",  # Fallback
-
         # Macro data
         "macro_china_gdp": "macro_china_gdp",  # Current
         "macro_china_cpi": "macro_china_cpi",  # Current
         "macro_china_ppi": "macro_china_ppi",  # Current
-
         # Northbound资金
         "stock_hsgt_north_net_flow_in_em": "stock_hsgt_hist_em",  # Fallback to historical data
         "stock_hsgt_north_acc_flow_in_em": "stock_hsgt_hist_em",  # Fallback to historical data
@@ -87,50 +79,38 @@ class AkShareAdapter:
         "stock_hsgt_hold_stock_em": "stock_hsgt_hold_stock_em",  # Current
         "stock_em_hsgt_north_net_flow_in": "stock_hsgt_hist_em",  # Deprecated in 1.18+ -> Fallback
         "stock_em_hsgt_north_acc_flow_in": "stock_hsgt_hist_em",  # Deprecated in 1.18+ -> Fallback
-
         # Financial reports
         "stock_financial_report_sina": "stock_financial_report_sina",  # Current
-
         # Margin trading
         "stock_margin_detail_szse": "stock_margin_detail_szse",  # Current
         "stock_margin_detail_sse": "stock_margin_detail_sse",  # Current
-
         # Pledge data
         "stock_gpzy_pledge_ratio_em": "stock_gpzy_pledge_ratio_em",  # Current
         "stock_gpzy_pledge_ratio_detail_em": "stock_gpzy_pledge_ratio_detail_em",  # Current
-
         # Dragon-Tiger List (龙虎榜)
         "stock_lhb_detail_em": "stock_lhb_detail_em",  # Current
         "stock_lhb_stock_statistic_em": "stock_lhb_stock_statistic_em",  # Current
         "stock_lhb_traderstatistic_em": "stock_lhb_traderstatistic_em",  # Current
-
         # Limit Up (涨停)
         "stock_zt_pool_em": "stock_zt_pool_em",  # Current
         "stock_zt_pool_previous_em": "stock_zt_pool_previous_em",  # Current
-
         # Disclosure
         "stock_notice_report": "stock_notice_report",  # Current
-
         # ESG
         "stock_esg_rate_sina": "stock_esg_rate_sina",  # Current
-
         # Futures
         "futures_zh_minute_sina": "futures_zh_minute_sina",  # Current
         "futures_zh_daily_sina": "futures_zh_daily_sina",  # Current
         "futures_zh_realtime": "futures_zh_realtime",  # Current
         "futures_zh_spot": "futures_zh_spot",  # Current
-
         # Options
         "option_current_em": "option_current_em",  # Current
         "option_sse_daily_sina": "option_sse_daily_sina",  # Current
-
         # Index
         "index_stock_info": "index_stock_info",  # Current
         "index_zh_a_hist": "index_zh_a_hist",  # Current
-
         # Bond
         "bond_cb_jsl": "bond_cb_jsl",  # Current
-
         # Utility
         "tool_trade_date_hist_sina": "tool_trade_date_hist_sina",  # Current
     }
@@ -235,9 +215,7 @@ class AkShareAdapter:
             self._function_cache[func_name] = exists
 
             if not exists:
-                logger.warning(
-                    f"AkShare function '{func_name}' not found in version {self._akshare_version}"
-                )
+                logger.warning(f"AkShare function '{func_name}' not found in version {self._akshare_version}")
 
             return exists
 
@@ -362,9 +340,7 @@ class AkShareAdapter:
             end_minor = int(end_parts[1]) if len(end_parts) > 1 else 0
 
             # Check if version is in range
-            return (major >= start_major and minor >= start_minor) and (
-                major <= end_major and minor <= end_minor
-            )
+            return (major >= start_major and minor >= start_minor) and (major <= end_major and minor <= end_minor)
 
         return False
 
@@ -434,9 +410,7 @@ class AkShareAdapter:
 
         if func is not None:
             try:
-                logger.debug(
-                    f"Calling AkShare function '{func_name}' with args: {args}, kwargs: {kwargs}"
-                )
+                logger.debug(f"Calling AkShare function '{func_name}' with args: {args}, kwargs: {kwargs}")
                 result = func(*args, **kwargs)
 
                 # Ensure result is a DataFrame
@@ -446,9 +420,7 @@ class AkShareAdapter:
                     # Some functions return dict, convert to DataFrame
                     return pd.DataFrame(result)
                 else:
-                    logger.warning(
-                        f"Function '{func_name}' returned unexpected type: {type(result)}"
-                    )
+                    logger.warning(f"Function '{func_name}' returned unexpected type: {type(result)}")
                     return pd.DataFrame()
 
             except Exception as e:
@@ -460,17 +432,37 @@ class AkShareAdapter:
                 # Try fallback if available
                 if fallback_func:
                     logger.info(f"Attempting fallback function '{fallback_func}'")
-                    return self.call(fallback_func, *args, **kwargs)
+                    try:
+                        result = self.call(fallback_func, *args, **kwargs)
+                        # If fallback returned empty DataFrame, treat as failure
+                        if result.empty:
+                            logger.error(
+                                f"Fallback function '{fallback_func}' returned empty result, treating as failure"
+                            )
+                            raise RuntimeError(
+                                f"Both primary function '{func_name}' and fallback '{fallback_func}' failed. "
+                                f"Primary error: {e}. Fallback returned empty DataFrame."
+                            ) from e
+                        return result
+                    except RuntimeError:
+                        # Re-raising RuntimeError from fallback, just propagate
+                        raise
+                    except Exception as fallback_e:
+                        logger.error(
+                            f"Fallback function '{fallback_func}' also failed: {fallback_e}",
+                            exc_info=True,
+                        )
+                        raise RuntimeError(
+                            f"Both primary function '{func_name}' and fallback '{fallback_func}' failed. "
+                            f"Primary error: {e}. Fallback error: {fallback_e}"
+                        ) from e
 
                 # No fallback, return empty DataFrame
                 return pd.DataFrame()
 
         # Primary function not found, try fallback
         if fallback_func:
-            logger.warning(
-                f"Primary function '{func_name}' not available, "
-                f"trying fallback '{fallback_func}'"
-            )
+            logger.warning(f"Primary function '{func_name}' not available, trying fallback '{fallback_func}'")
             return self.call(fallback_func, *args, **kwargs)
 
         # No function available

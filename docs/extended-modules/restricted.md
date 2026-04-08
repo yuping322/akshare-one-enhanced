@@ -2,7 +2,7 @@
 
 限售解禁模块提供相关数据接口。
 
-**数据源**：东方财富（eastmoney）  
+**数据源**：东方财富（eastmoney）、理杏仁（lixinger）  
 **更新频率**：T+1  
 **示例程序**：[examples/restricted_example.py](../../examples/restricted_example.py)
 

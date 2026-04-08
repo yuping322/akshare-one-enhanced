@@ -44,17 +44,25 @@ class PortfolioAnalysis:
 
         for symbol in self.stocks:
             print(f"  加载 {symbol}...")
-            df = get_hist_data(
-                symbol=symbol,
-                interval="day",
-                start_date=self.start_date,
-                end_date=self.end_date,
-                adjust="qfq",
-                source="eastmoney_direct"
-            )
+            try:
+                df = get_hist_data(
+                    symbol=symbol,
+                    interval="day",
+                    start_date=self.start_date,
+                    end_date=self.end_date,
+                    adjust="qfq",
+                    source="sina",
+                )
 
-            if not df.empty:
-                self.stock_data[symbol] = df
+                if not df.empty:
+                    self.stock_data[symbol] = df
+                    print(f"    成功: {len(df)} 条数据")
+                else:
+                    print(f"    无数据")
+            except ConnectionError as e:
+                print(f"    网络连接错误: {e}")
+            except Exception as e:
+                print(f"    加载失败: {e}")
 
         print(f"成功加载 {len(self.stock_data)} 只股票数据")
 
@@ -63,7 +71,7 @@ class PortfolioAnalysis:
         print("计算收益率...")
 
         for symbol, df in self.stock_data.items():
-            df['pct_change'] = df['close'].pct_change()
+            df["pct_change"] = df["close"].pct_change()
 
     def calculate_portfolio_value(self):
         """计算组合净值"""
@@ -76,13 +84,13 @@ class PortfolioAnalysis:
         dates = None
         for symbol, df in self.stock_data.items():
             if dates is None:
-                dates = df['timestamp'].values
+                dates = df["timestamp"].values
             else:
                 # 只保留所有股票都有的日期
-                dates = np.intersect1d(dates, df['timestamp'].values)
+                dates = np.intersect1d(dates, df["timestamp"].values)
 
         # 创建组合净值序列
-        self.portfolio_df = pd.DataFrame({'timestamp': dates})
+        self.portfolio_df = pd.DataFrame({"timestamp": dates})
 
         # 计算组合收益率（加权平均）
         portfolio_returns = []
@@ -94,18 +102,18 @@ class PortfolioAnalysis:
             for i, symbol in enumerate(self.stocks):
                 if symbol in self.stock_data:
                     df = self.stock_data[symbol]
-                    row = df[df['timestamp'] == date]
+                    row = df[df["timestamp"] == date]
 
-                    if not row.empty and pd.notna(row.iloc[0]['pct_change']):
-                        daily_return += row.iloc[0]['pct_change'] * self.weights[i]
+                    if not row.empty and pd.notna(row.iloc[0]["pct_change"]):
+                        daily_return += row.iloc[0]["pct_change"] * self.weights[i]
                         valid_stocks += 1
 
             portfolio_returns.append(daily_return if valid_stocks > 0 else 0)
 
-        self.portfolio_df['pct_change'] = portfolio_returns
+        self.portfolio_df["pct_change"] = portfolio_returns
 
         # 计算累计净值
-        self.portfolio_df['net_value'] = (1 + self.portfolio_df['pct_change']).cumprod()
+        self.portfolio_df["net_value"] = (1 + self.portfolio_df["pct_change"]).cumprod()
 
     def calculate_risk_metrics(self):
         """计算风险指标"""
@@ -115,12 +123,12 @@ class PortfolioAnalysis:
         df = self.portfolio_df
 
         # 年化收益率
-        total_return = df['net_value'].iloc[-1] - 1
+        total_return = df["net_value"].iloc[-1] - 1
         days = len(df)
         annual_return = (1 + total_return) ** (252 / days) - 1 if days > 0 else 0
 
         # 波动率
-        daily_std = df['pct_change'].std()
+        daily_std = df["pct_change"].std()
         annual_std = daily_std * np.sqrt(252)
 
         # 夏普比率（假设无风险利率为3%）
@@ -128,20 +136,20 @@ class PortfolioAnalysis:
         sharpe_ratio = (annual_return - risk_free_rate) / annual_std if annual_std > 0 else 0
 
         # 最大回撤
-        df['cummax'] = df['net_value'].cummax()
-        df['drawdown'] = (df['net_value'] - df['cummax']) / df['cummax']
-        max_drawdown = df['drawdown'].min()
+        df["cummax"] = df["net_value"].cummax()
+        df["drawdown"] = (df["net_value"] - df["cummax"]) / df["cummax"]
+        max_drawdown = df["drawdown"].min()
 
         # Calmar比率
         calmar_ratio = annual_return / abs(max_drawdown) if max_drawdown != 0 else 0
 
         return {
-            'total_return': total_return,
-            'annual_return': annual_return,
-            'annual_std': annual_std,
-            'sharpe_ratio': sharpe_ratio,
-            'max_drawdown': max_drawdown,
-            'calmar_ratio': calmar_ratio
+            "total_return": total_return,
+            "annual_return": annual_return,
+            "annual_std": annual_std,
+            "sharpe_ratio": sharpe_ratio,
+            "max_drawdown": max_drawdown,
+            "calmar_ratio": calmar_ratio,
         }
 
     def analyze_individual_stocks(self):
@@ -154,10 +162,10 @@ class PortfolioAnalysis:
                 continue
 
             # 计算收益率
-            total_return = (df['close'].iloc[-1] / df['close'].iloc[0] - 1)
+            total_return = df["close"].iloc[-1] / df["close"].iloc[0] - 1
 
             # 计算波动率
-            annual_std = df['pct_change'].std() * np.sqrt(252)
+            annual_std = df["pct_change"].std() * np.sqrt(252)
 
             print(f"\n股票 {symbol}:")
             print(f"  总收益率: {total_return:.2%}")
@@ -192,10 +200,8 @@ class PortfolioAnalysis:
         # 显示净值曲线
         if self.portfolio_df is not None and not self.portfolio_df.empty:
             print("\n组合净值曲线（月末）：")
-            monthly = self.portfolio_df.groupby(
-                self.portfolio_df['timestamp'].str[:7]
-            ).last()
-            print(monthly[['net_value']].head(12).to_string())
+            monthly = self.portfolio_df.groupby(self.portfolio_df["timestamp"].str[:7]).last()
+            print(monthly[["net_value"]].head(12).to_string())
 
 
 def example_equal_weight_portfolio():
@@ -204,15 +210,10 @@ def example_equal_weight_portfolio():
     print("示例1：等权重组合")
     print("=" * 60)
 
-    stocks = ['600000', '000001', '600519', '000858']
+    stocks = ["600000", "000001", "600519", "000858"]
     weights = [0.25, 0.25, 0.25, 0.25]
 
-    portfolio = PortfolioAnalysis(
-        stocks=stocks,
-        weights=weights,
-        start_date="2024-01-01",
-        end_date="2024-12-31"
-    )
+    portfolio = PortfolioAnalysis(stocks=stocks, weights=weights, start_date="2024-01-01", end_date="2024-12-31")
 
     portfolio.load_data()
     portfolio.calculate_returns()
@@ -226,15 +227,10 @@ def example_custom_weight_portfolio():
     print("示例2：自定义权重组合")
     print("=" * 60)
 
-    stocks = ['600000', '000001', '600519']
+    stocks = ["600000", "000001", "600519"]
     weights = [0.2, 0.3, 0.5]  # 重点配置贵州茅台
 
-    portfolio = PortfolioAnalysis(
-        stocks=stocks,
-        weights=weights,
-        start_date="2024-01-01",
-        end_date="2024-12-31"
-    )
+    portfolio = PortfolioAnalysis(stocks=stocks, weights=weights, start_date="2024-01-01", end_date="2024-12-31")
 
     portfolio.load_data()
     portfolio.calculate_returns()
@@ -248,15 +244,10 @@ def example_comparison():
     print("示例3：不同组合对比")
     print("=" * 60)
 
-    stocks = ['600000', '000001', '600519', '000858', '600036']
+    stocks = ["600000", "000001", "600519", "000858", "600036"]
 
     # 组合1：等权重
-    portfolio1 = PortfolioAnalysis(
-        stocks=stocks,
-        weights=[0.2] * 5,
-        start_date="2024-01-01",
-        end_date="2024-12-31"
-    )
+    portfolio1 = PortfolioAnalysis(stocks=stocks, weights=[0.2] * 5, start_date="2024-01-01", end_date="2024-12-31")
 
     portfolio1.load_data()
     portfolio1.calculate_returns()
@@ -268,7 +259,7 @@ def example_comparison():
         stocks=stocks,
         weights=[0.1, 0.1, 0.3, 0.3, 0.2],  # 贵州茅台和五粮液权重较高
         start_date="2024-01-01",
-        end_date="2024-12-31"
+        end_date="2024-12-31",
     )
 
     portfolio2.stock_data = portfolio1.stock_data  # 复用数据

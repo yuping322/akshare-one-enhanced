@@ -221,7 +221,7 @@ class TestFixturesExample:
         """Example: Use sample_date_range fixture."""
         assert "start_date" in sample_date_range
         assert "end_date" in sample_date_range
-        assert sample_date_range["start_date"] == "2024-01-01"
+        assert sample_date_range["start_date"] == "2024-01-25"
         assert sample_date_range["end_date"] == "2024-01-31"
 
     def test_multiple_fixtures(self, sample_symbols, sample_date_range, mock_data_generator):

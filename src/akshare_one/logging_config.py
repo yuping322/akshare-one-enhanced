@@ -93,9 +93,13 @@ class ContextFilter(logging.Filter):
         return True
 
 
+def _get_default_log_dir() -> Path:
+    return Path(__file__).parent.parent / "data" / "logs"
+
+
 def setup_logging(
     log_level: str = "INFO",
-    log_dir: str = "logs",
+    log_dir: str | None = None,
     enable_console: bool = True,
     enable_file: bool = False,
     json_format: bool = True,
@@ -119,22 +123,25 @@ def setup_logging(
         >>> logger = setup_logging(log_level="DEBUG", enable_file=True)
         >>> logger.info("Data fetched", extra={"context": {"rows": 100}})
     """
+    if log_dir is None:
+        log_dir = _get_default_log_dir()
+    else:
+        log_dir = Path(log_dir)
+
     file_logging_enabled = False
     if enable_file:
         try:
-            log_path = Path(log_dir)
-            log_path.mkdir(parents=True, exist_ok=True)
+            log_dir.mkdir(parents=True, exist_ok=True)
             # Test if directory is writable
-            test_file = log_path / ".write_test"
+            test_file = log_dir / ".write_test"
             test_file.touch()
             test_file.unlink()
             file_logging_enabled = True
         except (PermissionError, OSError) as e:
-            # Log directory not writable, fall back to console only
             import warnings
+
             warnings.warn(
-                f"Cannot create log directory '{log_dir}': {e}. "
-                "Falling back to console-only logging.",
+                f"Cannot create log directory '{log_dir}': {e}. Falling back to console-only logging.",
                 RuntimeWarning,
                 stacklevel=2,
             )
@@ -161,7 +168,7 @@ def setup_logging(
     if file_logging_enabled:
         try:
             file_handler = TimedRotatingFileHandler(
-                filename=f"{log_dir}/akshare_one.log",
+                filename=str(log_dir / "akshare_one.log"),
                 when="midnight",
                 interval=1,
                 backupCount=7,
@@ -172,9 +179,9 @@ def setup_logging(
             logger.addHandler(file_handler)
         except (PermissionError, OSError) as e:
             import warnings
+
             warnings.warn(
-                f"Cannot create log file in '{log_dir}': {e}. "
-                "Falling back to console-only logging.",
+                f"Cannot create log file in '{log_dir}': {e}. Falling back to console-only logging.",
                 RuntimeWarning,
                 stacklevel=2,
             )
@@ -213,9 +220,7 @@ def get_logger(name: str) -> logging.Logger:
             if not root_logger.handlers:
                 handler = logging.StreamHandler(sys.stdout)
                 handler.setLevel(logging.INFO)
-                handler.setFormatter(
-                    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-                )
+                handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
                 root_logger.addHandler(handler)
                 root_logger.setLevel(logging.INFO)
                 root_logger.propagate = False
