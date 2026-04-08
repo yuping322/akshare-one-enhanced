@@ -55,21 +55,23 @@ def scenario_1_track_hot_money():
             return
 
         # 按净买入金额排序
-        df_sorted = df.sort_values('net_amount', ascending=False)
+        df_sorted = df.sort_values("net_amount", ascending=False)
 
         # 结果展示：显示净买入最多的前10只股票
         print("\n龙虎榜净买入最多的前10只股票：")
-        display_df = df_sorted.head(10)[['symbol', 'name', 'close_price', 'pct_change', 'reason', 'net_amount', 'turnover_rate']]
+        display_df = df_sorted.head(10)[
+            ["symbol", "name", "close_price", "pct_change", "reason", "net_amount", "turnover_rate"]
+        ]
         print(display_df.to_string(index=False))
 
         # 统计分析
-        total_buy = df['buy_amount'].sum()
-        total_sell = df['sell_amount'].sum()
-        total_net = df['net_amount'].sum()
+        total_buy = df["buy_amount"].sum()
+        total_sell = df["sell_amount"].sum()
+        total_net = df["net_amount"].sum()
         stock_count = len(df)
 
         # 按上榜原因统计
-        reason_counts = df['reason'].value_counts()
+        reason_counts = df["reason"].value_counts()
 
         print("\n统计分析：")
         print(f"上榜股票总数：{stock_count}")
@@ -82,12 +84,12 @@ def scenario_1_track_hot_money():
             print(f"{reason}: {count} 只")
 
         # 分析热钱流向
-        net_buy_stocks = len(df[df['net_amount'] > 0])
-        net_sell_stocks = len(df[df['net_amount'] < 0])
+        net_buy_stocks = len(df[df["net_amount"] > 0])
+        net_sell_stocks = len(df[df["net_amount"] < 0])
 
         print("\n热钱流向分析：")
-        print(f"净买入股票数：{net_buy_stocks}（{net_buy_stocks/stock_count*100:.1f}%）")
-        print(f"净卖出股票数：{net_sell_stocks}（{net_sell_stocks/stock_count*100:.1f}%）")
+        print(f"净买入股票数：{net_buy_stocks}（{net_buy_stocks / stock_count * 100:.1f}%）")
+        print(f"净卖出股票数：{net_sell_stocks}（{net_sell_stocks / stock_count * 100:.1f}%）")
 
         if total_net > 0:
             print("整体趋势：热钱净流入，市场情绪偏多")
@@ -133,11 +135,11 @@ def scenario_2_analyze_summary():
             return
 
         # 按上榜次数排序
-        df_sorted = df.sort_values('list_count', ascending=False)
+        df_sorted = df.sort_values("list_count", ascending=False)
 
         # 结果展示：显示上榜次数最多的前10只股票
         print("\n上榜次数最多的前10只股票：")
-        display_columns = ['symbol', 'name', 'list_count', 'buy_amount', 'sell_amount', 'net_amount']
+        display_columns = ["symbol", "name", "list_count", "buy_amount", "sell_amount", "net_amount"]
         if all(col in df_sorted.columns for col in display_columns):
             print(df_sorted.head(10)[display_columns].to_string(index=False))
         else:
@@ -145,27 +147,27 @@ def scenario_2_analyze_summary():
 
         # 统计分析
         total_stocks = len(df)
-        total_list_count = df['list_count'].sum() if 'list_count' in df.columns else 0
+        total_list_count = df["list_count"].sum() if "list_count" in df.columns else 0
 
         print("\n统计分析：")
         print(f"上榜股票总数：{total_stocks}")
         print(f"上榜总次数：{total_list_count}")
 
-        if 'list_count' in df.columns:
-            avg_list_count = df['list_count'].mean()
-            max_list_count = df['list_count'].max()
+        if "list_count" in df.columns:
+            avg_list_count = df["list_count"].mean()
+            max_list_count = df["list_count"].max()
             print(f"平均上榜次数：{avg_list_count:.2f}")
             print(f"最多上榜次数：{max_list_count}")
 
         # 资金流向分析
-        if 'net_amount' in df.columns:
-            net_buy_stocks = len(df[df['net_amount'] > 0])
-            net_sell_stocks = len(df[df['net_amount'] < 0])
-            total_net = df['net_amount'].sum()
+        if "net_amount" in df.columns:
+            net_buy_stocks = len(df[df["net_amount"] > 0])
+            net_sell_stocks = len(df[df["net_amount"] < 0])
+            total_net = df["net_amount"].sum()
 
             print("\n资金流向分析：")
-            print(f"净买入股票数：{net_buy_stocks}（{net_buy_stocks/total_stocks*100:.1f}%）")
-            print(f"净卖出股票数：{net_sell_stocks}（{net_sell_stocks/total_stocks*100:.1f}%）")
+            print(f"净买入股票数：{net_buy_stocks}（{net_buy_stocks / total_stocks * 100:.1f}%）")
+            print(f"净卖出股票数：{net_sell_stocks}（{net_sell_stocks / total_stocks * 100:.1f}%）")
             print(f"期间净买入总额：{total_net:,.2f} 万元")
 
             if total_net > 0:
@@ -179,9 +181,9 @@ def scenario_2_analyze_summary():
             df_reason = get_dragon_tiger_summary(start_date, end_date, group_by="reason")
             if not df_reason.empty:
                 print("\n按上榜原因统计：")
-                reason_columns = ['reason', 'list_count']
+                reason_columns = ["reason", "list_count"]
                 if all(col in df_reason.columns for col in reason_columns):
-                    df_reason_sorted = df_reason.sort_values('list_count', ascending=False)
+                    df_reason_sorted = df_reason.sort_values("list_count", ascending=False)
                     print(df_reason_sorted.head(5)[reason_columns].to_string(index=False))
                 else:
                     print(df_reason.head(5).to_string(index=False))
@@ -228,7 +230,7 @@ def scenario_3_broker_activity():
 
         # 结果展示：显示最活跃的营业部
         print("\n最活跃的前10家营业部：")
-        display_columns = ['rank', 'broker_name', 'list_count', 'buy_amount', 'sell_amount', 'net_amount']
+        display_columns = ["rank", "broker_name", "list_count", "buy_amount", "sell_amount", "net_amount"]
         if all(col in df.columns for col in display_columns):
             print(df.head(10)[display_columns].to_string(index=False))
         else:
@@ -237,10 +239,10 @@ def scenario_3_broker_activity():
         # 统计分析
         total_brokers = len(df)
 
-        if 'list_count' in df.columns:
-            total_list_count = df['list_count'].sum()
-            avg_list_count = df['list_count'].mean()
-            max_list_count = df['list_count'].max()
+        if "list_count" in df.columns:
+            total_list_count = df["list_count"].sum()
+            avg_list_count = df["list_count"].mean()
+            max_list_count = df["list_count"].max()
 
             print("\n统计分析：")
             print(f"活跃营业部总数：{total_brokers}")
@@ -249,21 +251,21 @@ def scenario_3_broker_activity():
             print(f"最多上榜次数：{max_list_count}")
 
         # 资金流向分析
-        if 'buy_amount' in df.columns and 'sell_amount' in df.columns and 'net_amount' in df.columns:
-            total_buy = df['buy_amount'].sum()
-            total_sell = df['sell_amount'].sum()
-            total_net = df['net_amount'].sum()
+        if "buy_amount" in df.columns and "sell_amount" in df.columns and "net_amount" in df.columns:
+            total_buy = df["buy_amount"].sum()
+            total_sell = df["sell_amount"].sum()
+            total_net = df["net_amount"].sum()
 
             # 统计净买入和净卖出的营业部数量
-            net_buy_brokers = len(df[df['net_amount'] > 0])
-            net_sell_brokers = len(df[df['net_amount'] < 0])
+            net_buy_brokers = len(df[df["net_amount"] > 0])
+            net_sell_brokers = len(df[df["net_amount"] < 0])
 
             print("\n资金流向分析：")
             print(f"总买入金额：{total_buy:,.2f} 万元")
             print(f"总卖出金额：{total_sell:,.2f} 万元")
             print(f"净买入金额：{total_net:,.2f} 万元")
-            print(f"净买入营业部数：{net_buy_brokers}（{net_buy_brokers/total_brokers*100:.1f}%）")
-            print(f"净卖出营业部数：{net_sell_brokers}（{net_sell_brokers/total_brokers*100:.1f}%）")
+            print(f"净买入营业部数：{net_buy_brokers}（{net_buy_brokers / total_brokers * 100:.1f}%）")
+            print(f"净卖出营业部数：{net_sell_brokers}（{net_sell_brokers / total_brokers * 100:.1f}%）")
 
             # 分析营业部操作风格
             if total_net > 0:
@@ -272,9 +274,9 @@ def scenario_3_broker_activity():
                 print("\n整体趋势：活跃营业部以卖出为主，市场情绪偏空")
 
             # 找出最激进的买方和卖方营业部
-            if 'net_amount' in df.columns and 'broker_name' in df.columns:
-                top_buyer = df.loc[df['net_amount'].idxmax()]
-                top_seller = df.loc[df['net_amount'].idxmin()]
+            if "net_amount" in df.columns and "broker_name" in df.columns:
+                top_buyer = df.loc[df["net_amount"].idxmax()]
+                top_seller = df.loc[df["net_amount"].idxmin()]
 
                 print("\n最激进的买方营业部：")
                 print(f"  {top_buyer['broker_name']}")
@@ -285,19 +287,19 @@ def scenario_3_broker_activity():
                 print(f"  净卖出金额：{abs(top_seller['net_amount']):,.2f} 万元")
 
         # 交易频率分析
-        if 'buy_count' in df.columns and 'sell_count' in df.columns:
-            total_buy_count = df['buy_count'].sum()
-            total_sell_count = df['sell_count'].sum()
+        if "buy_count" in df.columns and "sell_count" in df.columns:
+            total_buy_count = df["buy_count"].sum()
+            total_sell_count = df["sell_count"].sum()
 
             print("\n交易频率分析：")
             print(f"总买入次数：{total_buy_count}")
             print(f"总卖出次数：{total_sell_count}")
 
-            if 'buy_amount' in df.columns and total_buy_count > 0:
+            if "buy_amount" in df.columns and total_buy_count > 0:
                 avg_buy_amount = total_buy / total_buy_count
                 print(f"平均单笔买入金额：{avg_buy_amount:,.2f} 万元")
 
-            if 'sell_amount' in df.columns and total_sell_count > 0:
+            if "sell_amount" in df.columns and total_sell_count > 0:
                 avg_sell_amount = total_sell / total_sell_count
                 print(f"平均单笔卖出金额：{avg_sell_amount:,.2f} 万元")
 
@@ -351,7 +353,10 @@ def scenario_4_multi_source_example():
 
         # 使用备用数据源（Sina）
         print("\n使用 Sina 数据源：")
-        sina_provider = DragonTigerFactory.get_provider('sina')
+        if "sina" not in available_sources:
+            print("Sina 数据源不可用，可用数据源为：{}".format(available_sources))
+            return
+        sina_provider = DragonTigerFactory.get_provider("sina")
         print(f"  提供商类型：{type(sina_provider).__name__}")
         print(f"  数据源名称：{sina_provider.get_source_name()}")
 

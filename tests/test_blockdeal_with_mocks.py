@@ -17,42 +17,38 @@ class TestBlockDealWithMocks:
         """
         Test getting block deal data for a single stock using mock data.
         """
-        df = get_block_deal(
-            symbol='600000',
-            start_date='2024-01-15',
-            end_date='2024-01-17'
-        )
+        df = get_block_deal(symbol="600000", start_date="2024-01-15", end_date="2024-01-17")
 
         # Verify structure
         assert isinstance(df, pd.DataFrame)
         assert not df.empty
-        assert 'date' in df.columns
-        assert 'symbol' in df.columns
-        assert 'price' in df.columns
-        assert 'volume' in df.columns
+        assert "date" in df.columns
+        assert "symbol" in df.columns
+        assert "price" in df.columns
+        assert "volume" in df.columns
 
         # Verify data types
-        assert df['date'].dtype == 'object'
-        assert df['price'].dtype in ['float64', 'float32']
+        assert (
+            df["date"].dtype == "object"
+            or str(df["date"].dtype) in ("str", "string")
+            or str(df["date"].dtype).startswith("StringDtype")
+        )
+        assert df["price"].dtype in ["float64", "float32"]
 
     def test_get_block_deal_data_validation(self, mock_block_deal_api):
         """
         Test data validation for block deal data.
         """
-        df = get_block_deal(
-            symbol='600000',
-            start_date='2024-01-15',
-            end_date='2024-01-17'
-        )
+        df = get_block_deal(symbol="600000", start_date="2024-01-15", end_date="2024-01-17")
 
         # Check price is positive
-        if not df.empty and 'price' in df.columns:
-            assert all(df['price'] > 0)
+        if not df.empty and "price" in df.columns:
+            assert all(df["price"] > 0)
 
         # Check volume is positive
-        if not df.empty and 'volume' in df.columns:
-            assert all(df['volume'] > 0)
+        if not df.empty and "volume" in df.columns:
+            assert all(df["volume"] > 0)
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

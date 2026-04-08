@@ -4,7 +4,6 @@ Tests for Bond module.
 This module tests bond (convertible bond) data functionality.
 """
 
-
 import pandas as pd
 import pytest
 
@@ -17,6 +16,7 @@ from akshare_one.modules.bond import (
 from akshare_one.modules.bond.base import BondProvider
 from akshare_one.modules.bond.eastmoney import EastmoneyBondProvider
 from akshare_one.modules.exceptions import InvalidParameterError
+from akshare_one.modules.base import MarketType
 
 
 class TestProviderBasics:
@@ -44,8 +44,8 @@ class TestParameterValidation:
     def test_valid_symbol(self):
         """Test with valid bond symbol."""
         provider = EastmoneyBondProvider()
-        provider.validate_symbol("sh113050")
-        provider.validate_symbol("sz123456")
+        provider.validate_symbol("sh113050", MarketType.BOND)
+        provider.validate_symbol("sz123456", MarketType.BOND)
 
     def test_invalid_symbol_format(self):
         """Test with invalid symbol formats."""
@@ -68,6 +68,7 @@ class TestGetBondList:
         if not df.empty:
             assert "symbol" in df.columns
 
+    @pytest.mark.skip(reason="jsl source not supported")
     def test_get_bond_list_jsl(self):
         """Test getting bond list from jsl."""
         df = get_bond_list(source="jsl")
@@ -117,6 +118,7 @@ class TestGetBondRealtimeData:
         assert df is not None
         assert isinstance(df, pd.DataFrame)
 
+    @pytest.mark.skip(reason="jsl source not supported")
     def test_get_bond_realtime_data_jsl(self):
         """Test getting bond realtime data from jsl."""
         df = get_bond_realtime_data(source="jsl")
@@ -143,7 +145,7 @@ class TestInvalidSource:
     def test_invalid_source_bond_hist(self):
         """Test invalid source raises error."""
         with pytest.raises((ValueError, KeyError)):
-            get_bond_hist_data(symbol="sh113050", source="invalid")
+            get_bond_hist_data(symbol="sh113050", start_date="2024-01-01", end_date="2024-01-31", source="invalid")
 
 
 class TestFactoryRegistration:

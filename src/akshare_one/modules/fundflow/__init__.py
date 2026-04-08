@@ -16,6 +16,7 @@ from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import FundFlowFactory
 from . import eastmoney
+from . import sina
 
 
 @api_endpoint(FundFlowFactory)

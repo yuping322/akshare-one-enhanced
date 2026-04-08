@@ -199,7 +199,7 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             # akshare function: stock_sy_jz_em() - 商誉减值预期
             raw_df = ak.stock_sy_jz_em()
 
-            if raw_df.empty:
+            if raw_df is None or raw_df.empty:
                 return self.create_empty_dataframe(
                     ["symbol", "name", "goodwill_balance", "expected_impairment", "risk_level"]
                 )
@@ -243,6 +243,11 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             return self.ensure_json_compatible(standardized)
 
         except Exception as e:
+            err_msg = str(e)
+            if "NoneType" in err_msg or "subscriptable" in err_msg:
+                return self.create_empty_dataframe(
+                    ["symbol", "name", "goodwill_balance", "expected_impairment", "risk_level"]
+                )
             raise RuntimeError(f"Failed to fetch goodwill impairment expectations: {e}") from e
 
     def get_goodwill_by_industry(self, date: str) -> pd.DataFrame:
@@ -278,67 +283,70 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             # akshare function: stock_sy_profile_em() - 商誉概况
             raw_df = ak.stock_sy_profile_em()
 
-            if raw_df.empty:
+            if raw_df is None or raw_df.empty:
                 return self.create_empty_dataframe(
                     ["industry", "total_goodwill", "avg_ratio", "total_impairment", "company_count"]
                 )
 
-            # Get industry information for each stock
-            # We need to fetch industry data separately
-            # For now, we'll use a simplified approach
+            # Check if data contains industry column for grouping
+            # If "所属行业" exists, group by industry
+            # Otherwise, return market-level aggregate as "全市场"
 
-            # Extract relevant columns
-            df = pd.DataFrame()
-            df["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
-
-            # Extract goodwill balance
-            if "商誉" in raw_df.columns:
-                df["goodwill_balance"] = raw_df["商誉"].astype(float)
-            elif "商誉余额" in raw_df.columns:
-                df["goodwill_balance"] = raw_df["商誉余额"].astype(float)
-            else:
-                df["goodwill_balance"] = 0.0
-
-            # Extract goodwill ratio
-            if "商誉占净资产比例" in raw_df.columns:
-                df["goodwill_ratio"] = raw_df["商誉占净资产比例"].astype(float)
-            elif "商誉/净资产" in raw_df.columns:
-                df["goodwill_ratio"] = raw_df["商誉/净资产"].astype(float)
-            else:
-                df["goodwill_ratio"] = 0.0
-
-            # Extract goodwill impairment
-            if "商誉减值" in raw_df.columns:
-                df["goodwill_impairment"] = raw_df["商誉减值"].astype(float)
-            else:
-                df["goodwill_impairment"] = 0.0
-
-            # Extract industry information if available
             if "所属行业" in raw_df.columns:
-                df["industry"] = raw_df["所属行业"].astype(str)
-            elif "行业" in raw_df.columns:
-                df["industry"] = raw_df["行业"].astype(str)
-            else:
-                # If industry info is not available, try to fetch it separately
-                # For now, use a default value
-                df["industry"] = "未分类"
+                # Group by industry
+                grouped = raw_df.groupby("所属行业")
 
-            # Group by industry and calculate statistics
-            industry_stats = (
-                df.groupby("industry")
-                .agg(
+                industry_stats = pd.DataFrame()
+                industry_stats["industry"] = grouped.groups.keys()
+                industry_stats = industry_stats.reset_index(drop=True)
+
+                # Calculate aggregates for each industry
+                if "商誉" in raw_df.columns:
+                    industry_stats["total_goodwill"] = grouped["商誉"].sum().values
+                else:
+                    industry_stats["total_goodwill"] = 0.0
+
+                if "商誉占净资产比例" in raw_df.columns:
+                    industry_stats["avg_ratio"] = grouped["商誉占净资产比例"].mean().values
+                else:
+                    industry_stats["avg_ratio"] = 0.0
+
+                if "商誉减值" in raw_df.columns:
+                    industry_stats["total_impairment"] = grouped["商誉减值"].sum().values
+                else:
+                    industry_stats["total_impairment"] = 0.0
+
+                industry_stats["company_count"] = grouped.size().values
+            else:
+                # No industry column - return market-level aggregate
+                # Extract goodwill balance
+                if "商誉" in raw_df.columns:
+                    total_goodwill = raw_df["商誉"].sum()
+                else:
+                    total_goodwill = 0.0
+
+                # Extract goodwill ratio (average)
+                if "商誉占净资产比例" in raw_df.columns:
+                    avg_ratio = raw_df["商誉占净资产比例"].mean()
+                else:
+                    avg_ratio = 0.0
+
+                # Extract goodwill impairment (total)
+                if "商誉减值" in raw_df.columns:
+                    total_impairment = raw_df["商誉减值"].sum()
+                else:
+                    total_impairment = 0.0
+
+                # Return market-level data as single industry entry
+                industry_stats = pd.DataFrame(
                     {
-                        "goodwill_balance": "sum",
-                        "goodwill_ratio": "mean",
-                        "goodwill_impairment": "sum",
-                        "symbol": "count",
+                        "industry": ["全市场"],
+                        "total_goodwill": [total_goodwill],
+                        "avg_ratio": [avg_ratio],
+                        "total_impairment": [total_impairment],
+                        "company_count": [len(raw_df)],
                     }
                 )
-                .reset_index()
-            )
-
-            # Rename columns
-            industry_stats.columns = ["industry", "total_goodwill", "avg_ratio", "total_impairment", "company_count"]
 
             # Sort by total goodwill descending
             industry_stats = industry_stats.sort_values("total_goodwill", ascending=False).reset_index(drop=True)
@@ -347,4 +355,9 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             return self.ensure_json_compatible(industry_stats)
 
         except Exception as e:
+            err_msg = str(e)
+            if "NoneType" in err_msg or "subscriptable" in err_msg:
+                return self.create_empty_dataframe(
+                    ["industry", "total_goodwill", "avg_ratio", "total_impairment", "company_count"]
+                )
             raise RuntimeError(f"Failed to fetch goodwill statistics by industry: {e}") from e

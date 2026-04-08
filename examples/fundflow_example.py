@@ -60,13 +60,13 @@ def scenario_1_track_stock_fund_flow():
 
         # 结果展示：显示最近10天的数据
         print("\n最近10天资金流向数据：")
-        display_df = df.head(10)[['date', 'close', 'pct_change', 'main_net_inflow', 'main_net_inflow_rate']]
+        display_df = df.head(10)[["date", "close", "pct_change", "main_net_inflow", "main_net_inflow_rate"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
-        total_inflow = df['main_net_inflow'].sum()
-        avg_inflow = df['main_net_inflow'].mean()
-        max_inflow_day = df.loc[df['main_net_inflow'].idxmax()]
+        total_inflow = df["main_net_inflow"].sum()
+        avg_inflow = df["main_net_inflow"].mean()
+        max_inflow_day = df.loc[df["main_net_inflow"].idxmax()]
 
         print("\n统计分析：")
         print(f"主力资金净流入总额：{total_inflow:,.2f} 万元")
@@ -111,17 +111,17 @@ def scenario_2_analyze_sector_rotation():
             return
 
         # 按主力净流入排序
-        df_sorted = df.sort_values('main_net_inflow', ascending=False)
+        df_sorted = df.sort_values("main_net_inflow", ascending=False)
 
         # 结果展示：显示资金流入最多的前10个板块
         print("\n资金流入最多的前10个行业板块：")
-        display_df = df_sorted.head(10)[['sector_name', 'main_net_inflow', 'pct_change', 'leading_stock']]
+        display_df = df_sorted.head(10)[["sector_name", "main_net_inflow", "pct_change", "leading_stock"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
         top_sector = df_sorted.iloc[0]
-        inflow_sectors = len(df[df['main_net_inflow'] > 0])
-        outflow_sectors = len(df[df['main_net_inflow'] < 0])
+        inflow_sectors = len(df[df["main_net_inflow"] > 0])
+        outflow_sectors = len(df[df["main_net_inflow"] < 0])
 
         print("\n统计分析：")
         print(f"资金流入最多的板块：{top_sector['sector_name']}（{top_sector['main_net_inflow']:,.2f} 万元）")
@@ -166,12 +166,12 @@ def scenario_3_main_fund_ranking():
 
         # 结果展示：显示排名前10的股票
         print("\n主力资金净流入排名前10的股票：")
-        display_df = df.head(10)[['rank', 'symbol', 'name', 'main_net_inflow', 'pct_change']]
+        display_df = df.head(10)[["rank", "symbol", "name", "main_net_inflow", "pct_change"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
-        top_10_inflow = df.head(10)['main_net_inflow'].sum()
-        avg_pct_change = df.head(10)['pct_change'].mean()
+        top_10_inflow = df.head(10)["main_net_inflow"].sum()
+        avg_pct_change = df.head(10)["pct_change"].mean()
 
         print("\n统计分析：")
         print(f"前10名主力资金净流入总额：{top_10_inflow:,.2f} 万元")
@@ -208,13 +208,13 @@ def scenario_4_industry_sectors():
 
         # 结果展示：显示前10个行业板块
         print("\n行业板块列表（前10个）：")
-        display_df = industry_df.head(10)[['sector_code', 'sector_name', 'constituent_count']]
+        display_df = industry_df.head(10)[["sector_code", "sector_name", "constituent_count"]]
         print(display_df.to_string(index=False))
 
         # 选择第一个行业板块，获取其成分股
         first_industry = industry_df.iloc[0]
-        industry_code = first_industry['sector_code']
-        industry_name = first_industry['sector_name']
+        industry_code = first_industry["sector_code"]
+        industry_name = first_industry["sector_name"]
 
         print(f"\n获取 {industry_name}（{industry_code}）的成分股...")
         constituents_df = get_industry_constituents(industry_code)
@@ -225,7 +225,7 @@ def scenario_4_industry_sectors():
 
         # 结果展示：显示前10只成分股
         print(f"\n{industry_name} 成分股（前10只）：")
-        display_df = constituents_df.head(10)[['symbol', 'name']]
+        display_df = constituents_df.head(10)[["symbol", "name"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
@@ -263,13 +263,13 @@ def scenario_5_concept_sectors():
 
         # 结果展示：显示前10个概念板块
         print("\n概念板块列表（前10个）：")
-        display_df = concept_df.head(10)[['sector_code', 'sector_name', 'constituent_count']]
+        display_df = concept_df.head(10)[["sector_code", "sector_name", "constituent_count"]]
         print(display_df.to_string(index=False))
 
         # 选择第一个概念板块，获取其成分股
         first_concept = concept_df.iloc[0]
-        concept_code = first_concept['sector_code']
-        concept_name = first_concept['sector_name']
+        concept_code = first_concept["sector_code"]
+        concept_name = first_concept["sector_name"]
 
         print(f"\n获取 {concept_name}（{concept_code}）的成分股...")
         constituents_df = get_concept_constituents(concept_code)
@@ -280,7 +280,7 @@ def scenario_5_concept_sectors():
 
         # 结果展示：显示前10只成分股
         print(f"\n{concept_name} 成分股（前10只）：")
-        display_df = constituents_df.head(10)[['symbol', 'name']]
+        display_df = constituents_df.head(10)[["symbol", "name"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
@@ -333,7 +333,10 @@ def scenario_6_multi_source_example():
 
         # 使用备用数据源（Sina）
         print("\n使用 Sina 数据源：")
-        sina_provider = FundFlowFactory.get_provider('sina')
+        if "sina" not in available_sources:
+            print("Sina 数据源不可用，可用数据源为：{}".format(available_sources))
+            return
+        sina_provider = FundFlowFactory.get_provider("sina")
         print(f"  提供商类型：{type(sina_provider).__name__}")
         print(f"  数据源名称：{sina_provider.get_source_name()}")
 

@@ -15,6 +15,30 @@ class SinaFundFlowProvider(FundFlowProvider):
     Fund flow data provider using Sina as the data source.
     """
 
+    _API_MAP = {
+        "get_stock_fund_flow": {
+            "ak_func": None,
+        },
+        "get_sector_fund_flow": {
+            "ak_func": None,
+        },
+        "get_main_fund_flow_rank": {
+            "ak_func": None,
+        },
+        "get_industry_list": {
+            "ak_func": None,
+        },
+        "get_industry_constituents": {
+            "ak_func": None,
+        },
+        "get_concept_list": {
+            "ak_func": None,
+        },
+        "get_concept_constituents": {
+            "ak_func": None,
+        },
+    }
+
     def get_source_name(self) -> str:
         """Return the data source name."""
         return "sina"

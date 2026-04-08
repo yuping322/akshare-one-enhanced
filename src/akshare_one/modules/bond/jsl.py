@@ -25,9 +25,12 @@ class JslBondProvider(BondProvider):
             "ak_func": "bond_cb_jsl",
         },
         "get_bond_hist": {
-            "ak_func": None,  # JiSiLu doesn't provide direct historical data API
+            "ak_func": None,
         },
         "get_bond_realtime": {
+            "ak_func": "bond_cb_jsl",
+        },
+        "get_bond_spot": {
             "ak_func": "bond_cb_jsl",
         },
     }
@@ -118,6 +121,10 @@ class JslBondProvider(BondProvider):
             pd.DataFrame: Empty DataFrame
         """
         return pd.DataFrame(columns=["date", "symbol", "open", "high", "low", "close", "volume"])
+
+    def get_bond_realtime(self) -> pd.DataFrame:
+        """Get bond realtime quotes (alias for get_bond_spot)."""
+        return self.get_bond_spot()
 
     def get_bond_spot(self) -> pd.DataFrame:
         """

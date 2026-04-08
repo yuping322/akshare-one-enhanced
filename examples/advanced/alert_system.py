@@ -26,7 +26,7 @@ class AlertSystem:
         self.alert_rules = []
         self.alert_history = []
 
-    def add_price_alert(self, symbol, target_price, condition='above'):
+    def add_price_alert(self, symbol, target_price, condition="above"):
         """
         添加价格预警
 
@@ -36,16 +36,16 @@ class AlertSystem:
             condition: 条件 ('above' 或 'below')
         """
         rule = {
-            'symbol': symbol,
-            'type': 'price',
-            'target_price': target_price,
-            'condition': condition,
-            'enabled': True
+            "symbol": symbol,
+            "type": "price",
+            "target_price": target_price,
+            "condition": condition,
+            "enabled": True,
         }
         self.alert_rules.append(rule)
         print(f"已添加价格预警: {symbol} {condition} {target_price}")
 
-    def add_change_alert(self, symbol, pct_threshold, condition='above'):
+    def add_change_alert(self, symbol, pct_threshold, condition="above"):
         """
         添加涨跌幅预警
 
@@ -55,11 +55,11 @@ class AlertSystem:
             condition: 条件 ('above' 或 'below')
         """
         rule = {
-            'symbol': symbol,
-            'type': 'change',
-            'pct_threshold': pct_threshold,
-            'condition': condition,
-            'enabled': True
+            "symbol": symbol,
+            "type": "change",
+            "pct_threshold": pct_threshold,
+            "condition": condition,
+            "enabled": True,
         }
         self.alert_rules.append(rule)
         print(f"已添加涨跌幅预警: {symbol} {condition} {pct_threshold}%")
@@ -73,22 +73,22 @@ class AlertSystem:
             volume_multiplier: 成交量倍数（相对于平均成交量）
         """
         # 首先获取历史平均成交量
-        df = get_hist_data(
-            symbol=symbol,
-            interval="day",
-            start_date="2024-01-01",
-            end_date="2024-12-31",
-            source="eastmoney_direct"
-        )
-
-        avg_volume = df['volume'].mean() if not df.empty else 0
+        try:
+            df = get_hist_data(
+                symbol=symbol, interval="day", start_date="2024-01-01", end_date="2024-12-31", source="eastmoney_direct"
+            )
+            avg_volume = df["volume"].mean() if not df.empty else 0
+        except (ValueError, ConnectionError) as e:
+            print(f"警告: 获取历史数据失败 ({symbol}): {e}")
+            print("将使用默认成交量阈值")
+            avg_volume = 0
 
         rule = {
-            'symbol': symbol,
-            'type': 'volume',
-            'avg_volume': avg_volume,
-            'volume_multiplier': volume_multiplier,
-            'enabled': True
+            "symbol": symbol,
+            "type": "volume",
+            "avg_volume": avg_volume,
+            "volume_multiplier": volume_multiplier,
+            "enabled": True,
         }
         self.alert_rules.append(rule)
         print(f"已添加成交量预警: {symbol} 成交量超过 {volume_multiplier}倍均量")
@@ -98,10 +98,10 @@ class AlertSystem:
         alerts_triggered = []
 
         for rule in self.alert_rules:
-            if not rule['enabled']:
+            if not rule["enabled"]:
                 continue
 
-            symbol = rule['symbol']
+            symbol = rule["symbol"]
 
             try:
                 # 获取实时数据
@@ -113,39 +113,43 @@ class AlertSystem:
                 latest = df.iloc[0]
 
                 # 检查价格预警
-                if rule['type'] == 'price':
-                    current_price = latest['price']
-                    target_price = rule['target_price']
+                if rule["type"] == "price":
+                    current_price = latest["price"]
+                    target_price = rule["target_price"]
 
-                    if rule['condition'] == 'above' and current_price >= target_price:
-                        alert_msg = f"[价格预警] {symbol} 当前价格 {current_price:.2f} 已达到目标价格 {target_price:.2f}"
+                    if rule["condition"] == "above" and current_price >= target_price:
+                        alert_msg = (
+                            f"[价格预警] {symbol} 当前价格 {current_price:.2f} 已达到目标价格 {target_price:.2f}"
+                        )
                         alerts_triggered.append(alert_msg)
 
-                    elif rule['condition'] == 'below' and current_price <= target_price:
-                        alert_msg = f"[价格预警] {symbol} 当前价格 {current_price:.2f} 已跌破目标价格 {target_price:.2f}"
+                    elif rule["condition"] == "below" and current_price <= target_price:
+                        alert_msg = (
+                            f"[价格预警] {symbol} 当前价格 {current_price:.2f} 已跌破目标价格 {target_price:.2f}"
+                        )
                         alerts_triggered.append(alert_msg)
 
                 # 检查涨跌幅预警
-                elif rule['type'] == 'change':
-                    pct_change = latest['pct_change']
-                    pct_threshold = rule['pct_threshold']
+                elif rule["type"] == "change":
+                    pct_change = latest["pct_change"]
+                    pct_threshold = rule["pct_threshold"]
 
-                    if rule['condition'] == 'above' and pct_change >= pct_threshold:
+                    if rule["condition"] == "above" and pct_change >= pct_threshold:
                         alert_msg = f"[涨跌幅预警] {symbol} 当前涨幅 {pct_change:.2f}% 已超过阈值 {pct_threshold}%"
                         alerts_triggered.append(alert_msg)
 
-                    elif rule['condition'] == 'below' and pct_change <= pct_threshold:
+                    elif rule["condition"] == "below" and pct_change <= pct_threshold:
                         alert_msg = f"[涨跌幅预警] {symbol} 当前跌幅 {pct_change:.2f}% 已跌破阈值 {pct_threshold}%"
                         alerts_triggered.append(alert_msg)
 
                 # 检查成交量预警
-                elif rule['type'] == 'volume':
-                    current_volume = latest['volume']
-                    avg_volume = rule['avg_volume']
-                    multiplier = rule['volume_multiplier']
+                elif rule["type"] == "volume":
+                    current_volume = latest["volume"]
+                    avg_volume = rule["avg_volume"]
+                    multiplier = rule["volume_multiplier"]
 
                     if current_volume >= avg_volume * multiplier:
-                        alert_msg = f"[成交量预警] {symbol} 当前成交量 {current_volume:.0f}手 是均量 {avg_volume:.0f}手 的 {current_volume/avg_volume:.1f}倍"
+                        alert_msg = f"[成交量预警] {symbol} 当前成交量 {current_volume:.0f}手 是均量 {avg_volume:.0f}手 的 {current_volume / avg_volume:.1f}倍"
                         alerts_triggered.append(alert_msg)
 
             except Exception as e:
@@ -169,7 +173,7 @@ class AlertSystem:
         print("-" * 60)
 
         for i in range(max_checks):
-            print(f"\n[{datetime.now().strftime('%H:%M:%S')}] 第 {i+1} 次检查")
+            print(f"\n[{datetime.now().strftime('%H:%M:%S')}] 第 {i + 1} 次检查")
 
             alerts = self.check_alerts()
 
@@ -177,10 +181,7 @@ class AlertSystem:
                 print("\n触发预警：")
                 for alert in alerts:
                     print(f"  ⚠️  {alert}")
-                    self.alert_history.append({
-                        'time': datetime.now(),
-                        'alert': alert
-                    })
+                    self.alert_history.append({"time": datetime.now(), "alert": alert})
 
             if i < max_checks - 1:
                 time.sleep(interval_seconds)
@@ -208,11 +209,11 @@ def example_basic_alerts():
     alert_system = AlertSystem()
 
     # 添加价格预警
-    alert_system.add_price_alert('600000', 10.0, 'above')  # 浦发银行突破10元
-    alert_system.add_price_alert('000001', 15.0, 'below')  # 平安银行跌破15元
+    alert_system.add_price_alert("600000", 10.0, "above")  # 浦发银行突破10元
+    alert_system.add_price_alert("000001", 15.0, "below")  # 平安银行跌破15元
 
     # 添加涨跌幅预警
-    alert_system.add_change_alert('600519', 3.0, 'above')  # 贵州茅台涨幅超过3%
+    alert_system.add_change_alert("600519", 3.0, "above")  # 贵州茅台涨幅超过3%
 
     # 运行监控（演示3次）
     alert_system.run_monitoring(interval_seconds=5, max_checks=3)
@@ -230,7 +231,7 @@ def example_volume_alert():
     alert_system = AlertSystem()
 
     # 添加成交量预警（成交量超过2倍均量）
-    alert_system.add_volume_alert('600000', volume_multiplier=2)
+    alert_system.add_volume_alert("600000", volume_multiplier=2)
 
     # 运行监控
     alert_system.run_monitoring(interval_seconds=5, max_checks=3)
@@ -245,12 +246,12 @@ def example_combined_alerts():
     alert_system = AlertSystem()
 
     # 添加多种类型的预警
-    alert_system.add_price_alert('600000', 10.5, 'above')
-    alert_system.add_change_alert('600000', 2.0, 'above')
-    alert_system.add_volume_alert('600000', volume_multiplier=1.5)
+    alert_system.add_price_alert("600000", 10.5, "above")
+    alert_system.add_change_alert("600000", 2.0, "above")
+    alert_system.add_volume_alert("600000", volume_multiplier=1.5)
 
-    alert_system.add_price_alert('000001', 12.0, 'below')
-    alert_system.add_change_alert('000001', -2.0, 'below')
+    alert_system.add_price_alert("000001", 12.0, "below")
+    alert_system.add_change_alert("000001", -2.0, "below")
 
     # 运行监控
     alert_system.run_monitoring(interval_seconds=5, max_checks=5)

@@ -63,9 +63,7 @@ class NamingRules:
     duration_field_pattern: str = r"^[a-z_]+_(days|duration)$"
 
     # 金额字段规则
-    amount_field_pattern: str = (
-        r"^([a-z_]+_amount|amount|price|close|open|high|low|last|bid|ask)$"
-    )
+    amount_field_pattern: str = r"^([a-z_]+_amount|amount|price|close|open|high|low|last|bid|ask|equity|value|revenue|net_profit|total_assets|total_liabilities|eps)$"
     balance_field_pattern: str = r"^([a-z_]+_balance|balance)$"
     value_field_pattern: str = r"^([a-z_]+_value|value)$"
     net_flow_pattern: str = r"^([a-z_]+_net_(inflow|outflow|buy|sell)|net_flow)$"
@@ -220,7 +218,7 @@ class MappingConfig:
                     field_type = FieldType(raw_type.lower())
                 except ValueError:
                     field_type = FieldType.OTHER
-                
+
                 mappings.append(
                     FieldMapping(
                         source_field=m["source_field"],

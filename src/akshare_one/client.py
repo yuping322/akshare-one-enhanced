@@ -9,7 +9,7 @@ from typing import Any, Literal
 import pandas as pd
 
 from .modules.financial import FinancialDataFactory
-from .modules.futures import FuturesHistoricalFactory, FuturesRealtimeFactory
+from .modules.futures import FuturesHistoricalFactory, FuturesRealtimeFactory, FuturesDataFactory
 from .modules.historical import HistoricalDataFactory
 from .modules.info import InfoDataFactory
 from .modules.insider import InsiderDataFactory

@@ -17,7 +17,7 @@ import pandas as pd
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import MacroFactory
-from . import official, sina
+from . import official, sina, lixinger
 
 
 @api_endpoint(MacroFactory)

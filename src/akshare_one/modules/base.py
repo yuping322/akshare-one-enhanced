@@ -761,9 +761,8 @@ class BaseProvider:
             if col in field_types and field_types[col] == FieldType.DATE:
                 try:
                     df[col] = self.standardize_date_field(df[col])
-                except Exception:
-                    # Skip if date conversion fails for some reason
-                    pass
+                except (ValueError, TypeError) as e:
+                    self.logger.warning(f"Date conversion failed for column '{col}': {e}")
 
         return df
 

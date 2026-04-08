@@ -31,6 +31,9 @@ class EastmoneyBondProvider(BondProvider):
         "get_bond_realtime": {
             "ak_func": "bond_zh_cov",
         },
+        "get_bond_spot": {
+            "ak_func": "bond_zh_cov",
+        },
     }
 
     def __init__(self, **kwargs):
@@ -139,6 +142,10 @@ class EastmoneyBondProvider(BondProvider):
             return df[[c for c in cols if c in df.columns]]
         except Exception:
             return pd.DataFrame()
+
+    def get_bond_realtime(self) -> pd.DataFrame:
+        """Get bond realtime quotes (alias for get_bond_spot)."""
+        return self.get_bond_spot()
 
     def get_bond_spot(self) -> pd.DataFrame:
         """

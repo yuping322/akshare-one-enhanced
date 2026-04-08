@@ -1,69 +1,43 @@
 """
-Bond (可转债) data module for PV.Bond.
-
-This module provides interfaces to fetch bond data including:
-- Convertible bond list
-- Bond historical price data
-- Bond realtime quotes
+src/akshare_one/modules/bond/__init__.py
+Bond module for conversion and standard bonds.
 """
 
-import pandas as pd
-
-from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import api_endpoint
 from .base import BondFactory
-from . import eastmoney, jsl
+from . import akshare
+from ..factory_base import api_endpoint
+from typing import Optional, Any
+import pandas as pd
 
 
 @api_endpoint(BondFactory)
 def get_bond_list(
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
+    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
     """
-    Get convertible bond list.
+    Get a comprehensive list of active conversion bonds.
     """
     pass
 
 
-@api_endpoint(BondFactory)
-def get_bond_hist(
-    symbol: str,
-    start_date: str = "1970-01-01",
-    end_date: str = "2030-12-31",
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
-) -> pd.DataFrame:
-    """
-    Get bond historical data.
-
-    Args:
-        symbol: Bond symbol (e.g., '110001')
-        start_date: Start date in YYYY-MM-DD format
-        end_date: End date in YYYY-MM-DD format
-    """
-    pass
-
-
-@api_endpoint(BondFactory)
+@api_endpoint(BondFactory, method_name="get_bond_hist")
 def get_bond_hist_data(
     symbol: str,
-    start_date: str = "1970-01-01",
-    end_date: str = "2030-12-31",
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
+    start_date: str,
+    end_date: str,
+    source: Optional[str] = None,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
+    """
+    Get bond historical daily data.
+    """
     pass
 
 
-@api_endpoint(BondFactory)
-def get_bond_realtime(
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
+@api_endpoint(BondFactory, method_name="get_bond_spot")
+def get_bond_realtime_data(
+    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
     """
     Get bond realtime quotes.
@@ -72,19 +46,16 @@ def get_bond_realtime(
 
 
 @api_endpoint(BondFactory)
-def get_bond_realtime_data(
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
+def get_bond_premium(
+    symbol: str,
+    source: Optional[str] = None,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
+    """
+    Get conversion premium and related valuation metrics.
+    """
     pass
 
 
-__all__ = [
-    "get_bond_list",
-    "get_bond_hist",
-    "get_bond_hist_data",
-    "get_bond_realtime",
-    "get_bond_realtime_data",
-    "BondFactory",
-]
+__all__ = ["get_bond_list", "get_bond_hist_data", "get_bond_realtime_data", "get_bond_premium", "BondFactory"]

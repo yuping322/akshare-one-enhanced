@@ -110,15 +110,16 @@ class SinaFinancialReport(FinancialDataProvider):
         Returns:
             Standardized DataFrame with consistent columns
         """
-        # Convert timestamp columns if exists
-        if "报告日" in raw_df.columns:
-            raw_df = self.map_source_fields(raw_df, "sina")
-            raw_df["report_date"] = pd.to_datetime(raw_df["report_date"], format="%Y%m%d")
-
         # Define and apply column mappings in one optimized operation
         raw_df = self.map_source_fields(raw_df, "sina")
 
-        # Select only required columns
+        # Convert timestamp columns if exists
+        # After mapping, the date column might be named 'date' or 'report_date'
+        date_col = "report_date" if "report_date" in raw_df.columns else "date"
+        if date_col in raw_df.columns:
+            raw_df[date_col] = pd.to_datetime(raw_df[date_col], format="%Y%m%d")
+
+        # Select only required columns that exist
         required_columns = [
             "report_date",
             "currency",
@@ -160,21 +161,40 @@ class SinaFinancialReport(FinancialDataProvider):
 
         # Calculate financial ratios using vectorized operations
         cols = ["current_debt", "non_current_debt"]
-        raw_df[cols] = raw_df[cols].apply(pd.to_numeric, errors="coerce")
-        raw_df["total_debt"] = raw_df[cols].fillna(0).sum(axis=1)
+        for col in cols:
+            if col in raw_df.columns:
+                raw_df[col] = pd.to_numeric(raw_df[col], errors="coerce")
+
+        if (
+            "total_assets" not in raw_df.columns
+            or "current_assets" not in raw_df.columns
+            or "current_liabilities" not in raw_df.columns
+        ):
+            self.logger.warning("Required columns for ratio calculation not found, skipping ratios")
+            return raw_df.reindex(columns=[c for c in required_columns if c in raw_df.columns])
+
+        # Calculate total_debt only if debt columns exist
+        if all(c in raw_df.columns for c in cols):
+            raw_df["total_debt"] = raw_df[cols].fillna(0).sum(axis=1)
 
         # Pre-calculate denominator conditions
-        valid_current_liab = raw_df["current_liabilities"].ne(0)
-        valid_total_assets = raw_df["total_assets"].ne(0)
+        valid_current_liab = (
+            raw_df["current_liabilities"].ne(0)
+            if "current_liabilities" in raw_df.columns
+            else pd.Series([False] * len(raw_df))
+        )
+        valid_total_assets = (
+            raw_df["total_assets"].ne(0) if "total_assets" in raw_df.columns else pd.Series([False] * len(raw_df))
+        )
 
         # Calculate ratios in one operation
-        ratios = pd.DataFrame(
-            {
-                "current_ratio": raw_df["current_assets"] / raw_df["current_liabilities"],
-                "cash_ratio": raw_df["cash_and_equivalents"] / raw_df["current_liabilities"],
-                "debt_to_assets": raw_df["total_debt"] / raw_df["total_assets"],
-            }
-        )
+        ratios = pd.DataFrame(index=raw_df.index)
+        if "current_assets" in raw_df.columns and "current_liabilities" in raw_df.columns:
+            ratios["current_ratio"] = raw_df["current_assets"] / raw_df["current_liabilities"]
+        if "cash_and_equivalents" in raw_df.columns and "current_liabilities" in raw_df.columns:
+            ratios["cash_ratio"] = raw_df["cash_and_equivalents"] / raw_df["current_liabilities"]
+        if "total_debt" in raw_df.columns and "total_assets" in raw_df.columns:
+            ratios["debt_to_assets"] = raw_df["total_debt"] / raw_df["total_assets"]
 
         # Apply conditions
         cond = pd.DataFrame(
@@ -183,11 +203,16 @@ class SinaFinancialReport(FinancialDataProvider):
                 "cash_ratio": valid_current_liab,
                 "debt_to_assets": valid_total_assets,
             },
-            index=ratios.index,
+            index=raw_df.index,
         )
-        raw_df = raw_df.join(ratios.where(cond))
 
-        return raw_df.reindex(columns=required_columns)
+        # Only join ratios that were calculated
+        ratios_to_join = ratios.dropna(axis=1, how="all")
+        if not ratios_to_join.empty:
+            raw_df = raw_df.join(ratios_to_join.where(cond.reindex(columns=ratios_to_join.columns, fill_value=False)))
+
+        available_cols = [c for c in required_columns if c in raw_df.columns]
+        return raw_df.reindex(columns=available_cols)
 
     def _clean_income_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
         """清理和标准化利润表数据
@@ -201,7 +226,9 @@ class SinaFinancialReport(FinancialDataProvider):
         # Convert timestamp columns if exists
         if "报告日" in raw_df.columns:
             raw_df = self.map_source_fields(raw_df, "sina")
-            raw_df["report_date"] = pd.to_datetime(raw_df["report_date"], format="%Y%m%d")
+            # After mapping, the date column might be named 'date' or 'report_date'
+            date_col = "report_date" if "report_date" in raw_df.columns else "date"
+            raw_df[date_col] = pd.to_datetime(raw_df[date_col], format="%Y%m%d")
 
         # Define column mappings and required columns
         column_mapping = {

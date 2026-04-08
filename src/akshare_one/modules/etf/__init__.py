@@ -1,61 +1,48 @@
 """
-ETF (交易型开放式指数基金) data module for PV.ETF.
-
-This module provides interfaces to fetch ETF data including:
-- ETF historical price data
-- ETF realtime quotes (spot)
-- ETF listings by category
-- Fund manager information
+src/akshare_one/modules/etf/__init__.py
+ETF and fund data module.
 """
 
-import pandas as pd
-
-from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import api_endpoint
 from .base import ETFFactory
-from . import eastmoney, sina
+from . import eastmoney
+from . import akshare
+from ..factory_base import api_endpoint
+from typing import Optional, List, Any
+import pandas as pd
 
 
 @api_endpoint(ETFFactory)
-def get_etf_hist(
+def get_etf_list(
+    fund_type: str = "etf",
+    source: Optional[str] = None,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
+):
+    """
+    Get a comprehensive list of funds (etf, lof, or reits).
+    """
+    pass
+
+
+@api_endpoint(ETFFactory, method_name="get_etf_hist")
+def get_etf_hist_data(
     symbol: str,
-    start_date: str = "1970-01-01",
-    end_date: str = "2030-12-31",
+    start_date: str,
+    end_date: str,
     interval: str = "daily",
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
+    source: Optional[str] = None,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """
     Get ETF historical data.
-
-    Args:
-        symbol: ETF symbol (e.g., '510050')
-        start_date: Start date in YYYY-MM-DD format
-        end_date: End date in YYYY-MM-DD format
-        interval: Data interval ('daily', 'weekly', 'monthly')
     """
     pass
 
 
-@api_endpoint(ETFFactory)
-def get_etf_hist_data(
-    symbol: str,
-    start_date: str = "1970-01-01",
-    end_date: str = "2030-12-31",
-    interval: str = "daily",
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
-) -> pd.DataFrame:
-    pass
-
-
-@api_endpoint(ETFFactory)
-def get_etf_spot(
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
+@api_endpoint(ETFFactory, method_name="get_etf_spot")
+def get_etf_realtime_data(
+    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
     """
     Get all ETF realtime quotes.
@@ -63,36 +50,9 @@ def get_etf_spot(
     pass
 
 
-@api_endpoint(ETFFactory)
-def get_etf_realtime_data(
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
-) -> pd.DataFrame:
-    pass
-
-
-@api_endpoint(ETFFactory)
-def get_etf_list(
-    category: str = "all",
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
-) -> pd.DataFrame:
-    """
-    Get ETF list.
-
-    Args:
-        category: ETF category ('all', 'equity', 'bond', 'commodity', 'cross_border')
-    """
-    pass
-
-
-@api_endpoint(ETFFactory)
-def get_fund_manager(
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
+@api_endpoint(ETFFactory, method_name="get_fund_manager")
+def get_fund_manager_info(
+    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
     """
     Get fund manager information.
@@ -100,32 +60,41 @@ def get_fund_manager(
     pass
 
 
-@api_endpoint(ETFFactory)
-def get_fund_manager_info(
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
-) -> pd.DataFrame:
-    pass
-
-
-@api_endpoint(ETFFactory)
+@api_endpoint(ETFFactory, method_name="get_fund_rating")
 def get_fund_rating_data(
-    source: SourceType = "eastmoney",
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
+    source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
+    """
+    Get fund ratings.
+    """
     pass
 
+
+@api_endpoint(ETFFactory)
+def get_fund_nav(
+    symbol: str,
+    source: Optional[str] = None,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    """
+    Get Net Asset Value (NAV) history for a given fund.
+    """
+    pass
+
+
+# Aliases
+get_fund_list = get_etf_list
+FundFactory = ETFFactory
 
 __all__ = [
-    "get_etf_hist",
-    "get_etf_hist_data",
-    "get_etf_spot",
-    "get_etf_realtime_data",
     "get_etf_list",
-    "get_fund_manager",
+    "get_fund_list",
+    "get_etf_hist_data",
+    "get_etf_realtime_data",
     "get_fund_manager_info",
     "get_fund_rating_data",
+    "get_fund_nav",
     "ETFFactory",
+    "FundFactory",
 ]

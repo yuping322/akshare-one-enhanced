@@ -14,7 +14,7 @@
 
 import pandas as pd
 from akshare_one import get_hist_data, get_realtime_data
-from akshare_one.modules.etf import ETFDataFactory
+from akshare_one.modules.etf import ETFFactory
 
 
 def example_etf_hist_data():
@@ -30,7 +30,7 @@ def example_etf_hist_data():
         start_date="2024-01-01",
         end_date="2024-12-31",
         adjust="none",
-        source="eastmoney_direct"
+        source="eastmoney_direct",
     )
 
     print(f"\n获取到 {len(df)} 条ETF日线数据")
@@ -45,10 +45,7 @@ def example_etf_realtime():
     print("=" * 60)
 
     # 获取单个ETF实时行情
-    df = get_realtime_data(
-        symbol="510300",
-        source="eastmoney_direct"
-    )
+    df = get_realtime_data(symbol="510300", source="eastmoney_direct")
 
     print("\n沪深300ETF实时行情：")
     print(df.to_string(index=False))
@@ -68,9 +65,12 @@ def example_etf_info():
     print("示例3：获取ETF基本信息")
     print("=" * 60)
 
-    # 使用 ETF 工厂获取 ETF 数据
-    provider = ETFDataFactory.get_provider("eastmoney", symbol="510300")
-    df = provider.get_etf_info()
+    # 使用 ETF 工厂获取 ETF 列表
+    df = ETFFactory.call_provider_method("get_etf_spot", source="eastmoney")
+
+    # 过滤特定ETF
+    if not df.empty and "symbol" in df.columns:
+        df = df[df["symbol"] == "510300"]
 
     print("\nETF基本信息：")
     print(df.to_string(index=False))
@@ -114,7 +114,7 @@ def example_etf_minute_data():
         interval_multiplier=15,
         start_date="2024-12-01",
         end_date="2024-12-31",
-        source="eastmoney_direct"
+        source="eastmoney_direct",
     )
 
     print(f"\n获取到 {len(df)} 条15分钟数据")

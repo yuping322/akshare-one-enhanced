@@ -33,5 +33,21 @@ def get_stock_sentiment(
     """
     pass
 
+# Macro Sentiment indicators (Internal for akshare-one)
+def compute_fed_model(index_code: str = "000300", bond_rate: float = None):
+    from ..alpha.sentiment import compute_fed_model as _fed
+    return _fed(index_code, bond_rate)
 
-__all__ = ["get_hot_rank", "get_stock_sentiment", "SentimentFactory"]
+def compute_crowding_ratio(date: str = None):
+    from ..alpha.sentiment import compute_crowding_ratio as _crowd
+    return _crowd(date)
+
+def compute_graham_index(index_code: str = "000300"):
+    from ..alpha.sentiment import compute_graham_index as _graham
+    return _graham(index_code)
+
+def compute_below_net_ratio():
+    from ..alpha.sentiment import compute_below_net_ratio as _net
+    return _net()
+
+__all__ = ["get_hot_rank", "get_stock_sentiment", "SentimentFactory", "compute_fed_model", "compute_crowding_ratio", "compute_graham_index", "compute_below_net_ratio"]

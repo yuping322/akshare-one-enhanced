@@ -57,7 +57,14 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
 
             if raw_df.empty:
                 return self.create_empty_dataframe(
-                    ["date", "market", "net_buy", "buy_amount", "sell_amount", "balance"]
+                    [
+                        "date",
+                        "market",
+                        "northbound_net_buy",
+                        "northbound_buy_amount",
+                        "northbound_sell_amount",
+                        "balance",
+                    ]
                 )
 
             # Standardize the data
@@ -66,7 +73,7 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         except Exception as e:
             self.logger.warning(f"Failed to fetch northbound flow data: {e}")
             return self.create_empty_dataframe(
-                ["date", "market", "net_buy", "buy_amount", "sell_amount", "balance"]
+                ["date", "market", "northbound_net_buy", "northbound_buy_amount", "northbound_sell_amount", "balance"]
             )
 
     def _standardize_flow_data(self, df: pd.DataFrame, start_date: str, end_date: str, market: str) -> pd.DataFrame:
@@ -78,33 +85,39 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         standardized["date"] = pd.to_datetime(df["日期"]).dt.strftime("%Y-%m-%d")
         standardized["market"] = market
 
-        # Use 当日成交净买额 (daily net buy amount) as net_buy
+        # Use 当日成交净买额 (daily net buy amount) as northbound_net_buy
         # Convert from 亿元 to 元
         if "当日成交净买额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
             # Use pd.to_numeric to handle non-numeric values safely
-            standardized["net_buy"] = pd.to_numeric(df["当日成交净买额"], errors='coerce').astype(float) * 100000000
+            standardized["northbound_net_buy"] = (
+                pd.to_numeric(df["当日成交净买额"], errors="coerce").astype(float) * 100000000
+            )
         else:
             # Create float64 column filled with NaN
-            standardized["net_buy"] = pd.Series([np.nan] * len(df), dtype=float)
+            standardized["northbound_net_buy"] = pd.Series([np.nan] * len(df), dtype=float)
 
         # Buy and sell amounts
         if "买入成交额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
-            standardized["buy_amount"] = pd.to_numeric(df["买入成交额"], errors='coerce').astype(float) * 100000000
+            standardized["northbound_buy_amount"] = (
+                pd.to_numeric(df["买入成交额"], errors="coerce").astype(float) * 100000000
+            )
         else:
-            standardized["buy_amount"] = pd.Series([np.nan] * len(df), dtype=float)
+            standardized["northbound_buy_amount"] = pd.Series([np.nan] * len(df), dtype=float)
 
         if "卖出成交额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
-            standardized["sell_amount"] = pd.to_numeric(df["卖出成交额"], errors='coerce').astype(float) * 100000000
+            standardized["northbound_sell_amount"] = (
+                pd.to_numeric(df["卖出成交额"], errors="coerce").astype(float) * 100000000
+            )
         else:
-            standardized["sell_amount"] = pd.Series([np.nan] * len(df), dtype=float)
+            standardized["northbound_sell_amount"] = pd.Series([np.nan] * len(df), dtype=float)
 
         # Balance
         if "当日余额" in df.columns:
             # Convert from 亿元 (hundred million yuan) to 元 (yuan)
-            standardized["balance"] = pd.to_numeric(df["当日余额"], errors='coerce').astype(float) * 100000000
+            standardized["balance"] = pd.to_numeric(df["当日余额"], errors="coerce").astype(float) * 100000000
         else:
             standardized["balance"] = pd.Series([np.nan] * len(df), dtype=float)
 
@@ -121,13 +134,6 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
             "northbound_sell_amount": FieldType.AMOUNT,
             "northbound_balance": FieldType.BALANCE,
         }
-
-        # Apply field name validation if available
-        try:
-            result = self.apply_field_standardization(result, field_types)
-        except Exception:
-            # If validation fails, return the result as is
-            pass
 
         # Keep numeric dtype (don't convert NaN to None) for analysis purposes
         # pandas.to_json() handles NaN automatically
@@ -323,11 +329,9 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         code_col = "代码" if "代码" in df.columns else "股票代码"
 
         if market == "sh":
-            # Shanghai stocks start with 6
-            df = df[df[code_col].astype(str).str.startswith("6")]
+            df = df[df[code_col].astype(str).str.startswith("6")].reset_index(drop=True)
         elif market == "sz":
-            # Shenzhen stocks start with 0 or 3
-            df = df[df[code_col].astype(str).str.match(r"^[03]")]
+            df = df[df[code_col].astype(str).str.match(r"^[03]")].reset_index(drop=True)
         # else 'all' - no filtering needed
 
         # Sort by holdings value (今日持股-市值) in descending order

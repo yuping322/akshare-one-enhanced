@@ -11,7 +11,7 @@ import pandas as pd
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import ValuationFactory
-from . import legu, eastmoney
+from . import legu, eastmoney, lixinger
 
 
 @api_endpoint(ValuationFactory)

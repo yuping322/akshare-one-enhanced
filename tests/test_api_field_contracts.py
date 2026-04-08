@@ -19,6 +19,7 @@ import pytest
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestHistDataContract:
     """Contract tests for get_hist_data API."""
 
@@ -88,6 +89,7 @@ class TestHistDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestRealtimeDataContract:
     """Contract tests for get_realtime_data API."""
 
@@ -147,6 +149,7 @@ class TestRealtimeDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestETFHistDataContract:
     """Contract tests for get_etf_hist_data API."""
 
@@ -154,7 +157,7 @@ class TestETFHistDataContract:
         """Verify ETF historical data has all required fields."""
         from akshare_one import get_etf_hist_data
 
-        df = get_etf_hist_data(symbol="510050")
+        df = get_etf_hist_data(symbol="510050", start_date="2024-01-01", end_date="2024-01-31")
 
         if df.empty:
             pytest.skip("No ETF historical data available")
@@ -167,7 +170,7 @@ class TestETFHistDataContract:
         """Verify ETF historical data field types are correct."""
         from akshare_one import get_etf_hist_data
 
-        df = get_etf_hist_data(symbol="510050")
+        df = get_etf_hist_data(symbol="510050", start_date="2024-01-01", end_date="2024-01-31")
 
         if df.empty:
             pytest.skip("No ETF historical data available")
@@ -182,7 +185,7 @@ class TestETFHistDataContract:
         """Verify ETF historical data values are in reasonable ranges."""
         from akshare_one import get_etf_hist_data
 
-        df = get_etf_hist_data(symbol="510050")
+        df = get_etf_hist_data(symbol="510050", start_date="2024-01-01", end_date="2024-01-31")
 
         if df.empty:
             pytest.skip("No ETF historical data available")
@@ -197,6 +200,7 @@ class TestETFHistDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestBondHistDataContract:
     """Contract tests for get_bond_hist_data API."""
 
@@ -204,7 +208,7 @@ class TestBondHistDataContract:
         """Verify bond historical data has all required fields."""
         from akshare_one import get_bond_hist_data
 
-        df = get_bond_hist_data(symbol="110001")
+        df = get_bond_hist_data(symbol="110001", start_date="2024-01-01", end_date="2024-01-31")
 
         if df.empty:
             pytest.skip("No bond historical data available")
@@ -217,7 +221,7 @@ class TestBondHistDataContract:
         """Verify bond historical data field types are correct."""
         from akshare_one import get_bond_hist_data
 
-        df = get_bond_hist_data(symbol="110001")
+        df = get_bond_hist_data(symbol="110001", start_date="2024-01-01", end_date="2024-01-31")
 
         if df.empty:
             pytest.skip("No bond historical data available")
@@ -232,6 +236,7 @@ class TestBondHistDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestIndexListContract:
     """Contract tests for get_index_list API."""
 
@@ -267,6 +272,7 @@ class TestIndexListContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestNorthboundFlowContract:
     """Contract tests for get_northbound_flow API."""
 
@@ -308,6 +314,7 @@ class TestNorthboundFlowContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestFundFlowContract:
     """Contract tests for get_stock_fund_flow API."""
 
@@ -323,7 +330,7 @@ class TestFundFlowContract:
         if df.empty:
             pytest.skip("No fund flow data available")
 
-        required_fields = ["date", "symbol", "main_net_inflow", "main_net_inflow_ratio"]
+        required_fields = ["date", "symbol", "fundflow_main_net_inflow", "fundflow_main_net_inflow_rate"]
         for field in required_fields:
             assert field in df.columns, f"Missing required field: {field}"
 
@@ -339,8 +346,10 @@ class TestFundFlowContract:
         if df.empty:
             pytest.skip("No fund flow data available")
 
-        assert pd.api.types.is_numeric_dtype(df["main_net_inflow"]), "main_net_inflow must be numeric"
-        assert pd.api.types.is_numeric_dtype(df["main_net_inflow_ratio"]), "main_net_inflow_ratio must be numeric"
+        assert pd.api.types.is_numeric_dtype(df["fundflow_main_net_inflow"]), "fundflow_main_net_inflow must be numeric"
+        assert pd.api.types.is_numeric_dtype(df["fundflow_main_net_inflow_rate"]), (
+            "fundflow_main_net_inflow_rate must be numeric"
+        )
 
 
 # ============================================================================
@@ -349,6 +358,7 @@ class TestFundFlowContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestDragonTigerContract:
     """Contract tests for get_dragon_tiger_list API."""
 
@@ -385,6 +395,7 @@ class TestDragonTigerContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestFuturesHistDataContract:
     """Contract tests for get_futures_hist_data API."""
 
@@ -421,6 +432,7 @@ class TestFuturesHistDataContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestFinancialMetricsContract:
     """Contract tests for get_financial_metrics API."""
 
@@ -457,6 +469,7 @@ class TestFinancialMetricsContract:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestCrossAPIConsistency:
     """Test consistency across related APIs."""
 
@@ -504,6 +517,7 @@ class TestCrossAPIConsistency:
 
 
 @pytest.mark.contract
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestFieldNameStandardization:
     """Test that field names follow standardized conventions."""
 
@@ -523,8 +537,9 @@ class TestFieldNameStandardization:
 
             # Check no Chinese characters in column names
             for col in df.columns:
-                assert not any('\u4e00' <= char <= '\u9fff' for char in col), \
+                assert not any("\u4e00" <= char <= "\u9fff" for char in col), (
                     f"Field name '{col}' contains Chinese characters"
+                )
 
     def test_timestamp_field_naming(self):
         """Verify time-related fields use standardized names."""

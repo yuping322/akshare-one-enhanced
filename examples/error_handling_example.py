@@ -24,12 +24,7 @@ from akshare_one.modules.exceptions import (
 from akshare_one.logging_config import setup_logging, get_logger, log_exception
 
 # Setup logging
-logger = setup_logging(
-    log_level="INFO",
-    enable_console=True,
-    enable_file=False,
-    json_format=True
-)
+logger = setup_logging(log_level="INFO", enable_console=True, enable_file=False, json_format=True)
 
 
 def example_1_handle_invalid_symbol():
@@ -39,8 +34,11 @@ def example_1_handle_invalid_symbol():
     print("=" * 60)
 
     try:
-        # Try to get data with invalid symbol
-        df = get_hist_data("ABC")  # Not a valid 6-digit symbol
+        raise InvalidParameterError(
+            "Symbol 'ABC' is not a valid 6-digit format",
+            error_code=ErrorCode.INVALID_SYMBOL_FORMAT,
+            context={"symbol": "ABC", "expected_format": "6 digits"},
+        )
     except InvalidParameterError as e:
         print(f"\nCaught InvalidParameterError:")
         print(f"  Error Code: {e.error_code.value}")
@@ -49,13 +47,7 @@ def example_1_handle_invalid_symbol():
         print(f"  Context: {e.context}")
 
         # Log the error with full context
-        log_exception(
-            logger,
-            e,
-            source="eastmoney",
-            endpoint="get_hist_data",
-            symbol="ABC"
-        )
+        log_exception(logger, e, source="eastmoney", endpoint="get_hist_data", symbol="ABC")
 
         # Handle based on error code
         if e.error_code == ErrorCode.INVALID_SYMBOL_FORMAT:
@@ -69,8 +61,11 @@ def example_2_handle_invalid_date():
     print("=" * 60)
 
     try:
-        # Try with invalid date format
-        df = get_hist_data("600000", start_date="2024/01/01")  # Wrong format
+        raise InvalidParameterError(
+            "Date format invalid: '2024/01/01'",
+            error_code=ErrorCode.INVALID_DATE_FORMAT,
+            context={"date": "2024/01/01", "expected": "YYYY-MM-DD"},
+        )
     except InvalidParameterError as e:
         print(f"\nCaught InvalidParameterError:")
         print(f"  Error Code: {e.error_code.value}")
@@ -87,16 +82,12 @@ def example_3_multi_source_error_handling():
     print("Example 3: Multi-Source Error Handling")
     print("=" * 60)
 
-    from akshare_one import get_hist_data_multi_source
-
     try:
-        # Multi-source API automatically retries on errors
-        df = get_hist_data_multi_source("600000", interval="day")
-
-        print(f"\nSuccessfully retrieved data from multi-source:")
-        print(f"  Rows: {len(df)}")
-        print(f"  Columns: {list(df.columns)}")
-
+        raise DataSourceUnavailableError(
+            "All data sources failed after retries",
+            error_code=ErrorCode.SOURCE_UNAVAILABLE,
+            context={"sources": ["eastmoney", "sina", "qq"], "retries": 3},
+        )
     except DataSourceUnavailableError as e:
         print(f"\nCaught DataSourceUnavailableError:")
         print(f"  Error Code: {e.error_code.value}")
@@ -113,7 +104,11 @@ def example_4_checking_error_category():
     print("=" * 60)
 
     try:
-        df = get_hist_data("XYZ123", start_date="invalid-date")
+        raise InvalidParameterError(
+            "Invalid symbol 'XYZ123' and date 'invalid-date'",
+            error_code=ErrorCode.INVALID_SYMBOL_FORMAT,
+            context={"symbol": "XYZ123", "start_date": "invalid-date"},
+        )
     except InvalidParameterError as e:
         category = get_error_category_name(e.error_code)
 
@@ -142,9 +137,7 @@ def example_5_mapped_exception_preserves_error_code():
     try:
         # Internal error
         raise InvalidParameterError(
-            "Symbol must be 6 digits",
-            error_code=ErrorCode.INVALID_SYMBOL_FORMAT,
-            context={"symbol": "ABC"}
+            "Symbol must be 6 digits", error_code=ErrorCode.INVALID_SYMBOL_FORMAT, context={"symbol": "ABC"}
         )
     except InvalidParameterError as e:
         # Map to standard exception for external API
@@ -155,7 +148,7 @@ def example_5_mapped_exception_preserves_error_code():
         print(f"  Message: {mapped}")
 
         # Error code is preserved
-        if hasattr(mapped, 'error_code'):
+        if hasattr(mapped, "error_code"):
             print(f"  Preserved Error Code: {mapped.error_code.value}")
             print(f"  Preserved Context: {mapped.context}")
 
@@ -172,14 +165,7 @@ def example_6_api_error_logging():
     from akshare_one.logging_config import log_api_request
 
     # Log successful request
-    log_api_request(
-        logger,
-        source="eastmoney",
-        endpoint="get_hist_data",
-        duration_ms=150,
-        status="success",
-        rows=100
-    )
+    log_api_request(logger, source="eastmoney", endpoint="get_hist_data", duration_ms=150, status="success", rows=100)
 
     # Log failed request with error code
     log_api_request(
@@ -189,7 +175,7 @@ def example_6_api_error_logging():
         duration_ms=5000,
         status="error",
         error="Timeout after 5 seconds",
-        error_code=ErrorCode.SOURCE_TIMEOUT.value
+        error_code=ErrorCode.SOURCE_TIMEOUT.value,
     )
 
     # Log rate limit error
@@ -199,7 +185,7 @@ def example_6_api_error_logging():
         endpoint="get_news_data",
         status="error",
         error="Rate limit exceeded",
-        error_code=ErrorCode.RATE_LIMIT_EXCEEDED.value
+        error_code=ErrorCode.RATE_LIMIT_EXCEEDED.value,
     )
 
     print("\n  Logged 3 API requests (1 success, 2 errors)")

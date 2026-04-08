@@ -84,7 +84,13 @@ class EastmoneyMarginProvider(MarginProvider):
                     from datetime import datetime
 
                     trade_date = datetime.now().strftime("%Y%m%d")
-                    raw_df = ak.stock_margin_detail_sse(date=trade_date)
+                    try:
+                        raw_df = ak.stock_margin_detail_sse(date=trade_date)
+                    except ValueError as e:
+                        if "Length mismatch" in str(e):
+                            raw_df = pd.DataFrame()
+                        else:
+                            raise
                     # 过滤指定股票
                     if not raw_df.empty and "标的证券代码" in raw_df.columns:
                         raw_df = raw_df[raw_df["标的证券代码"] == symbol]
@@ -94,7 +100,13 @@ class EastmoneyMarginProvider(MarginProvider):
                     from datetime import datetime
 
                     trade_date = datetime.now().strftime("%Y%m%d")
-                    raw_df = ak.stock_margin_detail_szse(date=trade_date)
+                    try:
+                        raw_df = ak.stock_margin_detail_szse(date=trade_date)
+                    except ValueError as e:
+                        if "Length mismatch" in str(e):
+                            raw_df = pd.DataFrame()
+                        else:
+                            raise
                     # 过滤指定股票
                     if not raw_df.empty and "标的证券代码" in raw_df.columns:
                         raw_df = raw_df[raw_df["标的证券代码"] == symbol]
@@ -234,7 +246,13 @@ class EastmoneyMarginProvider(MarginProvider):
                 from datetime import datetime
 
                 trade_date = datetime.now().strftime("%Y%m%d")
-                raw_df_sh = ak.stock_margin_sse(date=trade_date)
+                try:
+                    raw_df_sh = ak.stock_margin_sse(start_date=trade_date, end_date=trade_date)
+                except ValueError as e:
+                    if "Length mismatch" in str(e):
+                        raw_df_sh = pd.DataFrame()
+                    else:
+                        raise
 
                 if not raw_df_sh.empty:
                     # Standardize Shanghai data
@@ -253,7 +271,13 @@ class EastmoneyMarginProvider(MarginProvider):
 
             if market in ["sz", "all"]:
                 # Get Shenzhen market data
-                raw_df_sz = ak.stock_margin_szse(date=start_date.replace("-", ""))
+                try:
+                    raw_df_sz = ak.stock_margin_szse(date=end_date.replace("-", ""))
+                except (ValueError, KeyError) as e:
+                    if "Length mismatch" in str(e) or "信用交易日期" in str(e):
+                        raw_df_sz = pd.DataFrame()
+                    else:
+                        raise
 
                 if not raw_df_sz.empty:
                     # Standardize Shenzhen data

@@ -380,9 +380,12 @@
       "field_types": {
         "symbol": "SYMBOL",
         "name": "NAME",
-        "suspend_date": "DATE",
-        "expected_resume_date": "DATE",
-        "reason": "TYPE"
+        "suspend_date": "EVENT_DATE",
+        "suspend_end_date": "EVENT_DATE",
+        "expected_resume_date": "EVENT_DATE",
+        "suspend_duration_type": "TYPE",
+        "suspend_reason_type": "TYPE",
+        "market": "MARKET"
       },
       "amount_fields": {}
     },

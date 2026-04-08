@@ -15,7 +15,7 @@ import pandas as pd
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import IndexFactory
-from . import eastmoney, sina
+from . import eastmoney, sina, lixinger
 
 
 @api_endpoint(IndexFactory)

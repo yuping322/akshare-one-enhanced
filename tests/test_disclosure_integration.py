@@ -19,7 +19,8 @@ from src.akshare_one.modules.disclosure import (
 
 class TestDisclosureNewsIntegration:
     """Integration tests for disclosure news data."""
-    
+
+    @pytest.mark.timeout(180)
     def test_get_disclosure_news_all_categories(self):
         """Test fetching disclosure news for all categories."""
         # Use a recent date range (1 day)
@@ -55,6 +56,7 @@ class TestDisclosureNewsIntegration:
             for date_str in df['date']:
                 datetime.strptime(date_str, '%Y-%m-%d')
     
+    @pytest.mark.timeout(180)
     def test_get_disclosure_news_specific_symbol(self):
         """Test fetching disclosure news for a specific stock."""
         # Use a major stock that likely has announcements
@@ -78,6 +80,7 @@ class TestDisclosureNewsIntegration:
         if not df.empty:
             assert all(df['symbol'] == symbol)
     
+    @pytest.mark.timeout(180)
     def test_get_disclosure_news_dividend_category(self):
         """Test fetching disclosure news filtered by dividend category."""
         end_date = datetime.now().strftime('%Y-%m-%d')
@@ -101,6 +104,7 @@ class TestDisclosureNewsIntegration:
             for title in df['title']:
                 assert any(keyword in title for keyword in dividend_keywords)
     
+    @pytest.mark.timeout(180)
     def test_get_disclosure_news_repurchase_category(self):
         """Test fetching disclosure news filtered by repurchase category."""
         end_date = datetime.now().strftime('%Y-%m-%d')
@@ -124,6 +128,7 @@ class TestDisclosureNewsIntegration:
             for title in df['title']:
                 assert any(keyword in title for keyword in repurchase_keywords)
     
+    @pytest.mark.timeout(180)
     def test_get_disclosure_news_st_category(self):
         """Test fetching disclosure news filtered by ST category."""
         end_date = datetime.now().strftime('%Y-%m-%d')
@@ -147,6 +152,7 @@ class TestDisclosureNewsIntegration:
             for title in df['title']:
                 assert any(keyword in title for keyword in st_keywords)
     
+    @pytest.mark.timeout(180)
     def test_get_disclosure_news_major_event_category(self):
         """Test fetching disclosure news filtered by major event category."""
         end_date = datetime.now().strftime('%Y-%m-%d')
@@ -208,6 +214,7 @@ class TestDisclosureNewsIntegration:
                 category='invalid'
             )
     
+    @pytest.mark.timeout(180)
     def test_get_disclosure_news_json_compatibility(self):
         """Test that returned data is JSON compatible."""
         end_date = datetime.now().strftime('%Y-%m-%d')

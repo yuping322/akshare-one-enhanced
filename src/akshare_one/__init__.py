@@ -222,6 +222,49 @@ from .modules.esg import (
     get_esg_rating,
     get_esg_rating_rank,
 )
+from .jq_compat import (
+    get_price,
+    get_bars,
+    history,
+    attribute_history,
+    get_valuation,
+    get_index_valuation,
+    get_all_securities,
+    get_security_info,
+    get_shifted_date,
+    get_previous_trade_date,
+    get_next_trade_date,
+    transform_date,
+    is_trade_date,
+    get_trade_dates_between,
+    count_trade_dates_between,
+    get_concepts,
+    get_concept_stocks,
+    get_concept,
+    get_all_concepts,
+    get_locked_shares,
+    get_fund_info,
+    get_fundamentals_continuously,
+    get_recent_limit_up_stock,
+    get_recent_limit_down_stock,
+    get_mtss,
+    get_margincash_stocks,
+    get_marginsec_stocks,
+    get_billboard_list,
+    get_institutional_holdings,
+    get_dominant_future,
+    get_futures_info,
+    get_future_contracts,
+    get_north_factor,
+    get_comb_factor,
+    get_factor_momentum,
+    MA,
+    EMA,
+    MACD,
+    KDJ,
+    RSI,
+    BOLL,
+)
 
 __all__ = [
     # 配置
@@ -386,8 +429,19 @@ __all__ = [
     # ESG
     "get_esg_rating",
     "get_esg_rating_rank",
+    # JQ Compatibility (Merge from jk2bt)
+    "get_price",
+    "get_bars",
+    "history",
+    "attribute_history",
+    "get_valuation",
+    "get_index_valuation",
+    "risk",
+    "strategy",
 ]
 
+from . import risk
+from . import strategy
 
 def get_basic_info(
     symbol: str,

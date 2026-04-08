@@ -1,0 +1,56 @@
+{
+  "source": "eastmoney",
+  "module": "suspended",
+  "version": "1.0",
+  "last_updated": "2026-04-07",
+  "mappings": [
+    {
+      "source_field": "代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "名称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票简称"
+    },
+    {
+      "source_field": "停牌时间",
+      "standard_field": "suspend_date",
+      "field_type": "event_date",
+      "description": "停牌日期"
+    },
+    {
+      "source_field": "停牌截止时间",
+      "standard_field": "suspend_end_date",
+      "field_type": "event_date",
+      "description": "停牌截止日期"
+    },
+    {
+      "source_field": "停牌期限",
+      "standard_field": "suspend_duration_type",
+      "field_type": "type",
+      "description": "停牌期限类型（如：停牌一天、连续停牌）"
+    },
+    {
+      "source_field": "停牌原因",
+      "standard_field": "suspend_reason_type",
+      "field_type": "type",
+      "description": "停牌原因类型"
+    },
+    {
+      "source_field": "所属市场",
+      "standard_field": "market",
+      "field_type": "market",
+      "description": "所属市场"
+    },
+    {
+      "source_field": "预计复牌时间",
+      "standard_field": "expected_resume_date",
+      "field_type": "event_date",
+      "description": "预计复牌日期"
+    }
+  ]
+}

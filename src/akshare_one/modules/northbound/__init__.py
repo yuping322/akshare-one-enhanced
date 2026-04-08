@@ -15,6 +15,7 @@ from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import NorthboundFactory
 from . import eastmoney
+from . import sina
 
 
 @api_endpoint(NorthboundFactory)

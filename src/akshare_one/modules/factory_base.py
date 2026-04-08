@@ -33,10 +33,14 @@ def doc_params(func: Callable) -> Callable:
     return func
 
 
-def api_endpoint(factory_cls: type["BaseFactory"]) -> Callable:
+def api_endpoint(factory_cls: type["BaseFactory"], method_name: str | None = None) -> Callable:
     """
     装饰器：自动处理 Factory 调用逻辑。
-    将函数名作为 method_name 传递给 Factory.call_provider_method。
+    将函数名作为 method_name 传递给 Factory.call_provider_method，除非指定了 method_name。
+
+    Args:
+        factory_cls: Factory 类
+        method_name: 可选的显式方法名，如果为 None 则使用 func.__name__
     """
 
     def decorator(func: Callable) -> Callable:
@@ -56,9 +60,12 @@ def api_endpoint(factory_cls: type["BaseFactory"]) -> Callable:
             columns = params.pop("columns", None)
             row_filter = params.pop("row_filter", None)
 
+            # Use explicit method_name if provided, otherwise use func.__name__
+            effective_method_name = method_name if method_name is not None else func.__name__
+
             try:
                 return factory_cls.call_provider_method(
-                    func.__name__,
+                    effective_method_name,
                     source=source,
                     columns=columns,
                     row_filter=row_filter,
@@ -68,11 +75,11 @@ def api_endpoint(factory_cls: type["BaseFactory"]) -> Callable:
                 # Map internal exception to standard exception for public API
                 context = {
                     "source": source if isinstance(source, str) else None,
-                    "endpoint": func.__name__,
+                    "endpoint": effective_method_name,
                 }
                 # Add any symbol/context from params
                 if "symbol" in params:
-                    context["symbol"] = params["symbol"]
+                    context["symbol"] = kwargs["symbol"]
 
                 raise map_to_standard_exception(e, context)
 
@@ -188,16 +195,14 @@ class BaseFactory(Generic[T]):
                 if parent is sample_provider_cls:
                     continue
                 # Find the first class ending with "Provider" (the specific base)
-                if parent.__name__.endswith('Provider'):
+                if parent.__name__.endswith("Provider"):
                     base_provider_class = parent
                     break
 
             # If we found a base class, validate inheritance
             if base_provider_class:
                 if not issubclass(provider_class, base_provider_class):
-                    raise TypeError(
-                        f"Provider class must inherit from {base_provider_class.__name__}"
-                    )
+                    raise TypeError(f"Provider class must inherit from {base_provider_class.__name__}")
 
         cls._providers[source] = provider_class
 
@@ -256,7 +261,7 @@ class BaseFactory(Generic[T]):
         Returns:
             MultiSourceRouter instance
         """
-        from .multi_source import MultiSourceRouter
+        from .multi_source import MultiSourceRouter, EmptyDataPolicy
 
         if sources is None:
             sources = cls.list_sources()
@@ -268,7 +273,7 @@ class BaseFactory(Generic[T]):
             except Exception:
                 continue
 
-        return MultiSourceRouter(providers)
+        return MultiSourceRouter(providers, empty_data_policy=EmptyDataPolicy.RELAXED)
 
     @classmethod
     def call_provider_method(
@@ -310,10 +315,9 @@ class BaseFactory(Generic[T]):
             if isinstance(source, str):
                 # Single source
                 # Extract common constructor parameters if they exist in kwargs
-                # For now, just pass all kwargs to get_provider as well
-                # Providers should be tolerant of extra kwargs in __init__ if needed,
-                # or we can be more selective.
-                provider = cls.get_provider(source=source, **kwargs)
+                # row_filter and columns are for apply_data_filter, not for provider __init__
+                provider_kwargs = {k: v for k, v in kwargs.items() if k not in ("row_filter", "columns")}
+                provider = cls.get_provider(source=source, **provider_kwargs)
                 method = getattr(provider, method_name)
                 df = method(*args, **kwargs)
             else:

@@ -106,12 +106,12 @@ class EastmoneyETFProvider(ETFProvider):
 
         return self._standardize_spot_data(df)
 
-    def get_etf_list(self, category: str = "all") -> pd.DataFrame:
+    def get_etf_list(self, fund_type: str = "etf") -> pd.DataFrame:
         """
         Get ETF list from Eastmoney.
 
         Args:
-            category: ETF category ('all', 'stock', 'bond', 'cross', 'money')
+            fund_type: ETF fund type ('etf', 'lof', 'reits', 'all')
 
         Returns:
             pd.DataFrame: ETF list

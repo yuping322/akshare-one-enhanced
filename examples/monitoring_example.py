@@ -39,7 +39,21 @@ def main():
         print(f"   Fetched {len(hist_df)} historical records")
 
     except Exception as e:
-        logger.error(f"Failed to fetch data: {e}", exc_info=True)
+        logger.warning(f"Real data fetch failed, using demo data: {e}")
+        import pandas as pd
+
+        realtime_df = pd.DataFrame({"symbol": ["600000"], "name": ["浦发银行"], "price": [10.5], "change_pct": [1.25]})
+        hist_df = pd.DataFrame(
+            {
+                "date": pd.date_range("2026-01-01", periods=10),
+                "open": [10.0 + i * 0.1 for i in range(10)],
+                "high": [10.5 + i * 0.1 for i in range(10)],
+                "low": [9.5 + i * 0.1 for i in range(10)],
+                "close": [10.2 + i * 0.1 for i in range(10)],
+                "volume": [1000000 + i * 10000 for i in range(10)],
+            }
+        )
+        print(f"   Using demo data: {len(realtime_df)} realtime records, {len(hist_df)} historical records")
 
     # 3. Check health of data sources
     print("\n3. Checking health of data sources...")

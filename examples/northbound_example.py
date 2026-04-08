@@ -70,27 +70,27 @@ def scenario_1_analyze_northbound_flow_trend():
         # 结果展示：显示最近10天的数据
         print("\n最近10天北向资金流向数据：")
         # Ensure we drop rows with None/NaN values for statistics
-        df_valid = df.dropna(subset=['net_buy'])
+        df_valid = df.dropna(subset=["northbound_net_buy"])
         if df_valid.empty:
             print("无有效数据返回")
             return
-            
-        display_df = df_valid.head(10)[['date', 'market', 'net_buy']]
+
+        display_df = df_valid.head(10)[["date", "market", "northbound_net_buy"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
-        total_net_buy = df_valid['net_buy'].sum()
-        avg_net_buy = df_valid['net_buy'].mean()
-        max_inflow_day = df_valid.loc[df_valid['net_buy'].idxmax()]
-        min_inflow_day = df_valid.loc[df_valid['net_buy'].idxmin()]
-        inflow_days = len(df_valid[df_valid['net_buy'] > 0])
-        outflow_days = len(df_valid[df_valid['net_buy'] < 0])
+        total_net_buy = df_valid["northbound_net_buy"].sum()
+        avg_net_buy = df_valid["northbound_net_buy"].mean()
+        max_inflow_day = df_valid.loc[df_valid["northbound_net_buy"].idxmax()]
+        min_inflow_day = df_valid.loc[df_valid["northbound_net_buy"].idxmin()]
+        inflow_days = len(df_valid[df_valid["northbound_net_buy"] > 0])
+        outflow_days = len(df_valid[df_valid["northbound_net_buy"] < 0])
 
         print("\n统计分析：")
-        print(f"北向资金净流入总额：{total_net_buy:,.2f} 亿元")
-        print(f"日均北向资金净流入：{avg_net_buy:,.2f} 亿元")
-        print(f"最大单日净流入：{max_inflow_day['net_buy']:,.2f} 亿元（{max_inflow_day['date']}）")
-        print(f"最大单日净流出：{min_inflow_day['net_buy']:,.2f} 亿元（{min_inflow_day['date']}）")
+        print(f"北向资金净流入总额：{total_net_buy:,.2f} 元")
+        print(f"日均北向资金净流入：{avg_net_buy:,.2f} 元")
+        print(f"最大单日净流入：{max_inflow_day['northbound_net_buy']:,.2f} 元（{max_inflow_day['date']}）")
+        print(f"最大单日净流出：{min_inflow_day['northbound_net_buy']:,.2f} 元（{min_inflow_day['date']}）")
         print(f"净流入天数：{inflow_days} 天")
         print(f"净流出天数：{outflow_days} 天")
 
@@ -144,7 +144,7 @@ def scenario_2_track_northbound_holdings():
 
         # 结果展示：显示最近10天的持股数据
         print("\n最近10天北向持股明细：")
-        display_df = df.head(10)[['date', 'symbol', 'holdings_shares', 'holdings_ratio', 'holdings_change']]
+        display_df = df.head(10)[["date", "symbol", "holdings_shares", "holdings_ratio", "holdings_change"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
@@ -153,13 +153,15 @@ def scenario_2_track_northbound_holdings():
             earliest = df.iloc[-1]
 
             # 计算持股变化
-            if pd.notna(latest['holdings_shares']) and pd.notna(earliest['holdings_shares']):
-                total_change = latest['holdings_shares'] - earliest['holdings_shares']
-                change_pct = (total_change / earliest['holdings_shares']) * 100 if earliest['holdings_shares'] != 0 else 0
+            if pd.notna(latest["holdings_shares"]) and pd.notna(earliest["holdings_shares"]):
+                total_change = latest["holdings_shares"] - earliest["holdings_shares"]
+                change_pct = (
+                    (total_change / earliest["holdings_shares"]) * 100 if earliest["holdings_shares"] != 0 else 0
+                )
 
                 print("\n统计分析：")
                 print(f"最新持股数量：{latest['holdings_shares']:,.0f} 股")
-                if pd.notna(latest['holdings_ratio']):
+                if pd.notna(latest["holdings_ratio"]):
                     print(f"最新持股比例：{latest['holdings_ratio']:.2f}%")
                 else:
                     print("最新持股比例：数据不可用")
@@ -167,7 +169,7 @@ def scenario_2_track_northbound_holdings():
             else:
                 print("\n统计分析：")
                 print(f"最新持股数量：{latest['holdings_shares']:,.0f} 股")
-                if pd.notna(latest['holdings_ratio']):
+                if pd.notna(latest["holdings_ratio"]):
                     print(f"最新持股比例：{latest['holdings_ratio']:.2f}%")
                 else:
                     print("最新持股比例：数据不可用")
@@ -224,13 +226,13 @@ def scenario_3_identify_popular_stocks():
 
         # 结果展示：显示排名前10的股票
         print(f"\n北向资金持股排名前{top_n}的股票：")
-        display_df = df[['rank', 'symbol', 'name', 'holdings_shares', 'holdings_ratio']]
+        display_df = df[["rank", "symbol", "name", "holdings_shares", "holdings_ratio"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
-        if 'holdings_shares' in df.columns and df['holdings_shares'].notna().any():
-            total_holdings = df['holdings_shares'].sum()
-            avg_holdings_ratio = df['holdings_ratio'].mean()
+        if "holdings_shares" in df.columns and df["holdings_shares"].notna().any():
+            total_holdings = df["holdings_shares"].sum()
+            avg_holdings_ratio = df["holdings_ratio"].mean()
             top_stock = df.iloc[0]
 
             print("\n统计分析：")
@@ -282,7 +284,7 @@ def scenario_4_multi_source_example():
 
         # 使用备用数据源（Sina）
         print("\n使用 Sina 数据源：")
-        sina_provider = NorthboundFactory.get_provider('sina')
+        sina_provider = NorthboundFactory.get_provider("sina")
         print(f"  提供商类型：{type(sina_provider).__name__}")
         print(f"  数据源名称：{sina_provider.get_source_name()}")
 
@@ -293,7 +295,7 @@ def scenario_4_multi_source_example():
         print(f"\n查询时间范围：{start_date} 至 {end_date}")
 
         # 通过 provider 获取数据
-        df = sina_provider.get_northbound_flow(start_date, end_date, 'all')
+        df = sina_provider.get_northbound_flow(start_date, end_date, "all")
 
         if df.empty:
             print("无北向资金数据返回")

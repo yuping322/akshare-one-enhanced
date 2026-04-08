@@ -1,0 +1,10 @@
+{
+  "whitelist": [
+    "adj_close",
+    "close",
+    "high",
+    "low",
+    "open"
+  ],
+  "count": 5
+}

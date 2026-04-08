@@ -55,7 +55,7 @@ class DataPipeline:
                     start_date=start_date,
                     end_date=end_date,
                     adjust="qfq",
-                    source="eastmoney_direct"
+                    source="eastmoney_direct",
                 )
 
                 if not df.empty:
@@ -89,7 +89,7 @@ class DataPipeline:
             except Exception as e:
                 print(f"    失败: {e}")
 
-        self.data_cache['realtime'] = realtime_data
+        self.data_cache["realtime"] = realtime_data
         print(f"完成，成功获取 {len(realtime_data)} 只股票实时数据")
 
     def process_data(self):
@@ -99,31 +99,38 @@ class DataPipeline:
         processed = {}
 
         for key, data in self.data_cache.items():
-            if key == 'realtime':
+            if key == "realtime" or key == "processed":
                 continue
 
-            symbol = key.replace('_daily', '')
+            if not isinstance(data, pd.DataFrame):
+                continue
+
+            symbol = key.replace("_daily", "")
 
             # 计算技术指标
             df = data.copy()
 
+            if df.empty or "close" not in df.columns:
+                print(f"    跳过 {symbol}: 无有效数据")
+                continue
+
             # 涨跌幅
-            df['pct_change'] = df['close'].pct_change() * 100
+            df["pct_change"] = df["close"].pct_change() * 100
 
             # 均线
-            df['ma5'] = df['close'].rolling(window=5).mean()
-            df['ma10'] = df['close'].rolling(window=10).mean()
-            df['ma20'] = df['close'].rolling(window=20).mean()
+            df["ma5"] = df["close"].rolling(window=5).mean()
+            df["ma10"] = df["close"].rolling(window=10).mean()
+            df["ma20"] = df["close"].rolling(window=20).mean()
 
             # 成交量均线
-            df['volume_ma5'] = df['volume'].rolling(window=5).mean()
+            df["volume_ma5"] = df["volume"].rolling(window=5).mean()
 
             # 价格波动
-            df['price_range'] = df['high'] - df['low']
+            df["price_range"] = df["high"] - df["low"]
 
             processed[key] = df
 
-        self.data_cache['processed'] = processed
+        self.data_cache["processed"] = processed
         print(f"完成，处理了 {len(processed)} 只股票数据")
 
     def calculate_statistics(self):
@@ -132,80 +139,83 @@ class DataPipeline:
 
         stats_summary = []
 
-        for key, df in self.data_cache.get('processed', {}).items():
-            symbol = key.replace('_daily', '')
+        for key, df in self.data_cache.get("processed", {}).items():
+            symbol = key.replace("_daily", "")
+
+            if df.empty or "close" not in df.columns:
+                continue
 
             # 统计信息
             stats = {
-                'symbol': symbol,
-                'data_count': len(df),
-                'start_date': df['timestamp'].iloc[0] if len(df) > 0 else '',
-                'end_date': df['timestamp'].iloc[-1] if len(df) > 0 else '',
-                'avg_close': df['close'].mean(),
-                'max_close': df['close'].max(),
-                'min_close': df['close'].min(),
-                'avg_volume': df['volume'].mean(),
-                'avg_pct_change': df['pct_change'].mean(),
-                'max_pct_change': df['pct_change'].max(),
-                'min_pct_change': df['pct_change'].min(),
+                "symbol": symbol,
+                "data_count": len(df),
+                "start_date": df["timestamp"].iloc[0] if len(df) > 0 else "",
+                "end_date": df["timestamp"].iloc[-1] if len(df) > 0 else "",
+                "avg_close": df["close"].mean(),
+                "max_close": df["close"].max(),
+                "min_close": df["close"].min(),
+                "avg_volume": df["volume"].mean(),
+                "avg_pct_change": df["pct_change"].mean(),
+                "max_pct_change": df["pct_change"].max(),
+                "min_pct_change": df["pct_change"].min(),
             }
 
             stats_summary.append(stats)
 
-        self.data_cache['statistics'] = pd.DataFrame(stats_summary)
+        self.data_cache["statistics"] = pd.DataFrame(stats_summary)
         print(f"完成，统计了 {len(stats_summary)} 只股票")
 
     def save_data(self):
         """保存数据"""
         print("\n正在保存数据...")
 
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # 保存日线数据
-        daily_dir = os.path.join(self.output_dir, 'daily')
+        daily_dir = os.path.join(self.output_dir, "daily")
         os.makedirs(daily_dir, exist_ok=True)
 
         for key, df in self.data_cache.items():
-            if key in ['realtime', 'processed', 'statistics']:
+            if key in ["realtime", "processed", "statistics"]:
                 continue
 
-            symbol = key.replace('_daily', '')
+            symbol = key.replace("_daily", "")
             filename = os.path.join(daily_dir, f"{symbol}_{timestamp}.csv")
-            df.to_csv(filename, index=False, encoding='utf-8-sig')
+            df.to_csv(filename, index=False, encoding="utf-8-sig")
             print(f"  保存: {filename}")
 
         # 保存处理后的数据
-        processed_dir = os.path.join(self.output_dir, 'processed')
+        processed_dir = os.path.join(self.output_dir, "processed")
         os.makedirs(processed_dir, exist_ok=True)
 
-        for key, df in self.data_cache.get('processed', {}).items():
-            symbol = key.replace('_daily', '')
+        for key, df in self.data_cache.get("processed", {}).items():
+            symbol = key.replace("_daily", "")
             filename = os.path.join(processed_dir, f"{symbol}_processed_{timestamp}.csv")
-            df.to_csv(filename, index=False, encoding='utf-8-sig')
+            df.to_csv(filename, index=False, encoding="utf-8-sig")
 
         print(f"  保存处理后的数据到: {processed_dir}")
 
         # 保存实时数据
-        realtime_dir = os.path.join(self.output_dir, 'realtime')
+        realtime_dir = os.path.join(self.output_dir, "realtime")
         os.makedirs(realtime_dir, exist_ok=True)
 
         realtime_combined = []
-        for symbol, df in self.data_cache.get('realtime', {}).items():
+        for symbol, df in self.data_cache.get("realtime", {}).items():
             realtime_combined.append(df)
 
         if realtime_combined:
             realtime_df = pd.concat(realtime_combined, ignore_index=True)
             filename = os.path.join(realtime_dir, f"realtime_{timestamp}.csv")
-            realtime_df.to_csv(filename, index=False, encoding='utf-8-sig')
+            realtime_df.to_csv(filename, index=False, encoding="utf-8-sig")
             print(f"  保存实时数据到: {filename}")
 
         # 保存统计数据
-        stats_dir = os.path.join(self.output_dir, 'statistics')
+        stats_dir = os.path.join(self.output_dir, "statistics")
         os.makedirs(stats_dir, exist_ok=True)
 
-        if 'statistics' in self.data_cache:
+        if "statistics" in self.data_cache:
             filename = os.path.join(stats_dir, f"statistics_{timestamp}.csv")
-            self.data_cache['statistics'].to_csv(filename, index=False, encoding='utf-8-sig')
+            self.data_cache["statistics"].to_csv(filename, index=False, encoding="utf-8-sig")
             print(f"  保存统计数据到: {filename}")
 
         print("保存完成")
@@ -219,9 +229,9 @@ class DataPipeline:
         print(f"\n监控股票数: {len(self.stocks)}")
         print(f"缓存数据类型: {len(self.data_cache)}")
 
-        if 'statistics' in self.data_cache:
+        if "statistics" in self.data_cache:
             print("\n统计数据概览：")
-            print(self.data_cache['statistics'].to_string(index=False))
+            print(self.data_cache["statistics"].to_string(index=False))
 
     def run_full_pipeline(self, start_date, end_date):
         """运行完整的数据管道"""
@@ -261,13 +271,10 @@ def example_daily_pipeline():
     pipeline = DataPipeline(output_dir="data_output/example1")
 
     # 添加股票
-    pipeline.add_stocks(['600000', '000001', '600519'])
+    pipeline.add_stocks(["600000", "000001", "600519"])
 
     # 运行管道
-    pipeline.run_full_pipeline(
-        start_date="2024-01-01",
-        end_date="2024-12-31"
-    )
+    pipeline.run_full_pipeline(start_date="2024-01-01", end_date="2024-12-31")
 
 
 def example_batch_pipeline():
@@ -279,16 +286,13 @@ def example_batch_pipeline():
     pipeline = DataPipeline(output_dir="data_output/example2")
 
     # 批量添加股票
-    stocks = [
-        '600000', '000001', '600519', '000858',
-        '600036', '601318', '000333', '002415'
-    ]
+    stocks = ["600000", "000001", "600519", "000858", "600036", "601318", "000333", "002415"]
 
     pipeline.add_stocks(stocks)
 
     # 运行管道（近3个月数据）
-    end_date = datetime.now().strftime('%Y-%m-%d')
-    start_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
 
     pipeline.run_full_pipeline(start_date=start_date, end_date=end_date)
 
@@ -301,21 +305,15 @@ def example_incremental_pipeline():
 
     pipeline = DataPipeline(output_dir="data_output/example3")
 
-    pipeline.add_stocks(['600000', '000001'])
+    pipeline.add_stocks(["600000", "000001"])
 
     # 第一次运行：获取历史数据
     print("\n第一次运行（历史数据）：")
-    pipeline.run_full_pipeline(
-        start_date="2024-01-01",
-        end_date="2024-10-31"
-    )
+    pipeline.run_full_pipeline(start_date="2024-01-01", end_date="2024-10-31")
 
     # 第二次运行：增量更新
     print("\n第二次运行（增量更新）：")
-    pipeline.run_full_pipeline(
-        start_date="2024-11-01",
-        end_date="2024-12-31"
-    )
+    pipeline.run_full_pipeline(start_date="2024-11-01", end_date="2024-12-31")
 
 
 def main():

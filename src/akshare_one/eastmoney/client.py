@@ -11,6 +11,12 @@ class EastMoneyClient:
 
     def __init__(self) -> None:
         self.session = requests.Session()
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Referer": "https://quote.eastmoney.com/",
+            }
+        )
 
     def _get_security_id(self, symbol: str) -> str:
         """

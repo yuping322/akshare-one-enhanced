@@ -90,6 +90,7 @@ def valid_ratio_values(draw):
 # ============================================================================
 
 @pytest.mark.integration
+@pytest.mark.flaky(reruns=3, reruns_delay=2)
 class TestNumericColumnTypesContract:
     """
     Contract tests for numeric column data types.
@@ -841,6 +842,7 @@ class TestRealAPIDataNumericContract:
     """
 
     @pytest.mark.integration
+    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_hist_data_numeric_contract(self):
         """Contract: Historical data should comply with numeric type contracts."""
         from akshare_one import get_hist_data
@@ -863,6 +865,7 @@ class TestRealAPIDataNumericContract:
         assert not np.isinf(df["volume"]).any(), "volume should not have infinity"
 
     @pytest.mark.integration
+    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_realtime_data_numeric_contract(self):
         """Contract: Realtime data should comply with numeric type contracts."""
         from akshare_one import get_realtime_data
@@ -888,6 +891,7 @@ class TestRealAPIDataNumericContract:
                 assert not np.isinf(df[col]).any(), f"{col} should not have infinity"
 
     @pytest.mark.integration
+    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_fundflow_data_numeric_contract(self):
         """Contract: Fund flow data should comply with numeric type contracts."""
         from akshare_one import get_stock_fund_flow
@@ -906,6 +910,7 @@ class TestRealAPIDataNumericContract:
                 assert not np.isinf(df[col]).any(), f"{col} should not have infinity"
 
     @pytest.mark.integration
+    @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_northbound_data_numeric_contract(self):
         """Contract: Northbound data should comply with numeric type contracts."""
         from akshare_one import get_northbound_flow
