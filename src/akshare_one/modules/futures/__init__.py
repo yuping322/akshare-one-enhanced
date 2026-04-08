@@ -18,7 +18,7 @@ from .base import FuturesHistoricalFactory, FuturesRealtimeFactory, FuturesDataF
 from . import sina, eastmoney
 
 
-@api_endpoint(FuturesHistoricalFactory)
+@api_endpoint(FuturesHistoricalFactory, method_name="get_hist_data")
 def get_futures_hist_data(
     symbol: str,
     contract: str = "main",
@@ -44,7 +44,7 @@ def get_futures_hist_data(
     pass
 
 
-@api_endpoint(FuturesHistoricalFactory)
+@api_endpoint(FuturesHistoricalFactory, method_name="get_main_contracts")
 def get_futures_main_contracts(
     source: SourceType = None,
     columns: ColumnsType = None,
@@ -56,7 +56,7 @@ def get_futures_main_contracts(
     pass
 
 
-@api_endpoint(FuturesRealtimeFactory)
+@api_endpoint(FuturesRealtimeFactory, method_name="get_current_data")
 def get_futures_realtime_data(
     symbol: str | None = None,
     source: SourceType = None,
@@ -72,7 +72,7 @@ def get_futures_realtime_data(
     pass
 
 
-@api_endpoint(FuturesRealtimeFactory)
+@api_endpoint(FuturesRealtimeFactory, method_name="get_all_quotes")
 def get_futures_all_quotes(
     source: SourceType = None,
     columns: ColumnsType = None,

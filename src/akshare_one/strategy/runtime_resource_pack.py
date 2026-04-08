@@ -65,7 +65,7 @@ class RuntimeResourcePack:
         },
     }
 
-    DEFAULT_RUNTIME_BASE = Path("data") / "runtime_outputs"
+    DEFAULT_RUNTIME_BASE = Path("/tmp") / "akshare_one" / "runtime_outputs"
 
     _current_strategy_name: Optional[str] = None
     _lock = threading.Lock()
@@ -87,12 +87,7 @@ class RuntimeResourcePack:
 
     @classmethod
     def _get_default_runtime_base(cls) -> Path:
-        # 从 src/strategy/runtime_resource_pack.py 向上两级到项目根目录
-        # Path(__file__) = src/strategy/runtime_resource_pack.py
-        # parent = src/strategy/
-        # parent.parent = src/
-        # parent.parent.parent = 项目根目录
-        base_dir = Path(__file__).parent.parent.parent / cls.DEFAULT_RUNTIME_BASE
+        base_dir = cls.DEFAULT_RUNTIME_BASE
         base_dir.mkdir(parents=True, exist_ok=True)
         return base_dir
 

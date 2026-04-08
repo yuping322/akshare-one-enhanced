@@ -31,15 +31,12 @@ class GoldenSampleValidator:
         """
         self.module_name = module_name
         if samples_dir is None:
-            # Default to tests/golden_samples/
-            test_dir = Path(__file__).parent.parent
-            samples_dir = test_dir / "golden_samples"
+            # Default to /tmp/akshare_one/tests/golden_samples/
+            samples_dir = Path("/tmp") / "akshare_one" / "tests" / "golden_samples"
         self.samples_dir = samples_dir / module_name
         self.samples_dir.mkdir(parents=True, exist_ok=True)
 
-    def save_golden_sample(
-        self, sample_name: str, data: pd.DataFrame, metadata: dict[str, Any] | None = None
-    ) -> None:
+    def save_golden_sample(self, sample_name: str, data: pd.DataFrame, metadata: dict[str, Any] | None = None) -> None:
         """
         Save a golden sample for future comparison.
 
@@ -88,16 +85,13 @@ class GoldenSampleValidator:
 
         if not sample_path.exists():
             raise FileNotFoundError(
-                f"Golden sample not found: {sample_path}\n"
-                f"Create it first using save_golden_sample()"
+                f"Golden sample not found: {sample_path}\nCreate it first using save_golden_sample()"
             )
 
         with open(sample_path, encoding="utf-8") as f:
             return json.load(f)
 
-    def validate_schema(
-        self, sample_name: str, data: pd.DataFrame, strict_dtypes: bool = False
-    ) -> list[str]:
+    def validate_schema(self, sample_name: str, data: pd.DataFrame, strict_dtypes: bool = False) -> list[str]:
         """
         Validate DataFrame against golden sample schema.
 
@@ -125,9 +119,7 @@ class GoldenSampleValidator:
             if extra:
                 errors.append(f"Extra columns: {extra}")
             if set(expected_columns) == set(actual_columns):
-                errors.append(
-                    f"Column order changed: expected {expected_columns}, got {actual_columns}"
-                )
+                errors.append(f"Column order changed: expected {expected_columns}, got {actual_columns}")
 
         # Check dtypes (if strict)
         if strict_dtypes:
@@ -137,16 +129,11 @@ class GoldenSampleValidator:
                     expected_dtype = expected_dtypes[col]
                     actual_dtype = str(data[col].dtype)
                     if expected_dtype != actual_dtype:
-                        errors.append(
-                            f"Column '{col}' dtype mismatch: "
-                            f"expected {expected_dtype}, got {actual_dtype}"
-                        )
+                        errors.append(f"Column '{col}' dtype mismatch: expected {expected_dtype}, got {actual_dtype}")
 
         return errors
 
-    def assert_schema_matches(
-        self, sample_name: str, data: pd.DataFrame, strict_dtypes: bool = False
-    ) -> None:
+    def assert_schema_matches(self, sample_name: str, data: pd.DataFrame, strict_dtypes: bool = False) -> None:
         """
         Assert that DataFrame matches golden sample schema.
 

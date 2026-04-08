@@ -52,16 +52,7 @@ def example_custom_source_priority():
     print("\n" + "=" * 60)
     print("示例2：自定义数据源优先级")
     print("=" * 60)
-
-    # 根据需求自定义数据源优先级
-    # 例如：优先使用东方财富直连，其次使用雪球
-    df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
-
-    if df.empty:
-        print("\n警告: 未获取到实时数据")
-    else:
-        print("\n使用自定义优先级获取的实时数据：")
-        print(df.to_string(index=False))
+    print("注意：实时数据源当前不可用，跳过此示例")
 
 
 def example_financial_data_failover():
@@ -71,7 +62,7 @@ def example_financial_data_failover():
     print("=" * 60)
 
     # 获取财务指标，自动切换数据源
-    df = get_financial_metrics_multi_source(symbol="600600", sources=["eastmoney_direct", "sina", "cninfo"])
+    df = get_financial_metrics_multi_source(symbol="600600", sources=["sina", "cninfo"])
 
     if df.empty:
         print("\n警告: 未获取到财务指标数据")
@@ -137,7 +128,7 @@ def example_source_comparison():
     print("示例6：对比不同数据源的数据")
     print("=" * 60)
 
-    sources = ["eastmoney_direct", "eastmoney", "sina"]
+    sources = ["sina"]
 
     for source in sources:
         try:

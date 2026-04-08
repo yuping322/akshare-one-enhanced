@@ -95,3 +95,32 @@ class SinaFundFlowProvider(FundFlowProvider):
     def get_concept_constituents(self, concept_code: str) -> pd.DataFrame:
         """Get constituent stocks of a concept sector from Sina."""
         return self.create_empty_dataframe(["symbol", "name", "weight", "net_inflow", "price_change"])
+
+    def get_sector_list(self, sector_type: str = "industry") -> pd.DataFrame:
+        """
+        Get list of sectors (industry or concept) from Sina.
+
+        Args:
+            sector_type: 'industry' or 'concept'
+
+        Returns:
+            pd.DataFrame: Empty DataFrame (Sina not implemented)
+        """
+        if sector_type not in ["industry", "concept"]:
+            raise ValueError("sector_type must be 'industry' or 'concept'")
+        return self.create_empty_dataframe(["sector_code", "sector_name"])
+
+    def get_sector_constituents(self, sector_code: str, sector_type: str = "industry") -> pd.DataFrame:
+        """
+        Get constituent stocks of a sector from Sina.
+
+        Args:
+            sector_code: Sector code or name
+            sector_type: 'industry' or 'concept'
+
+        Returns:
+            pd.DataFrame: Empty DataFrame (Sina not implemented)
+        """
+        if sector_type not in ["industry", "concept"]:
+            raise ValueError("sector_type must be 'industry' or 'concept'")
+        return self.create_empty_dataframe(["symbol", "name", "weight", "net_inflow", "price_change"])

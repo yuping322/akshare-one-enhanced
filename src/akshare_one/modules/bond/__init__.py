@@ -11,7 +11,7 @@ from typing import Optional, Any
 import pandas as pd
 
 
-@api_endpoint(BondFactory)
+@api_endpoint(BondFactory, method_name="get_bond_list")
 def get_bond_list(
     source: Optional[str] = None, columns: list[str] | None = None, row_filter: dict[str, Any] | None = None
 ) -> pd.DataFrame:
@@ -46,7 +46,7 @@ def get_bond_realtime_data(
     pass
 
 
-@api_endpoint(BondFactory)
+@api_endpoint(BondFactory, method_name="get_bond_premium")
 def get_bond_premium(
     symbol: str,
     source: Optional[str] = None,

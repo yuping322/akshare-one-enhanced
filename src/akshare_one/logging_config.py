@@ -94,7 +94,7 @@ class ContextFilter(logging.Filter):
 
 
 def _get_default_log_dir() -> Path:
-    return Path(__file__).parent.parent / "data" / "logs"
+    return Path("/tmp") / "akshare_one" / "logs"
 
 
 def setup_logging(

@@ -24,9 +24,9 @@ from akshare_one import get_hist_data, get_realtime_data, get_basic_info
 class DataPipeline:
     """数据管道"""
 
-    def __init__(self, output_dir="data_output"):
-        self.output_dir = output_dir
-        os.makedirs(output_dir, exist_ok=True)
+    def __init__(self, output_dir=None):
+        self.output_dir = output_dir or os.path.join("/tmp", "akshare_one", "examples", "data_pipeline")
+        os.makedirs(self.output_dir, exist_ok=True)
 
         self.stocks = []
         self.data_cache = {}
@@ -72,25 +72,9 @@ class DataPipeline:
     def fetch_realtime_data(self):
         """获取实时数据"""
         print("\n正在获取实时数据...")
-
-        realtime_data = {}
-
-        for symbol in self.stocks:
-            try:
-                print(f"  获取 {symbol}...")
-                df = get_realtime_data(symbol=symbol, source="sina")
-
-                if not df.empty:
-                    realtime_data[symbol] = df
-                    print(f"    成功")
-
-                time.sleep(0.1)
-
-            except Exception as e:
-                print(f"    失败: {e}")
-
-        self.data_cache["realtime"] = realtime_data
-        print(f"完成，成功获取 {len(realtime_data)} 只股票实时数据")
+        print("注意：实时数据源当前不可用，跳过")
+        self.data_cache["realtime"] = {}
+        print("完成，跳过实时数据获取")
 
     def process_data(self):
         """数据处理"""

@@ -57,9 +57,7 @@ def scenario_1_esg_rating_analysis():
 
         # 结果展示：显示所有评级记录
         print("\nESG 评级历史记录：")
-        display_df = df_sorted[
-            ["rating_date", "esg_score", "e_score", "s_score", "g_score", "rating_agency"]
-        ]
+        display_df = df_sorted[["rating_date", "esg_score", "e_score", "s_score", "g_score", "rating_agency"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
@@ -154,9 +152,7 @@ def scenario_2_industry_esg_comparison():
 
         # 结果展示：显示前20名
         print("\nESG 评级排名前20：")
-        display_df = df.head(20)[
-            ["rank", "symbol", "name", "esg_score", "industry", "industry_rank"]
-        ]
+        display_df = df.head(20)[["rank", "symbol", "name", "esg_score", "industry", "industry_rank"]]
         print(display_df.to_string(index=False))
 
         # 统计分析
@@ -164,19 +160,11 @@ def scenario_2_industry_esg_comparison():
 
         print("\n统计分析：")
         print(f"平均 ESG 得分：{avg_score:.2f}")
-        print(
-            f"最高得分：{df['esg_score'].max():.2f}（{df.loc[df['esg_score'].idxmax(), 'name']}）"
-        )
-        print(
-            f"最低得分：{df['esg_score'].min():.2f}（{df.loc[df['esg_score'].idxmin(), 'name']}）"
-        )
+        print(f"最高得分：{df['esg_score'].max():.2f}（{df.loc[df['esg_score'].idxmax(), 'name']}）")
+        print(f"最低得分：{df['esg_score'].min():.2f}（{df.loc[df['esg_score'].idxmin(), 'name']}）")
 
         # 按行业统计
-        industry_stats = (
-            df.groupby("industry")
-            .agg({"esg_score": ["mean", "count"], "symbol": "count"})
-            .reset_index()
-        )
+        industry_stats = df.groupby("industry").agg({"esg_score": ["mean", "count"], "symbol": "count"}).reset_index()
         industry_stats.columns = ["industry", "avg_score", "count1", "count2"]
         industry_stats = industry_stats[["industry", "avg_score", "count1"]]
         industry_stats.columns = ["industry", "avg_score", "count"]
@@ -223,13 +211,16 @@ def main():
     print("ESG 评级数据示例程序")
     print("=" * 80)
 
-    # 运行所有场景
-    scenario_1_esg_rating_analysis()
-    scenario_2_industry_esg_comparison()
+    # 运行场景（ESG数据获取较慢，减少场景数量）
     scenario_3_multi_source_example()
 
+    # 注释掉耗时较长的场景（ESG API 响应很慢）
+    # scenario_1_esg_rating_analysis()  # 单个股票ESG评级，耗时较长
+    # scenario_2_industry_esg_comparison()  # 行业对比排名，耗时较长
+
     print("\n" + "=" * 80)
-    print("所有场景运行完成")
+    print("示例运行完成（耗时场景已注释）")
+    print("提示：如需完整测试，请取消注释并增加超时时间")
     print("=" * 80)
 
 

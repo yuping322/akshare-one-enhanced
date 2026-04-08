@@ -63,7 +63,10 @@ class VersionTestResult:
 # Critical AkShare functions used in the project
 CRITICAL_FUNCTIONS = {
     "stock": [
-        ("stock_zh_a_hist", {"symbol": "600000", "period": "daily", "start_date": "20240101", "end_date": "20240110", "adjust": ""}),
+        (
+            "stock_zh_a_hist",
+            {"symbol": "600000", "period": "daily", "start_date": "20240101", "end_date": "20240110", "adjust": ""},
+        ),
         ("stock_zh_a_hist_min_em", {"symbol": "600000", "period": "5", "adjust": ""}),
         ("stock_zh_a_spot_em", {}),
         ("stock_individual_info_em", {"symbol": "600000"}),
@@ -375,7 +378,7 @@ def test_single_version(version: str | None = None) -> int:
     result = test_all_functions_in_version(version)
 
     # Save JSON results
-    output_dir = Path("test_results/akshare_compatibility")
+    output_dir = Path("/tmp") / "akshare_one" / "test_results" / "akshare_compatibility"
     json_file = output_dir / f"akshare_{result.version}_test.json"
     save_results_to_json(result, json_file)
 
@@ -448,7 +451,7 @@ def test_multiple_versions(versions: list[str]) -> int:
         install_akshare_version(current_version)
 
     # Generate combined report
-    output_dir = Path("test_results/akshare_compatibility")
+    output_dir = Path("/tmp") / "akshare_one" / "test_results" / "akshare_compatibility"
     md_file = output_dir / "akshare_multi_version_report.md"
     generate_markdown_report(results, md_file)
 

@@ -89,13 +89,32 @@ class LixingerIPOProvider(IPOProvider):
 
     def _standardize_new_stocks(self, df: pd.DataFrame) -> pd.DataFrame:
         out = pd.DataFrame()
-        out["symbol"] = df.get("stockCode", pd.Series([""] * len(df))).astype(str).str.zfill(6)
-        out["name"] = df.get("cnName", pd.Series([""] * len(df))).astype(str)
-        out["ipo_date"] = pd.to_datetime(
-            df.get("listingDate"), errors="coerce"
-        ).dt.strftime("%Y-%m-%d")
-        out["market"] = df.get("market", pd.Series([""] * len(df))).astype(str)
-        out["area_code"] = df.get("areaCode", pd.Series([""] * len(df))).astype(str)
+
+        if "stockCode" in df.columns:
+            out["symbol"] = df["stockCode"].astype(str).str.zfill(6)
+        else:
+            out["symbol"] = ""
+
+        if "cnName" in df.columns:
+            out["name"] = df["cnName"].astype(str)
+        else:
+            out["name"] = ""
+
+        if "listingDate" in df.columns:
+            out["ipo_date"] = pd.to_datetime(df["listingDate"], errors="coerce").dt.strftime("%Y-%m-%d")
+        else:
+            out["ipo_date"] = ""
+
+        if "market" in df.columns:
+            out["market"] = df["market"].astype(str)
+        else:
+            out["market"] = ""
+
+        if "areaCode" in df.columns:
+            out["area_code"] = df["areaCode"].astype(str)
+        else:
+            out["area_code"] = ""
+
         out = out.sort_values("ipo_date", ascending=False, na_position="last").reset_index(drop=True)
         return self.ensure_json_compatible(out)
 

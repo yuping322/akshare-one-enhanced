@@ -711,7 +711,7 @@ class TestOptionsMappingManager:
         from akshare_one.modules.options.mapping_manager import DynamicMappingManager
 
         manager = DynamicMappingManager()
-        assert manager.cache_dir == "mapping_tables"
+        assert manager.cache_dir == os.path.join("/tmp", "akshare_one", "mapping_tables")
         assert manager._underlying_patterns is None
         assert manager._last_update is None
 

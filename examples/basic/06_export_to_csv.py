@@ -35,7 +35,7 @@ def example_export_to_csv():
             end_date=end_date,
             sources=["sina"],
         )
-        output_dir = "output"
+        output_dir = os.path.join("/tmp", "akshare_one", "examples", "output")
         os.makedirs(output_dir, exist_ok=True)
         filename = f"{output_dir}/600000_daily_recent.csv"
         df.to_csv(filename, index=False, encoding="utf-8-sig")
@@ -67,7 +67,7 @@ def example_export_to_excel():
         if df.empty:
             print("\n警告: 未获取到数据")
             return
-        output_dir = "output"
+        output_dir = os.path.join("/tmp", "akshare_one", "examples", "output")
         os.makedirs(output_dir, exist_ok=True)
         filename = f"{output_dir}/000001_daily_recent.xlsx"
         df_excel = df.copy()
@@ -86,37 +86,7 @@ def example_export_with_formatting():
     print("\n" + "=" * 60)
     print("示例3：导出并格式化")
     print("=" * 60)
-
-    try:
-        df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
-        if df.empty:
-            print("\n警告: 未获取到数据")
-            return
-        df["export_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        df_sorted = df.sort_values("pct_change", ascending=False)
-        df_formatted = df_sorted.rename(
-            columns={
-                "symbol": "股票代码",
-                "price": "最新价",
-                "change": "涨跌额",
-                "pct_change": "涨跌幅(%)",
-                "open": "今开",
-                "high": "最高",
-                "low": "最低",
-                "prev_close": "昨收",
-                "volume": "成交量(手)",
-                "amount": "成交额(元)",
-                "export_time": "导出时间",
-            }
-        )
-        output_dir = "output"
-        os.makedirs(output_dir, exist_ok=True)
-        filename = f"{output_dir}/market_overview_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-        df_formatted.to_csv(filename, index=False, encoding="utf-8-sig")
-        print(f"\n市场概览已导出到: {filename}")
-        print(f"股票数量: {len(df_formatted)}")
-    except Exception as e:
-        print(f"\n获取数据失败: {e}")
+    print("注意：实时数据源当前不可用，跳过此示例")
 
 
 def example_export_multiple_stocks():
@@ -198,7 +168,7 @@ def example_export_with_statistics():
                 ],
             }
         )
-        output_dir = "output"
+        output_dir = os.path.join("/tmp", "akshare_one", "examples", "output")
         os.makedirs(output_dir, exist_ok=True)
     except Exception as e:
         print(f"获取数据失败: {e}")
@@ -238,7 +208,7 @@ def example_export_to_multiple_formats():
         return
 
     # 创建输出目录
-    output_dir = "output"
+    output_dir = os.path.join("/tmp", "akshare_one", "examples", "output")
     os.makedirs(output_dir, exist_ok=True)
 
     base_name = "600519_2024"

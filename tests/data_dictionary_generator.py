@@ -27,9 +27,9 @@ sys.path.insert(0, PROJECT_ROOT)
 class DataDictionaryGenerator:
     """数据字典生成器"""
 
-    def __init__(self, output_dir: str = "docs"):
-        self.output_dir = output_dir
-        os.makedirs(output_dir, exist_ok=True)
+    def __init__(self, output_dir: str = None):
+        self.output_dir = output_dir or os.path.join("/tmp", "akshare_one", "docs")
+        os.makedirs(self.output_dir, exist_ok=True)
 
         self._providers = self._discover_providers()
         self._field_registry: dict[str, dict[str, Any]] = defaultdict(
@@ -148,9 +148,7 @@ class DataDictionaryGenerator:
 
                 config = get_field_mapping_config()
                 result["config"] = {
-                    "field_types": {
-                        k: v.value for k, v in config.get_field_types(module_name).items()
-                    },
+                    "field_types": {k: v.value for k, v in config.get_field_types(module_name).items()},
                     "amount_fields": config.get_amount_fields(module_name),
                 }
             except Exception:
@@ -230,16 +228,12 @@ class DataDictionaryGenerator:
                     )
                     all_dictionaries["field_index"][field]["modules"].append(module)
                     all_dictionaries["field_index"][field]["types"].add(info["inferred_type"])
-                    all_dictionaries["field_index"][field]["sample_values"].extend(
-                        info["sample_values"]
-                    )
+                    all_dictionaries["field_index"][field]["sample_values"].extend(info["sample_values"])
             else:
                 print(f"  ✗ 失败: {result.get('error', '未知错误')}")
 
         for field in all_dictionaries["field_index"]:
-            all_dictionaries["field_index"][field]["types"] = list(
-                all_dictionaries["field_index"][field]["types"]
-            )
+            all_dictionaries["field_index"][field]["types"] = list(all_dictionaries["field_index"][field]["types"])
             all_dictionaries["field_index"][field]["sample_values"] = list(
                 set(all_dictionaries["field_index"][field]["sample_values"][:10])
             )
@@ -322,9 +316,7 @@ class DataDictionaryGenerator:
         for field, info in sorted_fields:
             if len(info["modules"]) > 5:
                 samples = ", ".join(str(v) for v in info["sample_values"][:3])
-                lines.append(
-                    f"| {field} | {len(info['modules'])} | {', '.join(info['types'])} | {samples} |"
-                )
+                lines.append(f"| {field} | {len(info['modules'])} | {', '.join(info['types'])} | {samples} |")
 
         lines.extend(
             [

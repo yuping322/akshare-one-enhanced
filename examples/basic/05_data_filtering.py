@@ -74,29 +74,7 @@ def example_query_filtering():
     print("\n" + "=" * 60)
     print("示例4：使用查询表达式过滤")
     print("=" * 60)
-
-    try:
-        df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
-        if df.empty:
-            print("\n警告: 未获取到数据")
-            return
-        df_filtered = apply_data_filter(
-            df,
-            columns=["symbol", "price", "pct_change", "volume"],
-            row_filter={
-                "query": "pct_change > 3 and pct_change < 9.9 and volume > 10000",
-                "sort_by": "pct_change",
-                "ascending": False,
-                "top_n": 20,
-            },
-        )
-        if not df_filtered.empty:
-            print("\n涨幅3%-9.9%且成交量>1万手的股票：")
-            print(df_filtered.to_string(index=False))
-        else:
-            print("\n没有符合条件的数据")
-    except Exception as e:
-        print(f"\n获取数据失败: {e}")
+    print("注意：实时数据源当前不可用，跳过此示例")
 
 
 def example_sampling():
@@ -134,29 +112,7 @@ def example_combined_filtering():
     print("\n" + "=" * 60)
     print("示例6：组合过滤")
     print("=" * 60)
-
-    try:
-        df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
-        if df.empty:
-            print("\n警告: 未获取到数据")
-            return
-        df_filtered = apply_data_filter(
-            df,
-            columns=["symbol", "price", "pct_change", "volume", "amount"],
-            row_filter={
-                "query": "pct_change > 2 and volume > 50000",
-                "sort_by": "pct_change",
-                "ascending": False,
-                "top_n": 20,
-            },
-        )
-        print(f"\n原始数据: {len(df)} 条")
-        print(f"过滤后数据: {len(df_filtered)} 条")
-        if not df_filtered.empty:
-            print("\n过滤结果：")
-            print(df_filtered.to_string(index=False))
-    except Exception as e:
-        print(f"\n获取数据失败: {e}")
+    print("注意：实时数据源当前不可用，跳过此示例")
 
 
 def example_statistical_analysis():

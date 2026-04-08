@@ -34,13 +34,17 @@ class FundFlowProvider(BaseProvider):
         """
         Get individual stock fund flow data.
         """
-        return self._execute_api_mapped("get_stock_fund_flow", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
+        return self._execute_api_mapped(
+            "get_stock_fund_flow", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs
+        )
 
     def get_sector_fund_flow(self, sector_type: str, start_date: str, end_date: str, **kwargs: Any) -> pd.DataFrame:
         """
         Get sector fund flow data.
         """
-        return self._execute_api_mapped("get_sector_fund_flow", sector_type=sector_type, start_date=start_date, end_date=end_date, **kwargs)
+        return self._execute_api_mapped(
+            "get_sector_fund_flow", sector_type=sector_type, start_date=start_date, end_date=end_date, **kwargs
+        )
 
     def get_main_fund_flow_rank(self, date: str, indicator: str, **kwargs: Any) -> pd.DataFrame:
         """
@@ -71,6 +75,18 @@ class FundFlowProvider(BaseProvider):
         Get constituent stocks of a concept sector.
         """
         return self._execute_api_mapped("get_concept_constituents", concept_code=concept_code, **kwargs)
+
+    def get_sector_list(self, sector_type: str, **kwargs: Any) -> pd.DataFrame:
+        """
+        Get list of sectors (industry or concept).
+        """
+        return self._execute_api_mapped("get_sector_list", sector_type=sector_type, **kwargs)
+
+    def get_sector_constituents(self, sector_code: str, **kwargs: Any) -> pd.DataFrame:
+        """
+        Get constituent stocks of a sector.
+        """
+        return self._execute_api_mapped("get_sector_constituents", sector_code=sector_code, **kwargs)
 
 
 class FundFlowFactory(BaseFactory["FundFlowProvider"]):

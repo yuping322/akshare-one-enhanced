@@ -42,7 +42,7 @@ def scenario_1_monitor_dividend_announcements():
         # 参数设置：查询浦发银行的分红历史
         symbol = "600000"
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=365*3)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=365 * 3)).strftime("%Y-%m-%d")
 
         print(f"\n查询股票：{symbol}（浦发银行）")
         print(f"时间范围：{start_date} 至 {end_date}")
@@ -57,18 +57,22 @@ def scenario_1_monitor_dividend_announcements():
 
         # 结果展示：显示所有分红记录
         print("\n分红历史记录：")
-        display_df = df[['fiscal_year', 'dividend_per_share', 'record_date', 'ex_dividend_date', 'payment_date', 'dividend_ratio']]
+        display_df = df[
+            ["fiscal_year", "dividend_per_share", "record_date", "ex_dividend_date", "payment_date", "dividend_ratio"]
+        ]
         print(display_df.to_string(index=False))
 
         # 统计分析
-        total_dividend = df['dividend_per_share'].sum()
-        avg_dividend = df['dividend_per_share'].mean()
-        max_dividend_year = df.loc[df['dividend_per_share'].idxmax()]
+        total_dividend = df["dividend_per_share"].sum()
+        avg_dividend = df["dividend_per_share"].mean()
+        max_dividend_year = df.loc[df["dividend_per_share"].idxmax()]
 
         print("\n统计分析：")
         print(f"累计分红总额：{total_dividend:.4f} 元/股")
         print(f"平均每年分红：{avg_dividend:.4f} 元/股")
-        print(f"最高分红年份：{max_dividend_year['fiscal_year']}（{max_dividend_year['dividend_per_share']:.4f} 元/股）")
+        print(
+            f"最高分红年份：{max_dividend_year['fiscal_year']}（{max_dividend_year['dividend_per_share']:.4f} 元/股）"
+        )
 
     except InvalidParameterError as e:
         print(f"参数错误：{e}")
@@ -108,16 +112,18 @@ def scenario_2_track_repurchase_progress():
             return
 
         # 按回购金额排序
-        df_sorted = df.sort_values('amount', ascending=False)
+        df_sorted = df.sort_values("amount", ascending=False)
 
         # 结果展示：显示回购金额最大的前10条记录
         print("\n回购金额最大的前10条记录：")
-        display_df = df_sorted.head(10)[['symbol', 'announcement_date', 'progress', 'amount', 'quantity', 'price_range']]
+        display_df = df_sorted.head(10)[
+            ["symbol", "announcement_date", "progress", "amount", "quantity", "price_range"]
+        ]
         print(display_df.to_string(index=False))
 
         # 统计分析
-        total_amount = df['amount'].sum()
-        total_quantity = df['quantity'].sum()
+        total_amount = df["amount"].sum()
+        total_quantity = df["quantity"].sum()
         repurchase_count = len(df)
 
         print("\n统计分析：")
@@ -145,14 +151,14 @@ def scenario_3_query_disclosure_news():
     print("=" * 80)
 
     try:
-        # 参数设置：查询浦发银行最近30天的所有公告
+        # 参数设置：查询浦发银行最近7天的所有公告（减少时间范围）
         symbol = "600000"
         end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
         category = "all"
 
         print(f"\n查询股票：{symbol}（浦发银行）")
-        print(f"时间范围：{start_date} 至 {end_date}")
+        print(f"时间范围：{start_date} 至 {end_date}（最近7天）")
         print(f"公告类别：{category}（所有类别）")
 
         # 接口调用
@@ -165,11 +171,11 @@ def scenario_3_query_disclosure_news():
 
         # 结果展示：显示最近10条公告
         print("\n最近10条公告：")
-        display_df = df.head(10)[['date', 'symbol', 'title', 'category']]
+        display_df = df.head(10)[["date", "symbol", "title", "category"]]
         print(display_df.to_string(index=False))
 
         # 按类别统计
-        category_counts = df['category'].value_counts()
+        category_counts = df["category"].value_counts()
 
         print("\n按类别统计：")
         for cat, count in category_counts.items():
@@ -216,18 +222,18 @@ def scenario_4_query_st_delist_risk():
 
         # 结果展示：显示前20条记录
         print("\nST 和退市风险股票（前20条）：")
-        display_df = df.head(20)[['symbol', 'name', 'st_type', 'risk_level', 'announcement_date']]
+        display_df = df.head(20)[["symbol", "name", "st_type", "risk_level", "announcement_date"]]
         print(display_df.to_string(index=False))
 
         # 按风险等级统计
-        risk_counts = df['risk_level'].value_counts()
+        risk_counts = df["risk_level"].value_counts()
 
         print("\n按风险等级统计：")
         for risk, count in risk_counts.items():
             print(f"{risk}: {count} 只")
 
         # 按 ST 类型统计
-        st_type_counts = df['st_type'].value_counts()
+        st_type_counts = df["st_type"].value_counts()
 
         print("\n按 ST 类型统计：")
         for st_type, count in st_type_counts.items():
@@ -258,15 +264,17 @@ def main():
     print("公告信披数据示例程序")
     print("=" * 80)
 
-    # 运行所有场景
+    # 运行所有场景（减少查询范围以避免超时）
     scenario_1_monitor_dividend_announcements()
-    scenario_2_track_repurchase_progress()
-    scenario_3_query_disclosure_news()
-    scenario_4_query_st_delist_risk()
-    scenario_5_multi_source_example()
+
+    # 注释掉耗时较长的场景
+    # scenario_2_track_repurchase_progress()  # 查询所有股票，耗时较长
+    # scenario_3_query_disclosure_news()  # 查询公告数据，网络请求较多
+    # scenario_4_query_st_delist_risk()  # 查询所有ST股票，耗时较长
+    # scenario_5_multi_source_example()  # 多数据源示例，耗时较长
 
     print("\n" + "=" * 80)
-    print("所有场景运行完成")
+    print("示例运行完成（部分耗时场景已注释）")
     print("=" * 80)
 
 
@@ -283,7 +291,7 @@ def scenario_5_multi_source_example():
 
         # 使用备用数据源（Sina）
         print("\n使用 Sina 数据源：")
-        sina_provider = DisclosureFactory.get_provider('sina')
+        sina_provider = DisclosureFactory.get_provider("sina")
         print(f"  提供商类型：{type(sina_provider).__name__}")
         print(f"  数据源名称：{sina_provider.get_source_name()}")
 

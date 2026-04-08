@@ -237,17 +237,58 @@ class LixingerFinancialProvider(FinancialDataProvider):
         self, columns: list | None = None, row_filter: dict | None = None, **kwargs
     ) -> pd.DataFrame:
         """
-        Get dividend history from Lixinger.
-
-        Note: Lixinger cn/company/fs/non_financial API does not provide dividend data.
-        Returns empty DataFrame.
+        Get dividend history from Lixinger via cn/company/dividend.
 
         Args:
             columns: Optional column filter
             row_filter: Optional row filter
-            **kwargs: Additional parameters
+            **kwargs: start_date, end_date
 
         Returns:
-            pd.DataFrame: Empty DataFrame (not supported by this API)
+            pd.DataFrame: Dividend history with announcement_date, dividend_per_share, ex_date, etc.
         """
-        return pd.DataFrame()
+        client = get_lixinger_client()
+
+        start_date = kwargs.get("start_date", "1970-01-01")
+        end_date = kwargs.get("end_date", "2099-12-31")
+
+        params = {"stockCode": self.symbol, "startDate": start_date, "endDate": end_date}
+
+        response = client.query_api("cn/company/dividend", params)
+
+        if response.get("code") != 1:
+            return pd.DataFrame()
+
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.DataFrame(data)
+
+        rename = {
+            "date": "announcement_date",
+            "content": "content",
+            "bonusSharesFromProfit": "bonus_shares_from_profit",
+            "bonusSharesFromCapitalReserve": "bonus_shares_from_reserve",
+            "dividend": "dividend_per_share",
+            "currency": "currency",
+            "dividendAmount": "dividend_amount",
+            "annualNetProfit": "annual_net_profit",
+            "annualNetProfitDividendRatio": "dividend_ratio",
+            "registerDate": "record_date",
+            "exDate": "ex_date",
+            "paymentDate": "payment_date",
+            "fsEndDate": "fiscal_year_end",
+        }
+        df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
+
+        df["symbol"] = self.symbol.zfill(6) if self.symbol else ""
+
+        for date_col in ["announcement_date", "record_date", "ex_date", "payment_date", "fiscal_year_end"]:
+            if date_col in df.columns:
+                df[date_col] = pd.to_datetime(df[date_col], errors="coerce").dt.strftime("%Y-%m-%d")
+
+        if "announcement_date" in df.columns:
+            df = df.sort_values("announcement_date", ascending=False, na_position="last").reset_index(drop=True)
+
+        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)

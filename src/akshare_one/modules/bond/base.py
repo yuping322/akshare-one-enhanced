@@ -7,8 +7,10 @@ import pandas as pd
 from ..base import BaseProvider
 from ..factory_base import BaseFactory
 
+
 class BondProvider(BaseProvider):
     """Base class for bond data providers."""
+
     def get_data_type(self) -> str:
         return "bond"
 
@@ -19,10 +21,20 @@ class BondProvider(BaseProvider):
         """Get list of active bonds (Conversion bonds)."""
         return self._execute_api_mapped("get_bond_list")
 
+    def get_bond_hist(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+        """Get bond historical data."""
+        return self._execute_api_mapped("get_bond_hist", symbol=symbol, start_date=start_date, end_date=end_date)
+
+    def get_bond_spot(self) -> pd.DataFrame:
+        """Get bond realtime quotes."""
+        return self._execute_api_mapped("get_bond_spot")
+
     def get_bond_premium(self, symbol: str) -> pd.DataFrame:
         """Get bond premium rates and valuation."""
         return self._execute_api_mapped("get_bond_premium", symbol=symbol)
 
+
 class BondFactory(BaseFactory[BondProvider]):
     """Factory for bond data providers."""
+
     _providers: dict[str, type[BondProvider]] = {}

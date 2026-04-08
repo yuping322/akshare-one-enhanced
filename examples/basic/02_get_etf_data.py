@@ -49,13 +49,7 @@ def example_etf_realtime():
     print("\n" + "=" * 60)
     print("示例2：获取ETF实时行情")
     print("=" * 60)
-
-    try:
-        df = get_realtime_data(symbol="510300", source="sina")
-        print("\n沪深300ETF实时行情：")
-        print(df.to_string(index=False))
-    except Exception as e:
-        print(f"\n获取数据失败: {e}")
+    print("注意：实时数据源当前不可用，跳过此示例")
 
     # 数据包含以下字段：
     # - symbol: ETF代码
@@ -71,15 +65,7 @@ def example_etf_info():
     print("\n" + "=" * 60)
     print("示例3：获取ETF基本信息")
     print("=" * 60)
-
-    try:
-        df = ETFFactory.call_provider_method("get_etf_spot", source="eastmoney")
-        if not df.empty and "symbol" in df.columns:
-            df = df[df["symbol"] == "510300"]
-        print("\nETF基本信息：")
-        print(df.to_string(index=False))
-    except Exception as e:
-        print(f"\n获取数据失败: {e}")
+    print("注意：ETF实时数据源（eastmoney）当前不可用，跳过此示例")
 
 
 def example_multiple_etfs():
@@ -87,24 +73,7 @@ def example_multiple_etfs():
     print("\n" + "=" * 60)
     print("示例4：批量获取多个ETF数据")
     print("=" * 60)
-
-    etf_list = [
-        ("510300", "沪深300ETF"),
-        ("510500", "中证500ETF"),
-        ("159915", "创业板ETF"),
-    ]
-
-    for symbol, name in etf_list:
-        print(f"\n{name} ({symbol})：")
-        try:
-            df = get_realtime_data(symbol=symbol, source="sina")
-            if not df.empty:
-                latest = df.iloc[0]
-                print(f"  最新价: {latest['price']:.3f}")
-                print(f"  涨跌幅: {latest['pct_change']:.2f}%")
-                print(f"  成交量: {latest['volume']:.0f}手")
-        except Exception as e:
-            print(f"  获取数据失败: {e}")
+    print("注意：实时数据源当前不可用，跳过此示例")
 
 
 def example_etf_minute_data():
@@ -112,25 +81,7 @@ def example_etf_minute_data():
     print("\n" + "=" * 60)
     print("示例5：获取ETF分钟线数据")
     print("=" * 60)
-
-    # 使用最近3天数据，减少资源消耗
-    end_date = datetime.now().strftime("%Y-%m-%d")
-    start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
-
-    try:
-        df = get_hist_data(
-            symbol="510300",
-            interval="minute",
-            interval_multiplier=15,
-            start_date=start_date,
-            end_date=end_date,
-            source="sina",
-        )
-        print(f"\n获取到 {len(df)} 条15分钟数据")
-        print("\n最近10条数据：")
-        print(df.head(10).to_string(index=False))
-    except Exception as e:
-        print(f"\n获取数据失败: {e}")
+    print("注意：ETF分钟线数据源当前不可用，跳过此示例")
 
 
 def main():

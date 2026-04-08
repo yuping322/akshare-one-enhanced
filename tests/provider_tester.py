@@ -23,9 +23,9 @@ sys.path.insert(0, PROJECT_ROOT)
 class ProviderTester:
     """Provider 接口测试器"""
 
-    def __init__(self, output_dir: str = "tests/results"):
-        self.output_dir = output_dir
-        os.makedirs(output_dir, exist_ok=True)
+    def __init__(self, output_dir: str = None):
+        self.output_dir = output_dir or os.path.join("/tmp", "akshare_one", "tests", "results")
+        os.makedirs(self.output_dir, exist_ok=True)
 
         self.test_results = {
             "total": 0,
@@ -129,9 +129,7 @@ class ProviderTester:
             try:
                 raw_df = provider.fetch_data()
                 if raw_df is not None and not raw_df.empty:
-                    result["field_types_inferred"] = {
-                        k: v.value for k, v in provider.infer_field_types(raw_df).items()
-                    }
+                    result["field_types_inferred"] = {k: v.value for k, v in provider.infer_field_types(raw_df).items()}
                     result["amount_fields_inferred"] = provider.infer_amount_fields(raw_df)
             except Exception:
                 pass
@@ -196,10 +194,7 @@ class ProviderTester:
 
         if parallel:
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = {
-                    executor.submit(self.test_provider_basic, module): module
-                    for module in test_modules
-                }
+                futures = {executor.submit(self.test_provider_basic, module): module for module in test_modules}
 
                 for future in as_completed(futures):
                     module = futures[future]

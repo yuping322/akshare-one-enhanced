@@ -200,7 +200,7 @@ class PortfolioAnalysis:
         # 显示净值曲线
         if self.portfolio_df is not None and not self.portfolio_df.empty:
             print("\n组合净值曲线（月末）：")
-            monthly = self.portfolio_df.groupby(self.portfolio_df["timestamp"].str[:7]).last()
+            monthly = self.portfolio_df.groupby(self.portfolio_df["timestamp"].astype(str).str[:7]).last()
             print(monthly[["net_value"]].head(12).to_string())
 
 

@@ -33,6 +33,9 @@ class JslBondProvider(BondProvider):
         "get_bond_spot": {
             "ak_func": "bond_cb_jsl",
         },
+        "get_bond_premium": {
+            "ak_func": "bond_cb_jsl",
+        },
     }
 
     def __init__(self, **kwargs):
@@ -171,6 +174,58 @@ class JslBondProvider(BondProvider):
                 "premium_rate",
                 "amount",
                 "turnover",
+            ]
+
+            return df[[c for c in cols if c in df.columns]]
+        except Exception:
+            return pd.DataFrame()
+
+    def get_bond_premium(self, symbol: str) -> pd.DataFrame:
+        """
+        Get bond premium rate data from JiSiLu.
+
+        Args:
+            symbol: Bond symbol (6-digit code)
+
+        Returns:
+            pd.DataFrame: Bond premium data
+        """
+        import akshare as ak
+
+        try:
+            df = ak.bond_cb_jsl()
+
+            if df.empty:
+                return pd.DataFrame()
+
+            # Filter by symbol if provided
+            if symbol:
+                df = df[df["代码"] == symbol.zfill(6)]
+
+            df = df.rename(
+                columns={
+                    "代码": "symbol",
+                    "转债名称": "name",
+                    "现价": "price",
+                    "正股价": "stock_price",
+                    "转股价": "convert_price",
+                    "转股价值": "convert_value",
+                    "转股溢价率": "premium_rate",
+                    "剩余年限": "remaining_years",
+                    "到期税前收益": "ytm",
+                }
+            )
+
+            cols = [
+                "symbol",
+                "name",
+                "price",
+                "stock_price",
+                "convert_price",
+                "convert_value",
+                "premium_rate",
+                "remaining_years",
+                "ytm",
             ]
 
             return df[[c for c in cols if c in df.columns]]

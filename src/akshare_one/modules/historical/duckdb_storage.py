@@ -18,41 +18,41 @@ logger = logging.getLogger(__name__)
 _SINGLETON_CACHE: Dict[str, "DuckDBManager"] = {}
 _SINGLETON_LOCK = threading.Lock()
 
+
 def normalize_to_jq_format(symbol: str) -> str:
     """Normalize symbol to JQ format (e.g., 600000.XSHG)."""
     if not symbol:
         return symbol
-    
+
     symbol = str(symbol).strip().upper()
-    
-    if symbol.endswith(('.XSHG', '.XSHE')):
+
+    if symbol.endswith((".XSHG", ".XSHE")):
         return symbol
-    
-    if symbol.startswith('SH'):
+
+    if symbol.startswith("SH"):
         return f"{symbol[2:].zfill(6)}.XSHG"
-    if symbol.startswith('SZ'):
+    if symbol.startswith("SZ"):
         return f"{symbol[2:].zfill(6)}.XSHE"
-    
+
     # Pure numeric
     if symbol.isdigit():
         code = symbol.zfill(6)
-        if code.startswith('6'):
+        if code.startswith("6"):
             return f"{code}.XSHG"
         else:
             return f"{code}.XSHE"
-            
+
     return symbol
+
 
 class DuckDBManager:
     """DuckDB manager for storing and querying historical market data."""
 
     def __init__(self, db_path: str = None, read_only: bool = False):
         if db_path is None:
-            # Default to project root 'data/market.db'
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            # Assume project root is 3 levels up: src/akshare_one/modules/historical/duckdb_storage.py -> src/akshare_one/modules/historical/data/market.db
-            db_path = os.path.join(current_dir, "data", "market.db")
-            
+            # Default to /tmp/akshare_one/data/market.db
+            db_path = os.path.join("/tmp", "akshare_one", "data", "market.db")
+
         self.db_path = db_path
         self.read_only = read_only
         self._initialized = False
@@ -79,7 +79,7 @@ class DuckDBManager:
         with self._lock:
             if self._initialized:
                 return
-            
+
             with self._get_connection() as conn:
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS stock_daily (
@@ -97,7 +97,7 @@ class DuckDBManager:
                 """)
                 conn.execute("CREATE INDEX IF NOT EXISTS idx_stock_daily_symbol ON stock_daily(symbol)")
                 conn.execute("CREATE INDEX IF NOT EXISTS idx_stock_daily_date ON stock_daily(datetime)")
-                
+
                 # Index/ETF tables if needed, for simplicity starting with stock_daily
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS index_daily (
@@ -112,7 +112,7 @@ class DuckDBManager:
                         PRIMARY KEY (symbol, datetime)
                     )
                 """)
-                
+
             self._initialized = True
 
     def save_stock_daily(self, symbol: str, df: pd.DataFrame, adjust: str = "none"):
@@ -122,29 +122,29 @@ class DuckDBManager:
 
         jq_symbol = normalize_to_jq_format(symbol)
         df = df.copy()
-        
+
         # Mapping columns to match DuckDB schema
-        if 'timestamp' in df.columns and 'datetime' not in df.columns:
-            df = df.rename(columns={'timestamp': 'datetime'})
-            
-        if 'amount' not in df.columns:
-            df['amount'] = 0.0
-            
-        df['symbol'] = jq_symbol
-        df['adjust'] = adjust
-        
+        if "timestamp" in df.columns and "datetime" not in df.columns:
+            df = df.rename(columns={"timestamp": "datetime"})
+
+        if "amount" not in df.columns:
+            df["amount"] = 0.0
+
+        df["symbol"] = jq_symbol
+        df["adjust"] = adjust
+
         # Ensure datetime is date type for DuckDB
-        if 'datetime' in df.columns:
-            df['datetime'] = pd.to_datetime(df['datetime']).dt.date
+        if "datetime" in df.columns:
+            df["datetime"] = pd.to_datetime(df["datetime"]).dt.date
 
         # Define explicit column order for insertion
-        cols = ['symbol', 'datetime', 'open', 'high', 'low', 'close', 'volume', 'amount', 'adjust']
-        
+        cols = ["symbol", "datetime", "open", "high", "low", "close", "volume", "amount", "adjust"]
+
         # Check for missing columns and fill with None if necessary
         for col in cols:
             if col not in df.columns:
                 df[col] = None
-                
+
         df = df[cols]
 
         with self._get_connection() as conn:
@@ -156,7 +156,7 @@ class DuckDBManager:
     def get_stock_daily(self, symbol: str, start_date: str, end_date: str, adjust: str = "none") -> pd.DataFrame:
         """Query stock daily data from DuckDB."""
         jq_symbol = normalize_to_jq_format(symbol)
-        
+
         with self._get_connection() as conn:
             query = """
                 SELECT datetime, open, high, low, close, volume, amount

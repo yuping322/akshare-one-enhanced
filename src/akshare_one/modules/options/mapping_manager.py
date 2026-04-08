@@ -13,8 +13,8 @@ import akshare as ak
 class DynamicMappingManager:
     """动态映射表管理器"""
 
-    def __init__(self, cache_dir: str = "mapping_tables"):
-        self.cache_dir = cache_dir
+    def __init__(self, cache_dir: str = None):
+        self.cache_dir = cache_dir or os.path.join("/tmp", "akshare_one", "mapping_tables")
         self.ensure_cache_dir()
         self._underlying_patterns = None
         self._last_update = None

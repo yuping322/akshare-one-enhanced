@@ -96,25 +96,34 @@ class LixingerRestrictedReleaseProvider(RestrictedReleaseProvider):
         out["symbol"] = symbol.zfill(6)
 
         # date field from Lixinger is ISO-8601
-        out["release_date"] = pd.to_datetime(
-            df.get("date"), errors="coerce"
-        ).dt.strftime("%Y-%m-%d")
+        if "date" in df.columns:
+            out["release_date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        else:
+            out["release_date"] = ""
 
         # shares count
-        out["release_shares"] = pd.to_numeric(
-            df.get("restrictedSharesReleased"), errors="coerce"
-        )
+        if "restrictedSharesReleased" in df.columns:
+            out["release_shares"] = pd.to_numeric(df["restrictedSharesReleased"], errors="coerce")
+        else:
+            out["release_shares"] = 0.0
 
         # market value (元)
-        out["release_value"] = pd.to_numeric(
-            df.get("restrictedSharesReleasedMarketValue"), errors="coerce"
-        )
+        if "restrictedSharesReleasedMarketValue" in df.columns:
+            out["release_value"] = pd.to_numeric(df["restrictedSharesReleasedMarketValue"], errors="coerce")
+        else:
+            out["release_value"] = 0.0
 
         # share type / release type
-        out["release_type"] = df.get("restrictedSharesType", pd.Series([""] * len(df))).astype(str)
+        if "restrictedSharesType" in df.columns:
+            out["release_type"] = df["restrictedSharesType"].astype(str)
+        else:
+            out["release_type"] = ""
 
         # shareholder name
-        out["shareholder_name"] = df.get("shareholderName", pd.Series([""] * len(df))).astype(str)
+        if "shareholderName" in df.columns:
+            out["shareholder_name"] = df["shareholderName"].astype(str)
+        else:
+            out["shareholder_name"] = ""
 
         out = out.sort_values("release_date", na_position="last").reset_index(drop=True)
         return self.ensure_json_compatible(out)

@@ -104,53 +104,9 @@ class AlertSystem:
             symbol = rule["symbol"]
 
             try:
-                # 获取实时数据
-                df = get_realtime_data(symbol=symbol, source="sina")
-
-                if df.empty:
-                    continue
-
-                latest = df.iloc[0]
-
-                # 检查价格预警
-                if rule["type"] == "price":
-                    current_price = latest["price"]
-                    target_price = rule["target_price"]
-
-                    if rule["condition"] == "above" and current_price >= target_price:
-                        alert_msg = (
-                            f"[价格预警] {symbol} 当前价格 {current_price:.2f} 已达到目标价格 {target_price:.2f}"
-                        )
-                        alerts_triggered.append(alert_msg)
-
-                    elif rule["condition"] == "below" and current_price <= target_price:
-                        alert_msg = (
-                            f"[价格预警] {symbol} 当前价格 {current_price:.2f} 已跌破目标价格 {target_price:.2f}"
-                        )
-                        alerts_triggered.append(alert_msg)
-
-                # 检查涨跌幅预警
-                elif rule["type"] == "change":
-                    pct_change = latest["pct_change"]
-                    pct_threshold = rule["pct_threshold"]
-
-                    if rule["condition"] == "above" and pct_change >= pct_threshold:
-                        alert_msg = f"[涨跌幅预警] {symbol} 当前涨幅 {pct_change:.2f}% 已超过阈值 {pct_threshold}%"
-                        alerts_triggered.append(alert_msg)
-
-                    elif rule["condition"] == "below" and pct_change <= pct_threshold:
-                        alert_msg = f"[涨跌幅预警] {symbol} 当前跌幅 {pct_change:.2f}% 已跌破阈值 {pct_threshold}%"
-                        alerts_triggered.append(alert_msg)
-
-                # 检查成交量预警
-                elif rule["type"] == "volume":
-                    current_volume = latest["volume"]
-                    avg_volume = rule["avg_volume"]
-                    multiplier = rule["volume_multiplier"]
-
-                    if current_volume >= avg_volume * multiplier:
-                        alert_msg = f"[成交量预警] {symbol} 当前成交量 {current_volume:.0f}手 是均量 {avg_volume:.0f}手 的 {current_volume / avg_volume:.1f}倍"
-                        alerts_triggered.append(alert_msg)
+                # 获取实时数据（当前不可用，跳过）
+                print(f"  {symbol}: 实时数据源不可用，跳过")
+                continue
 
             except Exception as e:
                 print(f"检查 {symbol} 时出错: {e}")

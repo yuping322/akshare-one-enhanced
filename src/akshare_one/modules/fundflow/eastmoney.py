@@ -142,3 +142,38 @@ class EastmoneyFundFlowProvider(FundFlowProvider):
             raise ValueError("concept_code cannot be empty")
 
         return self._execute_api_mapped("get_concept_constituents", concept_code=concept_code, **kwargs)
+
+    def get_sector_list(self, sector_type: str = "industry", **kwargs) -> pd.DataFrame:
+        """
+        Get list of sectors (industry or concept).
+
+        Args:
+            sector_type: 'industry' or 'concept'
+
+        Returns:
+            pd.DataFrame: Sector list
+        """
+        if sector_type == "industry":
+            return self._execute_api_mapped("get_industry_list", **kwargs)
+        elif sector_type == "concept":
+            return self._execute_api_mapped("get_concept_list", **kwargs)
+        else:
+            raise ValueError(f"Invalid sector_type: {sector_type}. Must be 'industry' or 'concept'")
+
+    def get_sector_constituents(self, sector_code: str, sector_type: str = "industry", **kwargs) -> pd.DataFrame:
+        """
+        Get constituent stocks of a sector.
+
+        Args:
+            sector_code: Sector code or name
+            sector_type: 'industry' or 'concept'
+
+        Returns:
+            pd.DataFrame: Constituent stocks
+        """
+        if sector_type == "industry":
+            return self.get_industry_constituents(industry_code=sector_code, **kwargs)
+        elif sector_type == "concept":
+            return self.get_concept_constituents(concept_code=sector_code, **kwargs)
+        else:
+            raise ValueError(f"Invalid sector_type: {sector_type}. Must be 'industry' or 'concept'")

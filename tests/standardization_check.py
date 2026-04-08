@@ -56,9 +56,7 @@ class StandardizationChecker:
 
         config_path = os.path.join(self.config_dir, "field_mappings.json")
         if os.path.exists(config_path):
-            self.results["passed"].append(
-                {"check": "config_file_exists", "message": f"配置文件存在: {config_path}"}
-            )
+            self.results["passed"].append({"check": "config_file_exists", "message": f"配置文件存在: {config_path}"})
             print(f"  ✓ 配置文件存在: {config_path}")
 
             try:
@@ -75,14 +73,10 @@ class StandardizationChecker:
                 )
                 print(f"  ✓ 已配置模块数: {modules_configured}")
             except Exception as e:
-                self.results["errors"].append(
-                    {"check": "config_file_parse", "message": f"配置文件解析失败: {e}"}
-                )
+                self.results["errors"].append({"check": "config_file_parse", "message": f"配置文件解析失败: {e}"})
                 print(f"  ✗ 配置文件解析失败: {e}")
         else:
-            self.results["errors"].append(
-                {"check": "config_file_exists", "message": "配置文件不存在"}
-            )
+            self.results["errors"].append({"check": "config_file_exists", "message": "配置文件不存在"})
             print("  ✗ 配置文件不存在")
 
     def _check_all_modules(self):
@@ -246,7 +240,7 @@ class StandardizationChecker:
 
     def _save_results(self):
         """保存检查结果"""
-        output_path = os.path.join(PROJECT_ROOT, "tests", "results", "standardization_check.json")
+        output_path = os.path.join("/tmp", "akshare_one", "tests", "results", "standardization_check.json")
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         with open(output_path, "w", encoding="utf-8") as f:

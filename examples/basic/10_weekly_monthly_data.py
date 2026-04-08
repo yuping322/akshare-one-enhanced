@@ -238,6 +238,7 @@ def example_period_returns():
         )
     except Exception as e:
         print(f"\n获取数据失败: {e}")
+        return
 
     print(f"\n波动率分析（标准差）：")
     print(f"  日线波动率: {df_day['close'].pct_change().std() * 100:.2f}%")

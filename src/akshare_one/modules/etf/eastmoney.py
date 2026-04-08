@@ -38,6 +38,10 @@ class EastmoneyETFProvider(ETFProvider):
         "get_fund_rating": {
             "ak_func": "fund_rating_all",
         },
+        "get_fund_nav": {
+            "ak_func": "fund_open_fund_info_em",
+            "params": {"symbol": "symbol"},
+        },
     }
 
     def __init__(self, **kwargs):
@@ -201,6 +205,40 @@ class EastmoneyETFProvider(ETFProvider):
         )
 
         return df
+
+    def get_fund_nav(self, symbol: str) -> pd.DataFrame:
+        """
+        Get fund NAV (Net Asset Value) history.
+
+        Args:
+            symbol: Fund symbol (6-digit code)
+
+        Returns:
+            pd.DataFrame: NAV history data
+        """
+        import akshare as ak
+
+        try:
+            df = ak.fund_open_fund_info_em(symbol=symbol, indicator="单位净值走势")
+
+            if df.empty:
+                return pd.DataFrame()
+
+            df = df.rename(
+                columns={
+                    "净值日期": "date",
+                    "单位净值": "nav",
+                    "累计净值": "accumulated_nav",
+                    "日增长率": "daily_growth",
+                }
+            )
+
+            df["symbol"] = symbol
+
+            cols = ["date", "symbol", "nav", "accumulated_nav", "daily_growth"]
+            return df[[c for c in cols if c in df.columns]]
+        except Exception:
+            return pd.DataFrame()
 
     def _standardize_hist_data(self, df: pd.DataFrame, symbol: str) -> pd.DataFrame:
         """Standardize historical data columns."""

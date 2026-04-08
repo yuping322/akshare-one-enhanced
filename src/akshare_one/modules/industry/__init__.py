@@ -17,7 +17,7 @@ def get_industry_list(source: Optional[str] = None):
     pass
 
 
-@api_endpoint(IndustryFactory)
+@api_endpoint(IndustryFactory, method_name="get_industry_list")
 def get_industry_classify(source: Optional[str] = None):
     """Get list of industry classifications. Alias for get_industry_list."""
     pass
