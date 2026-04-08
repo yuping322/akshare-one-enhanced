@@ -14,7 +14,7 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from . import eastmoney, lixinger, sina
+from . import eastmoney, efinance, lixinger, sina, tushare
 from .base import IndexFactory
 
 
@@ -113,6 +113,22 @@ def get_index_constituents(
     pass
 
 
+@api_endpoint(IndexFactory)
+def get_members(
+    index_code: str,
+    source: SourceType = "efinance",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get stocks in an index (index constituent stocks).
+
+    Args:
+        index_code: Index code (e.g., '000300' for 沪深300, '000016' for 上证50)
+    """
+    pass
+
+
 __all__ = [
     "get_index_hist",
     "get_index_hist_data",
@@ -120,5 +136,6 @@ __all__ = [
     "get_index_realtime_data",
     "get_index_list",
     "get_index_constituents",
+    "get_members",
     "IndexFactory",
 ]

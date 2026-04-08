@@ -77,6 +77,18 @@ pip install akshare-one
 pip install akshare-one[talib]
 ```
 
+安装 Tushare Pro 数据源支持：
+
+```bash
+pip install akshare-one[tushare]
+```
+
+安装所有可选依赖：
+
+```bash
+pip install akshare-one[talib,tushare,mcp]
+```
+
 ## 💻 使用示例
 
 ### 基础数据获取
@@ -223,8 +235,38 @@ pmi = get_pmi_index(
 
 **可选依赖**:
 - ta-lib (>=0.6.4) - 技术指标计算
+- tushare (>=1.4.0) - Tushare Pro 数据源
 - fastmcp (>=2.11.3) - MCP服务器
 - pydantic (>=2.0.0) - 数据验证
+
+## 🌐 数据源支持
+
+本项目支持多个数据源，提供统一接口：
+
+| 数据源 | 类型 | 特点 | 推荐场景 |
+|-------|------|------|---------|
+| **akshare** | 免费 | 数据全面，无需认证 | 日常数据获取 |
+| **tushare** | 免费/付费 | 专业数据，高质量 | 专业量化分析 |
+| **eastmoney** | 免费 | 实时性强 | 实时监控 |
+| **sina** | 免费 | 响应快速 | 快速查询 |
+| **lixinger** | 付费 | 专业分析 | 高级功能 |
+
+**Tushare Pro 配置**：
+
+```python
+from akshare_one.tushare_config import set_tushare_api_key
+
+# 设置你的 Tushare API key
+set_tushare_api_key("your_api_key_from_tushare.pro")
+
+# 使用 Tushare 数据源
+from akshare_one.modules.financial import FinancialDataFactory
+
+provider = FinancialDataFactory.get_provider("tushare", symbol="600000")
+balance_df = provider.get_balance_sheet()
+```
+
+详细配置请参考：[Tushare 集成文档](docs/TUSHARE_INTEGRATION.md)
 
 ## 🤝 贡献指南
 

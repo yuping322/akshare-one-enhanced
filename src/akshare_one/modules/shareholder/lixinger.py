@@ -190,6 +190,94 @@ class LixingerShareholderProvider(ShareholderProvider):
         """
         return pd.DataFrame()
 
+    def get_shareholders_num(
+        self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get shareholders number history from Lixinger (cn/company/shareholders-num).
+
+        Args:
+            symbol: Stock symbol (e.g., '600000')
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+
+        Returns:
+            pd.DataFrame: Columns: date, total, shareholders_number_change_rate, spc
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": symbol, "startDate": start_date}
+        if end_date:
+            params["endDate"] = end_date
+        if "limit" in kwargs:
+            params["limit"] = kwargs["limit"]
+
+        response = client.query_api("cn/company/shareholders-num", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.json_normalize(data)
+        df["symbol"] = symbol
+        rename = {
+            "date": "date",
+            "total": "total",
+            "shareholdersNumberChangeRate": "shareholders_number_change_rate",
+            "spc": "spc",
+        }
+        df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
+        if "date" in df.columns:
+            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_fund_collection_shareholders(
+        self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get fund company (基金公司) shareholdings for a stock from Lixinger
+        (cn/company/fund-collection-shareholders).
+
+        Args:
+            symbol: Stock symbol (e.g., '600000')
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+
+        Returns:
+            pd.DataFrame: Columns: date, name, fund_collection_code, holdings,
+                market_cap, outstanding_shares_a, proportion_of_capitalization
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": symbol, "startDate": start_date}
+        if end_date:
+            params["endDate"] = end_date
+        if "limit" in kwargs:
+            params["limit"] = kwargs["limit"]
+
+        response = client.query_api("cn/company/fund-collection-shareholders", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.json_normalize(data)
+        df["symbol"] = symbol
+        rename = {
+            "fundCollectionCode": "fund_collection_code",
+            "marketCap": "market_cap",
+            "outstandingSharesA": "outstanding_shares_a",
+            "proportionOfCapitalization": "proportion_of_capitalization",
+        }
+        df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
+        if "date" in df.columns:
+            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
     def get_top_shareholders(self, symbol: str, **kwargs) -> pd.DataFrame:
         """
         Get top shareholders - defaults to top 10 shareholders.

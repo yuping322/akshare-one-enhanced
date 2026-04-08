@@ -294,6 +294,42 @@ class MacroProvider(BaseProvider):
             "get_macro_data", api_type=api_type, start_date=start_date, end_date=end_date, **kwargs
         )
 
+    def get_deposit_rate_data(self, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
+        """
+        Get deposit rate data.
+        """
+        return self._execute_api_mapped("get_deposit_rate_data", start_date=start_date, end_date=end_date, **kwargs)
+
+    def get_loan_rate_data(self, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
+        """
+        Get loan rate data.
+        """
+        return self._execute_api_mapped("get_loan_rate_data", start_date=start_date, end_date=end_date, **kwargs)
+
+    def get_required_reserve_ratio_data(self, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
+        """
+        Get required reserve ratio data.
+        """
+        return self._execute_api_mapped(
+            "get_required_reserve_ratio_data", start_date=start_date, end_date=end_date, **kwargs
+        )
+
+    def get_money_supply_data_month(self, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
+        """
+        Get monthly money supply data.
+        """
+        return self._execute_api_mapped(
+            "get_money_supply_data_month", start_date=start_date, end_date=end_date, **kwargs
+        )
+
+    def get_money_supply_data_year(self, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
+        """
+        Get yearly money supply data.
+        """
+        return self._execute_api_mapped(
+            "get_money_supply_data_year", start_date=start_date, end_date=end_date, **kwargs
+        )
+
 
 class MacroFactory(BaseFactory["MacroProvider"]):
     """

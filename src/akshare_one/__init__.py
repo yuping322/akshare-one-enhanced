@@ -132,7 +132,14 @@ from .modules.valuation import (
     get_stock_valuation,
     get_market_valuation,
 )
-from .modules.shareholder import ShareholderFactory
+from .modules.shareholder import (
+    ShareholderFactory,
+    get_shareholder_changes,
+    get_top_shareholders,
+    get_institution_holdings,
+    get_top10_stock_holder_info,
+    get_latest_holder_number,
+)
 from .modules.performance import PerformanceFactory
 from .modules.analyst import AnalystFactory
 from .modules.sentiment import SentimentFactory
@@ -195,6 +202,7 @@ from .modules.blockdeal import (
     BlockDealFactory,
     get_block_deal,
     get_block_deal_summary,
+    get_deal_detail,
 )
 from .modules.margin import (
     MarginFactory,
@@ -221,6 +229,12 @@ from .modules.esg import (
     ESGFactory,
     get_esg_rating,
     get_esg_rating_rank,
+)
+from .modules.special import (
+    SpecialDataFactory,
+    get_chip_distribution,
+    get_broker_forecast,
+    get_institutional_research,
 )
 from .jq_compat import (
     get_price,
@@ -329,6 +343,8 @@ __all__ = [
     "get_shareholder_changes",
     "get_top_shareholders",
     "get_institution_holdings",
+    "get_top10_stock_holder_info",
+    "get_latest_holder_number",
     # 业绩数据
     "get_performance_forecast",
     "get_performance_express",
@@ -413,6 +429,7 @@ __all__ = [
     # 大宗交易
     "get_block_deal",
     "get_block_deal_summary",
+    "get_deal_detail",
     # 融资融券
     "get_margin_data",
     "get_margin_summary",
@@ -429,6 +446,10 @@ __all__ = [
     # ESG
     "get_esg_rating",
     "get_esg_rating_rank",
+    # 特色数据
+    "get_chip_distribution",
+    "get_broker_forecast",
+    "get_institutional_research",
     # JQ Compatibility (Merge from jk2bt)
     "get_price",
     "get_bars",

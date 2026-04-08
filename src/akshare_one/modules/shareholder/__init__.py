@@ -11,7 +11,7 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from . import eastmoney, lixinger
+from . import eastmoney, efinance, lixinger, tushare
 from .base import ShareholderFactory
 
 
@@ -127,6 +127,40 @@ def get_fund_shareholders(
     pass
 
 
+@api_endpoint(ShareholderFactory)
+def get_top10_stock_holder_info(
+    stock_code: str,
+    top: int = 10,
+    source: SourceType = "efinance",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get top 10 stock holder information.
+
+    Args:
+        stock_code: Stock code (e.g., '600000')
+        top: Number of top holders to return
+    """
+    pass
+
+
+@api_endpoint(ShareholderFactory)
+def get_latest_holder_number(
+    date: str,
+    source: SourceType = "efinance",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get latest holder number for all stocks.
+
+    Args:
+        date: Date in YYYY-MM-DD format
+    """
+    pass
+
+
 __all__ = [
     "get_shareholder_changes",
     "get_top_shareholders",
@@ -134,5 +168,7 @@ __all__ = [
     "get_top10_shareholders",
     "get_top10_float_shareholders",
     "get_fund_shareholders",
+    "get_top10_stock_holder_info",
+    "get_latest_holder_number",
     "ShareholderFactory",
 ]

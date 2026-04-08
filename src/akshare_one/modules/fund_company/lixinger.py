@@ -277,3 +277,29 @@ class LixingerFundCompanyProvider(FundCompanyProvider):
         return self.standardize_and_filter(
             df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
         )
+
+    def get_fund_company_hot_asset_scale(self, stock_codes: list[str], **kwargs) -> pd.DataFrame:
+        """
+        Get fund company latest asset scale hot data from Lixinger
+        (cn/fund-company/hot/fc_as).
+
+        Args:
+            stock_codes: List of fund company codes (1-100)
+
+        Returns:
+            pd.DataFrame: Latest asset scale snapshot with fc_as, fc_nb_as,
+                fc_h_as, fc_e_as, fc_q_as, fc_b_as
+        """
+        client = get_lixinger_client()
+        response = client.query_api("cn/fund-company/hot/fc_as", {"stockCodes": stock_codes})
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        df = pd.json_normalize(data)
+        if "stockCode" in df.columns:
+            df = df.rename(columns={"stockCode": "symbol"})
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )

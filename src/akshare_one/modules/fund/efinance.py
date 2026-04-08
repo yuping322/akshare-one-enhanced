@@ -584,3 +584,249 @@ class EfinanceFundProvider(FundProvider):
                 },
             )
             return pd.DataFrame(columns=["fund_code", "fund_name", "realtime_pct_change"])
+
+    def get_quote_history_multi(
+        self,
+        fund_codes: list[str],
+        pz: int = 100,
+        **kwargs,
+    ) -> dict[str, pd.DataFrame]:
+        """
+        Get fund historical net value data for multiple funds from efinance.
+
+        Args:
+            fund_codes: List of fund codes
+            pz: Number of records per fund
+
+        Returns:
+            Dict mapping fund codes to DataFrames with historical data
+        """
+        if not fund_codes:
+            return {}
+
+        start_time = time.time()
+        try:
+            raw_dict = ef.fund.get_quote_history_multi(fund_codes, pz)
+
+            duration_ms = (time.time() - start_time) * 1000
+            self.logger.debug(
+                f"get_quote_history_multi completed",
+                extra={
+                    "context": {
+                        "log_type": "api_request",
+                        "source": "efinance",
+                        "endpoint": "get_quote_history_multi",
+                        "fund_codes": fund_codes,
+                        "pz": pz,
+                        "duration_ms": round(duration_ms, 2),
+                        "fund_count": len(raw_dict) if raw_dict else 0,
+                    }
+                },
+            )
+
+            if raw_dict is None:
+                return {}
+
+            result = {}
+            for code, df in raw_dict.items():
+                if df is not None and not df.empty:
+                    df = self._map_fields(df)
+                    df = self.ensure_json_compatible(df)
+                    result[code] = df
+                else:
+                    result[code] = pd.DataFrame(
+                        columns=["fund_code", "date", "net_value", "accumulated_net_value", "pct_change"]
+                    )
+
+            return result
+
+        except Exception as e:
+            self.logger.error(
+                f"get_quote_history_multi failed",
+                extra={
+                    "context": {
+                        "log_type": "api_error",
+                        "source": "efinance",
+                        "endpoint": "get_quote_history_multi",
+                        "fund_codes": fund_codes,
+                        "error": str(e),
+                    }
+                },
+            )
+            return {}
+
+    def get_public_dates(
+        self,
+        fund_code: str | None = None,
+        **kwargs,
+    ) -> list[str]:
+        """
+        Get list of public announcement dates for a fund from efinance.
+
+        Args:
+            fund_code: Fund code
+
+        Returns:
+            List of date strings
+        """
+        code = fund_code or self.fund_code
+        if not code:
+            return []
+
+        start_time = time.time()
+        try:
+            dates = ef.fund.get_public_dates(code)
+
+            duration_ms = (time.time() - start_time) * 1000
+            self.logger.debug(
+                f"get_public_dates completed",
+                extra={
+                    "context": {
+                        "log_type": "api_request",
+                        "source": "efinance",
+                        "endpoint": "get_public_dates",
+                        "fund_code": code,
+                        "duration_ms": round(duration_ms, 2),
+                        "date_count": len(dates) if dates else 0,
+                    }
+                },
+            )
+
+            return dates if dates else []
+
+        except Exception as e:
+            self.logger.error(
+                f"get_public_dates failed",
+                extra={
+                    "context": {
+                        "log_type": "api_error",
+                        "source": "efinance",
+                        "endpoint": "get_public_dates",
+                        "fund_code": code,
+                        "error": str(e),
+                    }
+                },
+            )
+            return []
+
+    def get_period_change(
+        self,
+        fund_code: str | None = None,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """
+        Get fund performance in different periods from efinance.
+
+        Args:
+            fund_code: Fund code
+            columns: Columns to keep
+            row_filter: Row filter configuration
+
+        Returns:
+            DataFrame with period performance data
+        """
+        code = fund_code or self.fund_code
+        if not code:
+            return pd.DataFrame()
+
+        start_time = time.time()
+        try:
+            raw_df = ef.fund.get_period_change(code)
+
+            duration_ms = (time.time() - start_time) * 1000
+            self.logger.debug(
+                f"get_period_change completed",
+                extra={
+                    "context": {
+                        "log_type": "api_request",
+                        "source": "efinance",
+                        "endpoint": "get_period_change",
+                        "fund_code": code,
+                        "duration_ms": round(duration_ms, 2),
+                        "rows": len(raw_df) if raw_df is not None and not raw_df.empty else 0,
+                    }
+                },
+            )
+
+            if raw_df is None or raw_df.empty:
+                return pd.DataFrame(columns=["fund_code", "week1", "month1", "month3", "month6", "year1", "year3"])
+
+            df = self._map_fields(raw_df)
+            df = self.ensure_json_compatible(df)
+            return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
+
+        except Exception as e:
+            self.logger.error(
+                f"get_period_change failed",
+                extra={
+                    "context": {
+                        "log_type": "api_error",
+                        "source": "efinance",
+                        "endpoint": "get_period_change",
+                        "fund_code": code,
+                        "error": str(e),
+                    }
+                },
+            )
+            return pd.DataFrame(columns=["fund_code", "week1", "month1", "month3", "month6", "year1", "year3"])
+
+    def get_pdf_reports(
+        self,
+        fund_code: str | None = None,
+        max_count: int = 12,
+        save_dir: str = "pdf",
+        **kwargs,
+    ) -> list[str] | None:
+        """
+        Download PDF reports for a fund from efinance.
+
+        Args:
+            fund_code: Fund code
+            max_count: Maximum number of PDF reports to download
+            save_dir: Directory to save PDF reports
+
+        Returns:
+            List of file paths or None on error
+        """
+        code = fund_code or self.fund_code
+        if not code:
+            return None
+
+        start_time = time.time()
+        try:
+            result = ef.fund.get_pdf_reports(code, max_count, save_dir)
+
+            duration_ms = (time.time() - start_time) * 1000
+            self.logger.debug(
+                f"get_pdf_reports completed",
+                extra={
+                    "context": {
+                        "log_type": "api_request",
+                        "source": "efinance",
+                        "endpoint": "get_pdf_reports",
+                        "fund_code": code,
+                        "max_count": max_count,
+                        "save_dir": save_dir,
+                        "duration_ms": round(duration_ms, 2),
+                    }
+                },
+            )
+
+            return result
+
+        except Exception as e:
+            self.logger.error(
+                f"get_pdf_reports failed",
+                extra={
+                    "context": {
+                        "log_type": "api_error",
+                        "source": "efinance",
+                        "endpoint": "get_pdf_reports",
+                        "fund_code": code,
+                        "error": str(e),
+                    }
+                },
+            )
+            return None

@@ -156,6 +156,70 @@ def get_fund_realtime_increase_rate(
     pass
 
 
+@api_endpoint(FundFactory, method_name="get_quote_history_multi")
+def get_fund_quote_history_multi(
+    fund_codes: list[str],
+    pz: int = 100,
+    source: SourceType = None,
+) -> dict[str, pd.DataFrame]:
+    """
+    Get fund historical net value data for multiple funds.
+
+    Args:
+        fund_codes: List of fund codes
+        pz: Number of records per fund
+    """
+    pass
+
+
+@api_endpoint(FundFactory, method_name="get_public_dates")
+def get_fund_public_dates(
+    fund_code: str,
+    source: SourceType = None,
+) -> list[str]:
+    """
+    Get list of public announcement dates for a fund.
+
+    Args:
+        fund_code: Fund code
+    """
+    pass
+
+
+@api_endpoint(FundFactory, method_name="get_period_change")
+def get_fund_period_change(
+    fund_code: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get fund performance in different periods (近1周, 近1月, 近3月, 近6月, 近1年, 近3年).
+
+    Args:
+        fund_code: Fund code
+    """
+    pass
+
+
+@api_endpoint(FundFactory, method_name="get_pdf_reports")
+def get_fund_pdf_reports(
+    fund_code: str,
+    max_count: int = 12,
+    save_dir: str = "pdf",
+    source: SourceType = None,
+) -> list[str] | None:
+    """
+    Download PDF reports for a fund.
+
+    Args:
+        fund_code: Fund code
+        max_count: Maximum number of PDF reports to download
+        save_dir: Directory to save PDF reports
+    """
+    pass
+
+
 __all__ = [
     "get_fund_quote_history",
     "get_fund_base_info",
@@ -165,6 +229,10 @@ __all__ = [
     "get_fund_codes",
     "get_fund_manager",
     "get_fund_realtime_increase_rate",
+    "get_fund_quote_history_multi",
+    "get_fund_public_dates",
+    "get_fund_period_change",
+    "get_fund_pdf_reports",
     "FundFactory",
     "FundProvider",
 ]

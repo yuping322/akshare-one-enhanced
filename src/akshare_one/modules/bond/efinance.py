@@ -223,12 +223,13 @@ class EfinanceBondProvider(BondProvider):
         except Exception:
             return pd.DataFrame()
 
-    def get_bond_deal_detail(self, bond_code: str) -> pd.DataFrame:
+    def get_bond_deal_detail(self, bond_code: str, max_count: int = 100) -> pd.DataFrame:
         """
         Get bond deal details from efinance.
 
         Args:
             bond_code: Bond code
+            max_count: Maximum number of records to return
 
         Returns:
             pd.DataFrame: Deal details
@@ -236,7 +237,7 @@ class EfinanceBondProvider(BondProvider):
         import efinance as ef
 
         try:
-            df = ef.bond.get_deal_detail(bond_code)
+            df = ef.bond.get_deal_detail(bond_code, max_count)
 
             if df is None or df.empty:
                 return pd.DataFrame()
@@ -247,13 +248,13 @@ class EfinanceBondProvider(BondProvider):
                     "价格": "price",
                     "成交量": "volume",
                     "成交额": "amount",
-                    "性质": "direction",
+                    "性质": "nature",
                 }
             )
 
             df["bond_code"] = bond_code
 
-            cols = ["bond_code", "time", "price", "volume", "amount", "direction"]
+            cols = ["bond_code", "time", "price", "volume", "amount", "nature"]
             return df[[c for c in cols if c in df.columns]]
         except Exception:
             return pd.DataFrame()
@@ -283,7 +284,7 @@ class EfinanceBondProvider(BondProvider):
                     "小单净流入": "small_net_inflow",
                     "中单净流入": "medium_net_inflow",
                     "大单净流入": "large_net_inflow",
-                    "超大单净流入": "xlarge_net_inflow",
+                    "超大单净流入": "super_large_net_inflow",
                 }
             )
 
@@ -296,7 +297,7 @@ class EfinanceBondProvider(BondProvider):
                 "small_net_inflow",
                 "medium_net_inflow",
                 "large_net_inflow",
-                "xlarge_net_inflow",
+                "super_large_net_inflow",
             ]
             return df[[c for c in cols if c in df.columns]]
         except Exception:
@@ -327,7 +328,7 @@ class EfinanceBondProvider(BondProvider):
                     "小单净流入": "small_net_inflow",
                     "中单净流入": "medium_net_inflow",
                     "大单净流入": "large_net_inflow",
-                    "超大单净流入": "xlarge_net_inflow",
+                    "超大单净流入": "super_large_net_inflow",
                 }
             )
 
@@ -340,7 +341,7 @@ class EfinanceBondProvider(BondProvider):
                 "small_net_inflow",
                 "medium_net_inflow",
                 "large_net_inflow",
-                "xlarge_net_inflow",
+                "super_large_net_inflow",
             ]
             return df[[c for c in cols if c in df.columns]]
         except Exception:

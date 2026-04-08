@@ -1,0 +1,70 @@
+{
+  "source": "efinance",
+  "module": "blockdeal",
+  "version": "1.0",
+  "last_updated": "2026-04-08",
+  "mappings": [
+    {
+      "source_field": "时间",
+      "standard_field": "time",
+      "field_type": "time",
+      "description": "成交时间"
+    },
+    {
+      "source_field": "价格",
+      "standard_field": "price",
+      "field_type": "value",
+      "description": "成交价格"
+    },
+    {
+      "source_field": "成交量",
+      "standard_field": "volume",
+      "field_type": "volume",
+      "description": "成交量（股）"
+    },
+    {
+      "source_field": "成交额",
+      "standard_field": "amount",
+      "field_type": "amount",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "成交金额（元）"
+    },
+    {
+      "source_field": "性质",
+      "standard_field": "nature",
+      "field_type": "text",
+      "description": "成交性质（买入/卖出）"
+    },
+    {
+      "source_field": "股票名称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票名称"
+    },
+    {
+      "source_field": "股票代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "昨收",
+      "standard_field": "prev_close",
+      "field_type": "value",
+      "description": "昨收"
+    },
+    {
+      "source_field": "成交价",
+      "standard_field": "deal_price",
+      "field_type": "value",
+      "description": "成交价"
+    },
+    {
+      "source_field": "单数",
+      "standard_field": "order_count",
+      "field_type": "value",
+      "description": "单数"
+    }
+  ]
+}

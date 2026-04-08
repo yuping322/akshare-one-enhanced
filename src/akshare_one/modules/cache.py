@@ -26,8 +26,20 @@ CACHE_CONFIG: dict[str, TTLCache[Any, Any]] = {
     "financial_cache": TTLCache(maxsize=500, ttl=86400),  # 财务数据缓存24小时
     "info_cache": TTLCache(maxsize=500, ttl=86400),  # 信息数据缓存24小时
     "insider_cache": TTLCache(maxsize=500, ttl=86400),  # 内部交易数据缓存24小时
+    "macro_cache": TTLCache(maxsize=500, ttl=86400),  # 宏观经济数据缓存24小时
+    "blockdeal_cache": TTLCache(maxsize=500, ttl=86400),  # 大宗交易数据缓存24小时
+    "shareholder_cache": TTLCache(maxsize=500, ttl=86400),  # 股东数据缓存24小时
+    "dividend_data_cache": TTLCache(maxsize=1000, ttl=86400),  # 分红送转数据缓存24小时
+    "adjust_factor_cache": TTLCache(maxsize=1000, ttl=86400),  # 复权因子数据缓存24小时
+    "northbound_cache": TTLCache(maxsize=500, ttl=86400),  # 北向资金数据缓存24小时
+    "margin_cache": TTLCache(maxsize=500, ttl=86400),  # 融资融券数据缓存24小时
+    "index_cache": TTLCache(maxsize=500, ttl=86400),  # 指数数据缓存24小时
+    "lhbg_cache": TTLCache(maxsize=500, ttl=86400),  # 龙虎榜数据缓存24小时
+    "pledge_cache": TTLCache(maxsize=500, ttl=86400),  # 股权质押数据缓存24小时
+    "restricted_cache": TTLCache(maxsize=500, ttl=86400),  # 限售解禁数据缓存24小时
     # 长期缓存 - 不常变化的数据
     "stock_list_cache": TTLCache(maxsize=100, ttl=604800),  # 股票列表缓存7天
+    "trade_dates_cache": TTLCache(maxsize=100, ttl=604800),  # 交易日历缓存7天
 }
 
 

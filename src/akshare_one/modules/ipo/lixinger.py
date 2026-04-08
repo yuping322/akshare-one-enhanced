@@ -38,9 +38,9 @@ class LixingerIPOProvider(IPOProvider):
         """
         Get newly listed A-share stocks from Lixinger.
 
-        Queries cn/company for all companies and filters those whose
-        listingDate falls within the last 365 days (or a custom range
-        passed via kwargs start_date / end_date).
+        Fetches all companies from cn/company and filters by listingDate.
+        cn/company does not support date-range filtering, so we fetch all
+        and filter client-side.
 
         Returns:
             pd.DataFrame with columns:
@@ -54,34 +54,39 @@ class LixingerIPOProvider(IPOProvider):
         if not end_date:
             end_date = datetime.date.today().strftime("%Y-%m-%d")
         if not start_date:
-            # default: last 365 days
             start_dt = datetime.date.today() - datetime.timedelta(days=365)
             start_date = start_dt.strftime("%Y-%m-%d")
 
         client = get_lixinger_client()
-        params = {
-            "listingDateStart": start_date,
-            "listingDateEnd": end_date,
-        }
+        all_data = []
+        page = 0
 
-        response = client.query_api("cn/company", params)
+        # cn/company is paginated; fetch all pages
+        while True:
+            params = {"pageIndex": page}
+            response = client.query_api("cn/company", params)
+            if response.get("code") != 1:
+                self.logger.warning(f"Lixinger cn/company error: {response.get('msg')}")
+                break
+            data = response.get("data", [])
+            if not data:
+                break
+            all_data.extend(data)
+            # If fewer records than a typical page, we're done
+            if len(data) < 100:
+                break
+            page += 1
 
-        if response.get("code") != 1:
-            self.logger.warning(
-                f"Lixinger cn/company returned error: {response.get('msg')}"
-            )
-            return self.create_empty_dataframe(
-                ["symbol", "name", "ipo_date", "market", "area_code"]
-            )
+        if not all_data:
+            return self.create_empty_dataframe(["symbol", "name", "ipo_date", "market", "area_code"])
 
-        data = response.get("data", [])
-        if not data:
-            return self.create_empty_dataframe(
-                ["symbol", "name", "ipo_date", "market", "area_code"]
-            )
-
-        df = pd.DataFrame(data)
+        df = pd.DataFrame(all_data)
         out = self._standardize_new_stocks(df)
+
+        # Filter by date range client-side
+        if "ipo_date" in out.columns and out["ipo_date"].notna().any():
+            mask = (out["ipo_date"] >= start_date) & (out["ipo_date"] <= end_date)
+            out = out[mask].reset_index(drop=True)
 
         return self.standardize_and_filter(
             out, source="lixinger", columns=columns, row_filter=row_filter

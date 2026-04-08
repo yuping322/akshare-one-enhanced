@@ -13,7 +13,7 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from . import eastmoney, lixinger, sina
+from . import eastmoney, efinance, lixinger, sina, tushare
 from .base import DragonTigerFactory
 
 
@@ -75,9 +75,29 @@ def get_dragon_tiger_broker_stats(
     pass
 
 
+@api_endpoint(DragonTigerFactory)
+def get_lhb_data(
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    source: SourceType = "efinance",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get dragon tiger list data (龙虎榜) for a date range.
+
+    Args:
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+        source: Data source ('efinance', 'eastmoney', 'sina', 'lixinger')
+    """
+    pass
+
+
 __all__ = [
     "get_dragon_tiger_list",
     "get_dragon_tiger_summary",
     "get_dragon_tiger_broker_stats",
+    "get_lhb_data",
     "DragonTigerFactory",
 ]

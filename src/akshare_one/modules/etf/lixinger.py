@@ -168,18 +168,18 @@ class LixingerETFProvider(ETFProvider):
         df = pd.json_normalize(data)
         df["symbol"] = symbol
 
+        # Actual field names from cn/fund/candlestick API:
+        # date, open, close, high, low, volume, amount, change, complexFactor
         rename = {
-            "date": "date",
-            "nav": "nav",
-            "accumulatedNav": "accumulated_nav",
-            "navChangeRate": "pct_change",
+            "change": "pct_change",
+            "complexFactor": "complex_factor",
         }
         df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
 
         if "date" in df.columns:
             df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
 
-        for col in ["nav", "accumulated_nav", "pct_change"]:
+        for col in ["open", "close", "high", "low", "volume", "amount", "pct_change", "complex_factor"]:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors="coerce")
 
@@ -187,7 +187,7 @@ class LixingerETFProvider(ETFProvider):
             df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
         )
 
-    def get_fund_net_value(
+    def get_etf_hist(
         self, stock_code: str, start_date: str, end_date: str | None = None, limit: int | None = None, **kwargs
     ) -> pd.DataFrame:
         """
@@ -665,23 +665,17 @@ class LixingerETFProvider(ETFProvider):
         df = pd.json_normalize(data)
         df["symbol"] = symbol
 
+        # Actual field names from cn/fund/candlestick: open, close, high, low, volume, amount, change
         rename = {
-            "date": "date",
-            "openPrice": "open",
-            "closePrice": "close",
-            "highestPrice": "high",
-            "lowestPrice": "low",
-            "turnoverVolume": "volume",
-            "turnoverAmount": "amount",
-            "changeRate": "pct_change",
-            "turnoverRate": "turnover",
+            "change": "pct_change",
+            "complexFactor": "complex_factor",
         }
         df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
 
         if "date" in df.columns:
             df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
 
-        for col in ["open", "close", "high", "low", "volume", "amount", "pct_change", "turnover"]:
+        for col in ["open", "close", "high", "low", "volume", "amount", "pct_change"]:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors="coerce")
 
@@ -700,3 +694,278 @@ class LixingerETFProvider(ETFProvider):
     def get_fund_rating(self, **kwargs) -> pd.DataFrame:
         """Lixinger does not provide fund rating data. Returns empty DataFrame."""
         return pd.DataFrame()
+
+    def get_fund_profile(self, stock_codes: list[str], **kwargs) -> pd.DataFrame:
+        """
+        Get fund profile (概况) from Lixinger (cn/fund/profile).
+
+        Args:
+            stock_codes: List of fund codes (1-100)
+
+        Returns:
+            pd.DataFrame: Profile with investment_o, investment_s, f_c_name, inception_date, etc.
+        """
+        client = get_lixinger_client()
+        response = client.query_api("cn/fund/profile", {"stockCodes": stock_codes})
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        df = pd.json_normalize(data)
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_fund_manager_history(self, stock_codes: list[str], **kwargs) -> pd.DataFrame:
+        """
+        Get fund manager history from Lixinger (cn/fund/manager).
+
+        Args:
+            stock_codes: List of fund codes (1-100)
+
+        Returns:
+            pd.DataFrame: Manager history with stockCode, managers (name, managerCode,
+                appointmentDate, departureDate)
+        """
+        client = get_lixinger_client()
+        response = client.query_api("cn/fund/manager", {"stockCodes": stock_codes})
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        # Flatten managers array
+        rows = []
+        for item in data:
+            fund_code = item.get("stockCode", "")
+            for mgr in item.get("managers", []):
+                row = {"fund_code": fund_code}
+                row.update(mgr)
+                rows.append(row)
+        if not rows:
+            return pd.DataFrame()
+        df = pd.json_normalize(rows)
+        rename = {
+            "name": "manager_name",
+            "managerCode": "manager_code",
+            "appointmentDate": "appointment_date",
+            "departureDate": "departure_date",
+        }
+        df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
+        for col in ["appointment_date", "departure_date"]:
+            if col in df.columns:
+                df[col] = pd.to_datetime(df[col], errors="coerce").dt.strftime("%Y-%m-%d")
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_fund_fees(self, stock_code: str, start_date: str, end_date: str | None = None, **kwargs) -> pd.DataFrame:
+        """
+        Get fund fees from Lixinger (cn/fund/fees).
+
+        Returns:
+            pd.DataFrame: Columns: date, m_f_r (管理费率), m_f, c_f_r (托管费率), c_f
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": stock_code, "startDate": start_date}
+        if end_date:
+            params["endDate"] = end_date
+        if "limit" in kwargs:
+            params["limit"] = kwargs["limit"]
+        response = client.query_api("cn/fund/fees", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        df = pd.json_normalize(data)
+        df["symbol"] = stock_code
+        if "date" in df.columns:
+            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_fund_drawdown(
+        self, stock_code: str, start_date: str, granularity: str = "y1", end_date: str | None = None, **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get fund drawdown from Lixinger (cn/fund/drawdown).
+
+        Args:
+            granularity: m/q/hy/y1/y3/y5/y10/fs
+
+        Returns:
+            pd.DataFrame: Columns: date, value
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": stock_code, "startDate": start_date, "granularity": granularity}
+        if end_date:
+            params["endDate"] = end_date
+        response = client.query_api("cn/fund/drawdown", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        df = pd.json_normalize(data)
+        df["symbol"] = stock_code
+        if "date" in df.columns:
+            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_fund_announcement(
+        self, stock_code: str, start_date: str, end_date: str | None = None, **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get fund announcements from Lixinger (cn/fund/announcement).
+
+        Returns:
+            pd.DataFrame: Columns: date, lang, linkText, linkUrl, linkType, types
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": stock_code, "startDate": start_date}
+        if end_date:
+            params["endDate"] = end_date
+        if "limit" in kwargs:
+            params["limit"] = kwargs["limit"]
+        response = client.query_api("cn/fund/announcement", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        df = pd.json_normalize(data)
+        df["symbol"] = stock_code
+        rename = {
+            "linkText": "link_text",
+            "linkUrl": "link_url",
+            "linkType": "link_type",
+        }
+        df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
+        if "date" in df.columns:
+            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_fund_turnover_rate(
+        self, stock_code: str, start_date: str, end_date: str | None = None, **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get fund turnover rate from Lixinger (cn/fund/turnover-rate).
+
+        Returns:
+            pd.DataFrame: Columns: date, value
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": stock_code, "startDate": start_date}
+        if end_date:
+            params["endDate"] = end_date
+        if "limit" in kwargs:
+            params["limit"] = kwargs["limit"]
+        response = client.query_api("cn/fund/turnover-rate", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        df = pd.json_normalize(data)
+        df["symbol"] = stock_code
+        if "date" in df.columns:
+            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_fund_exchange_traded_close_price(
+        self, stock_code: str, start_date: str, end_date: str | None = None, **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get exchange-traded fund close price from Lixinger (cn/fund/exchange-traded-close-price).
+
+        Returns:
+            pd.DataFrame: Columns: date, open, close, low, high
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": stock_code, "startDate": start_date}
+        if end_date:
+            params["endDate"] = end_date
+        if "limit" in kwargs:
+            params["limit"] = kwargs["limit"]
+        response = client.query_api("cn/fund/exchange-traded-close-price", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        df = pd.json_normalize(data)
+        df["symbol"] = stock_code
+        if "date" in df.columns:
+            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        for col in ["open", "close", "low", "high"]:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_fund_net_value_dri(
+        self, stock_code: str, start_date: str, end_date: str | None = None, **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get fund net value of dividend reinvestment from Lixinger
+        (cn/fund/net-value-of-dividend-reinvestment).
+
+        Returns:
+            pd.DataFrame: Columns: date, net_value
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": stock_code, "startDate": start_date}
+        if end_date:
+            params["endDate"] = end_date
+        if "limit" in kwargs:
+            params["limit"] = kwargs["limit"]
+        response = client.query_api("cn/fund/net-value-of-dividend-reinvestment", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        df = pd.json_normalize(data)
+        df["symbol"] = stock_code
+        if "netValue" in df.columns:
+            df = df.rename(columns={"netValue": "net_value"})
+        if "date" in df.columns:
+            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_fund_premium_discount(self, stock_codes: list[str], **kwargs) -> pd.DataFrame:
+        """
+        Get fund latest close price premium/discount info from Lixinger
+        (cn/fund/hot/f_nlacan).
+
+        Args:
+            stock_codes: List of fund codes (1-100)
+
+        Returns:
+            pd.DataFrame: Premium/discount data with f_pnv_pr, f_pnv_pr_avg_d5/d10/d20, etc.
+        """
+        client = get_lixinger_client()
+        response = client.query_api("cn/fund/hot/f_nlacan", {"stockCodes": stock_codes})
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        df = pd.json_normalize(data)
+        if "stockCode" in df.columns:
+            df = df.rename(columns={"stockCode": "symbol"})
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )

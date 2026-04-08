@@ -28,6 +28,10 @@ class PerformanceProvider(BaseProvider):
         """Get performance express data."""
         return self._execute_api_mapped("get_performance_express", date=date, **kwargs)
 
+    def get_all_company_performance(self, date: str, **kwargs) -> pd.DataFrame:
+        """Get all company performance data."""
+        return self._execute_api_mapped("get_all_company_performance", date=date, **kwargs)
+
 
 class PerformanceFactory(BaseFactory["PerformanceProvider"]):
     """Factory class for creating performance data providers."""

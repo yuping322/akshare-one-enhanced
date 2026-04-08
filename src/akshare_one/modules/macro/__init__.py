@@ -43,7 +43,7 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from . import lixinger, official, sina
+from . import baostock, lixinger, official, sina, tushare
 from .base import MacroFactory
 
 
@@ -777,6 +777,96 @@ def get_macro_data(
     pass
 
 
+@api_endpoint(MacroFactory)
+def get_deposit_rate_data(
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    source: SourceType = "baostock",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get deposit rate data.
+
+    Args:
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+    """
+    pass
+
+
+@api_endpoint(MacroFactory)
+def get_loan_rate_data(
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    source: SourceType = "baostock",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get loan rate data.
+
+    Args:
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+    """
+    pass
+
+
+@api_endpoint(MacroFactory)
+def get_required_reserve_ratio_data(
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    source: SourceType = "baostock",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get required reserve ratio data.
+
+    Args:
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+    """
+    pass
+
+
+@api_endpoint(MacroFactory)
+def get_money_supply_data_month(
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    source: SourceType = "baostock",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get monthly money supply data (M0, M1, M2).
+
+    Args:
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+    """
+    pass
+
+
+@api_endpoint(MacroFactory)
+def get_money_supply_data_year(
+    start_date: str = "1970-01-01",
+    end_date: str = "2030-12-31",
+    source: SourceType = "baostock",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get yearly money supply data (M0, M1, M2).
+
+    Args:
+        start_date: Start date in YYYY-MM-DD format
+        end_date: End date in YYYY-MM-DD format
+    """
+    pass
+
+
 __all__ = [
     "get_lpr_rate",
     "get_pmi_index",
@@ -818,5 +908,10 @@ __all__ = [
     "get_industrialization",
     "get_domestic_trade",
     "get_macro_data",
+    "get_deposit_rate_data",
+    "get_loan_rate_data",
+    "get_required_reserve_ratio_data",
+    "get_money_supply_data_month",
+    "get_money_supply_data_year",
     "MacroFactory",
 ]

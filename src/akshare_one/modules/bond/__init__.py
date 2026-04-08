@@ -60,4 +60,53 @@ def get_bond_premium(
     pass
 
 
-__all__ = ["get_bond_list", "get_bond_hist_data", "get_bond_realtime_data", "get_bond_premium", "BondFactory"]
+@api_endpoint(BondFactory, method_name="get_bond_deal_detail")
+def get_bond_deal_detail(
+    bond_code: str,
+    max_count: int = 100,
+    source: str | None = None,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    """
+    Get bond deal details.
+    """
+    pass
+
+
+@api_endpoint(BondFactory, method_name="get_bond_history_bill")
+def get_bond_history_bill(
+    bond_code: str,
+    source: str | None = None,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    """
+    Get bond historical fund flow.
+    """
+    pass
+
+
+@api_endpoint(BondFactory, method_name="get_bond_today_bill")
+def get_bond_today_bill(
+    bond_code: str,
+    source: str | None = None,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    """
+    Get bond today's fund flow.
+    """
+    pass
+
+
+__all__ = [
+    "get_bond_list",
+    "get_bond_hist_data",
+    "get_bond_realtime_data",
+    "get_bond_premium",
+    "get_bond_deal_detail",
+    "get_bond_history_bill",
+    "get_bond_today_bill",
+    "BondFactory",
+]

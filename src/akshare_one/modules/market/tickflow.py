@@ -69,7 +69,7 @@ class TickFlowInstrumentProvider(InstrumentProvider):
         if not instruments:
             return pd.DataFrame()
 
-df = pd.DataFrame(instruments)
+        df = pd.DataFrame(instruments)
 
         if "ext" in df.columns:
             ext_data = df["ext"].apply(lambda x: x if isinstance(x, dict) else {})

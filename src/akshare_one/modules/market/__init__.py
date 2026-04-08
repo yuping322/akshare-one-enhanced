@@ -6,6 +6,7 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import baostock
 from . import tickflow
 from .base import ExchangeFactory, InstrumentFactory, UniverseFactory
 

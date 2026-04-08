@@ -22,6 +22,50 @@ class InfoDataProvider(BaseProvider):
         """Fetches basic information"""
         return self._execute_api_mapped("get_basic_info", columns=columns, row_filter=row_filter, **kwargs)
 
+    def get_daily_basic(
+        self,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """Fetches daily basic indicators"""
+        return pd.DataFrame()
+
+    def get_suspend_data(
+        self,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """Fetches suspension/resumption data"""
+        return pd.DataFrame()
+
+    def get_stk_limit(
+        self,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """Fetches daily limit up/down prices"""
+        return pd.DataFrame()
+
+    def get_adj_factor(
+        self,
+        start_date: str | None = None,
+        end_date: str | None = None,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """Fetches adjustment factor data"""
+        return pd.DataFrame()
+
 
 class InfoDataFactory(BaseFactory["InfoDataProvider"]):
     """Factory class for creating info data providers."""

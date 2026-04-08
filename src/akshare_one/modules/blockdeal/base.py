@@ -31,13 +31,23 @@ class BlockDealProvider(BaseProvider):
         """
         Get block deal transaction details.
         """
-        return self._execute_api_mapped("get_block_deal", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
+        return self._execute_api_mapped(
+            "get_block_deal", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs
+        )
 
     def get_block_deal_summary(self, start_date: str, end_date: str, group_by: str, **kwargs) -> pd.DataFrame:
         """
         Get block deal summary statistics.
         """
-        return self._execute_api_mapped("get_block_deal_summary", start_date=start_date, end_date=end_date, group_by=group_by, **kwargs)
+        return self._execute_api_mapped(
+            "get_block_deal_summary", start_date=start_date, end_date=end_date, group_by=group_by, **kwargs
+        )
+
+    def get_deal_detail(self, stock_code: str, max_count: int = 100, **kwargs) -> pd.DataFrame:
+        """
+        Get stock deal detail (成交明细).
+        """
+        return self._execute_api_mapped("get_deal_detail", stock_code=stock_code, max_count=max_count, **kwargs)
 
 
 class BlockDealFactory(BaseFactory["BlockDealProvider"]):

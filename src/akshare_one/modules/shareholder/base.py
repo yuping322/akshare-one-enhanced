@@ -83,6 +83,18 @@ class ShareholderProvider(BaseProvider):
             "get_fund_shareholders", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs
         )
 
+    def get_top10_stock_holder_info(self, stock_code: str, top: int = 10, **kwargs) -> pd.DataFrame:
+        """
+        Get top 10 stock holder information.
+        """
+        return self._execute_api_mapped("get_top10_stock_holder_info", stock_code=stock_code, top=top, **kwargs)
+
+    def get_latest_holder_number(self, date: str, **kwargs) -> pd.DataFrame:
+        """
+        Get latest holder number for all stocks.
+        """
+        return self._execute_api_mapped("get_latest_holder_number", date=date, **kwargs)
+
 
 class ShareholderFactory(BaseFactory["ShareholderProvider"]):
     """Factory class for creating shareholder data providers."""

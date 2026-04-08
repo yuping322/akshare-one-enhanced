@@ -2134,3 +2134,119 @@ class LixingerHkusProvider(HKUSProvider):
         df = pd.json_normalize(data)
 
         return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+
+    def get_hk_company_fund_shareholders(
+        self,
+        stock_code: str,
+        start_date: str,
+        end_date: str | None = None,
+        limit: int | None = None,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get HK company fund shareholders from Lixinger (hk/company/fund-shareholders).
+
+        Args:
+            stock_code: HK stock code (e.g., '00700')
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            limit: Number of recent records
+
+        Returns:
+            pd.DataFrame: Columns: date, fundCode, marketCap, marketCapRank, holdings, netValueRatio
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": stock_code, "startDate": start_date}
+        if end_date:
+            params["endDate"] = end_date
+        if limit:
+            params["limit"] = limit
+
+        response = client.query_api("hk/company/fund-shareholders", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.json_normalize(data)
+        df["symbol"] = stock_code
+        rename = {
+            "fundCode": "fund_code",
+            "marketCap": "market_cap",
+            "marketCapRank": "market_cap_rank",
+            "netValueRatio": "net_value_ratio",
+        }
+        df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
+        if "date" in df.columns:
+            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+
+    def get_hk_company_mutual_market(
+        self,
+        stock_code: str,
+        start_date: str,
+        end_date: str | None = None,
+        limit: int | None = None,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get HK company mutual market (互联互通) data from Lixinger (hk/company/mutual-market).
+
+        Args:
+            stock_code: HK stock code (e.g., '00700')
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            limit: Number of recent records
+
+        Returns:
+            pd.DataFrame: Columns: shareholdings (nested array with date, holdings, etc.)
+        """
+        client = get_lixinger_client()
+        params = {"stockCode": stock_code, "startDate": start_date}
+        if end_date:
+            params["endDate"] = end_date
+        if limit:
+            params["limit"] = limit
+
+        response = client.query_api("hk/company/mutual-market", params)
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.json_normalize(data)
+        df["symbol"] = stock_code
+        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+
+    def get_hk_industry_hot_mm_ah_hsi(
+        self,
+        stock_codes: list[str],
+        columns: list | None = None,
+        row_filter: dict | None = None,
+    ) -> pd.DataFrame:
+        """
+        Get HK industry mutual market (AH) hot data from Lixinger
+        (hk/industry/hot/mm_ah/hsi).
+
+        Args:
+            stock_codes: List of HSI industry codes (1-100)
+
+        Returns:
+            pd.DataFrame: AH hot data with mm_sha, mm_sha_mc_r, mm_sh_nba_d1/d5/d20/d60, etc.
+        """
+        client = get_lixinger_client()
+        response = client.query_api("hk/industry/hot/mm_ah/hsi", {"stockCodes": stock_codes})
+        if response.get("code") != 1:
+            return pd.DataFrame()
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.json_normalize(data)
+        if "stockCode" in df.columns:
+            df = df.rename(columns={"stockCode": "symbol"})
+        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)

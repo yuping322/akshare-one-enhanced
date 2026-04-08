@@ -14,7 +14,7 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from . import eastmoney, sina
+from . import eastmoney, efinance, sina
 from .base import FundFlowFactory
 
 
@@ -146,6 +146,40 @@ def get_sector_constituents(
     pass
 
 
+@api_endpoint(FundFlowFactory, method_name="get_history_bill")
+def get_fundflow_history(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get historical fund flow data for a stock.
+
+    Args:
+        symbol: Stock symbol (e.g., '600000')
+        source: Data source (default: None, will auto-select)
+    """
+    pass
+
+
+@api_endpoint(FundFlowFactory, method_name="get_today_bill")
+def get_fundflow_today(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get today's fund flow data for a stock.
+
+    Args:
+        symbol: Stock symbol (e.g., '600000')
+        source: Data source (default: None, will auto-select)
+    """
+    pass
+
+
 __all__ = [
     "get_stock_fund_flow",
     "get_sector_fund_flow",
@@ -156,5 +190,7 @@ __all__ = [
     "get_concept_constituents",
     "get_sector_list",
     "get_sector_constituents",
+    "get_fundflow_history",
+    "get_fundflow_today",
     "FundFlowFactory",
 ]

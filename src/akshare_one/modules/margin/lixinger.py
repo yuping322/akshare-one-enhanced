@@ -31,19 +31,22 @@ class LixingerMarginProvider(MarginProvider):
         Get margin financing data from Lixinger.
 
         Args:
-            symbol: Stock symbol (e.g., '600000'). If None, returns all stocks.
+            symbol: Stock symbol (e.g., '600000'). Required — Lixinger API requires stockCode.
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
 
         Returns:
-            pd.DataFrame: Margin data
+            pd.DataFrame: Margin data with financingBalance, securitiesBalance, etc.
         """
-        client = get_lixinger_client()
+        if not symbol:
+            self.logger.warning(
+                "Lixinger margin API requires a stock symbol. "
+                "Market-wide query is not supported. Returning empty DataFrame."
+            )
+            return pd.DataFrame()
 
-        if symbol:
-            params = {"stockCodes": [symbol], "startDate": start_date, "endDate": end_date}
-        else:
-            params = {"startDate": start_date, "endDate": end_date}
+        client = get_lixinger_client()
+        params = {"stockCode": symbol, "startDate": start_date, "endDate": end_date}
 
         response = client.query_api("cn/company/margin-trading-and-securities-lending", params)
 

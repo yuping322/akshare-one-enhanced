@@ -43,6 +43,8 @@ Repository = "https://github.com/zwldarren/akshare-one.git"
 
 [project.optional-dependencies]
 talib = ["ta-lib>=0.6.4,<1.0.0"]
+tushare = ["tushare>=1.4.0,<2.0.0"]
+baostock = ["baostock>=0.8.9,<1.0.0"]
 mcp = [
     "fastmcp>=2.11.3,<3.0.0",
     "pydantic>=2.0.0,<3.0.0",

@@ -210,6 +210,80 @@ class FundProvider(BaseProvider):
         """
         raise NotImplementedError
 
+    def get_quote_history_multi(
+        self,
+        fund_codes: list[str],
+        pz: int = 100,
+        **kwargs,
+    ) -> dict[str, pd.DataFrame]:
+        """
+        Get fund historical net value data for multiple funds.
+
+        Args:
+            fund_codes: List of fund codes
+            pz: Number of records per fund
+
+        Returns:
+            Dict mapping fund codes to DataFrames with historical data
+        """
+        raise NotImplementedError
+
+    def get_public_dates(
+        self,
+        fund_code: str | None = None,
+        **kwargs,
+    ) -> list[str]:
+        """
+        Get list of public announcement dates for a fund.
+
+        Args:
+            fund_code: Fund code
+
+        Returns:
+            List of date strings
+        """
+        raise NotImplementedError
+
+    def get_period_change(
+        self,
+        fund_code: str | None = None,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """
+        Get fund performance in different periods.
+
+        Args:
+            fund_code: Fund code
+            columns: Columns to keep
+            row_filter: Row filter configuration
+
+        Returns:
+            DataFrame with period performance data
+        """
+        raise NotImplementedError
+
+    def get_pdf_reports(
+        self,
+        fund_code: str | None = None,
+        max_count: int = 12,
+        save_dir: str = "pdf",
+        **kwargs,
+    ) -> list[str] | None:
+        """
+        Download PDF reports for a fund.
+
+        Args:
+            fund_code: Fund code
+            max_count: Maximum number of PDF reports to download
+            save_dir: Directory to save PDF reports
+
+        Returns:
+            List of file paths or None on error
+        """
+        raise NotImplementedError
+
 
 class FundFactory(BaseFactory["FundProvider"]):
     """
@@ -253,4 +327,10 @@ FIELD_MAPPING = {
     "基金代码": "fund_code",
     "基金名称": "fund_name",
     "实时涨跌幅": "realtime_pct_change",
+    "近1周": "week1",
+    "近1月": "month1",
+    "近3月": "month3",
+    "近6月": "month6",
+    "近1年": "year1",
+    "近3年": "year3",
 }

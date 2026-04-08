@@ -13,7 +13,7 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from . import eastmoney, lixinger, sina
+from . import eastmoney, efinance, lixinger, sina, tushare
 from .base import BlockDealFactory
 
 
@@ -57,8 +57,27 @@ def get_block_deal_summary(
     pass
 
 
+@api_endpoint(BlockDealFactory)
+def get_deal_detail(
+    stock_code: str,
+    max_count: int = 100,
+    source: SourceType = "efinance",
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get stock deal detail (成交明细).
+
+    Args:
+        stock_code: Stock code (e.g., '600000')
+        max_count: Maximum number of records to fetch
+    """
+    pass
+
+
 __all__ = [
     "get_block_deal",
     "get_block_deal_summary",
+    "get_deal_detail",
     "BlockDealFactory",
 ]
