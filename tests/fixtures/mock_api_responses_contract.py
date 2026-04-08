@@ -121,11 +121,12 @@ def mock_realtime_data_contract(mocker):
 @pytest.fixture
 def mock_etf_hist_data_contract(mocker):
     """Mock ETF historical data provider."""
-    # Mock ETF historical provider
     from tests.fixtures.historical_fixtures import get_mock_hist_data_etf
 
-    # Need to mock at the akshare_compat level for ETF
-    return mocker.patch("akshare_one.akshare_compat.call_akshare", return_value=get_mock_hist_data_etf())
+    return mocker.patch(
+        "akshare_one.modules.etf.eastmoney.EastmoneyETFProvider.get_etf_hist",
+        return_value=get_mock_hist_data_etf(),
+    )
 
 
 @pytest.fixture

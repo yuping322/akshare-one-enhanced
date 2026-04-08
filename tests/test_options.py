@@ -15,58 +15,99 @@ from akshare_one import (
 @pytest.mark.integration
 class TestOptionsChain:
     def test_basic_options_chain(self):
-        """测试基本期权链数据获取功能"""
-        try:
-            df = get_options_chain(underlying_symbol="510300")  # 300ETF期权
-            # 如果有数据，验证基本结构
-            if not df.empty:
-                assert "symbol" in df.columns
-                assert "strike" in df.columns
-                assert "expiration" in df.columns
-        except ValueError as e:
-            # 如果没有可用的期权数据，也要接受这种情况
-            if "No valid expirations found" in str(e):
-                pass  # 这是可以接受的情况
-            else:
-                raise
+        """测试基本期权链数据获取功能 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
+
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                df = get_options_chain(underlying_symbol="510300")
+                if not df.empty:
+                    assert "symbol" in df.columns
+                    assert "strike" in df.columns
+                    assert "expiration" in df.columns
 
     def test_options_chain_columns(self):
-        """测试期权链数据字段完整性"""
-        try:
-            df = get_options_chain(underlying_symbol="510300")
-            if not df.empty:
-                expected_columns = {
-                    "underlying",
-                    "symbol",
-                    "name",
-                    "option_type",
-                    "strike",
-                    "expiration",
-                    "price",
-                    "volume",
-                    "open_interest",
-                }
-                assert expected_columns.issubset(set(df.columns))
-        except ValueError as e:
-            # 如果没有可用的期权数据，也要接受这种情况
-            if "No valid expirations found" in str(e):
-                pass  # 这是可以接受的情况
-            else:
-                raise
+        """测试期权链数据字段完整性 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
+
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                df = get_options_chain(underlying_symbol="510300")
+                if not df.empty:
+                    expected_columns = {
+                        "underlying",
+                        "symbol",
+                        "name",
+                        "option_type",
+                        "strike",
+                        "expiration",
+                        "price",
+                        "volume",
+                        "open_interest",
+                    }
+                    assert expected_columns.issubset(set(df.columns))
 
     def test_options_chain_types(self):
-        """测试期权类型分离"""
-        try:
-            df = get_options_chain(underlying_symbol="510300")
-            if not df.empty and "option_type" in df.columns:
-                option_types = df["option_type"].unique()
-                assert set(option_types).issubset({"call", "put", ""})
-        except ValueError as e:
-            # 如果没有可用的期权数据，也要接受这种情况
-            if "No valid expirations found" in str(e):
-                pass  # 这是可以接受的情况
-            else:
-                raise
+        """测试期权类型分离 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
+
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                df = get_options_chain(underlying_symbol="510300")
+                if not df.empty and "option_type" in df.columns:
+                    option_types = df["option_type"].unique()
+                    assert set(option_types).issubset({"call", "put", ""})
 
     def test_empty_api_response_handling(self):
         """测试空API响应处理"""
@@ -124,61 +165,99 @@ class TestOptionsChain:
 @pytest.mark.integration
 class TestOptionsRealtime:
     def test_options_realtime_for_underlying(self):
-        """测试获取标的所有期权实时数据"""
-        try:
-            df = get_options_realtime(underlying_symbol="510300")
-            # 如果有数据，验证基本结构
-            if not df.empty:
-                assert "symbol" in df.columns
-                assert "price" in df.columns
-        except ValueError as e:
-            # 如果没有可用的期权数据，也要接受这种情况
-            if "No valid expirations found" in str(e) or "Failed to fetch options chain" in str(e):
-                pass  # 这是可以接受的情况
-            else:
-                raise
+        """测试获取标的所有期权实时数据 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
+
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                df = get_options_realtime(underlying_symbol="510300")
+                if not df.empty:
+                    assert "symbol" in df.columns
+                    assert "price" in df.columns
 
     def test_options_realtime_columns(self):
-        """测试期权实时数据字段完整性"""
-        try:
-            df = get_options_realtime(underlying_symbol="510300")
-            if not df.empty:
-                expected_columns = {
-                    "symbol",
-                    "underlying",
-                    "price",
-                    "change",
-                    "pct_change",
-                    "timestamp",
-                    "volume",
-                    "open_interest",
-                }
-                assert expected_columns.issubset(set(df.columns))
-        except ValueError as e:
-            # 如果没有可用的期权数据，也要接受这种情况
-            if "No valid expirations found" in str(e) or "Failed to fetch options chain" in str(e):
-                pass  # 这是可以接受的情况
-            else:
-                raise
+        """测试期权实时数据字段完整性 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
+
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                df = get_options_realtime(underlying_symbol="510300")
+                if not df.empty:
+                    expected_columns = {
+                        "symbol",
+                        "underlying",
+                        "price",
+                        "change",
+                        "pct_change",
+                        "timestamp",
+                        "volume",
+                        "open_interest",
+                    }
+                    assert expected_columns.issubset(set(df.columns))
 
     def test_specific_option_realtime(self):
-        """测试特定期权的实时数据 - 使用动态获取的有效期权代码"""
-        # First get a valid option symbol from the chain
-        try:
-            chain_df = get_options_chain(underlying_symbol="510300")
-            if chain_df.empty:
-                pytest.skip("No options data available to get valid symbol")
+        """测试特定期权的实时数据 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
 
-            # Get the first valid option symbol
-            valid_symbol = chain_df["symbol"].iloc[0]
-            df = get_options_realtime(symbol=valid_symbol)
-            if not df.empty:
-                assert "symbol" in df.columns
-        except ValueError as e:
-            if "No valid expirations found" in str(e) or "Failed to fetch options chain" in str(e):
-                pytest.skip("No options data available")
-            else:
-                raise
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                chain_df = get_options_chain(underlying_symbol="510300")
+                valid_symbol = chain_df["symbol"].iloc[0]
+
+                df = get_options_realtime(symbol=valid_symbol)
+                if not df.empty:
+                    assert "symbol" in df.columns
 
     def test_realtime_invalid_params_both(self):
         """测试同时提供 symbol 和 underlying_symbol 时抛出异常"""
@@ -194,29 +273,57 @@ class TestOptionsRealtime:
 @pytest.mark.integration
 class TestOptionsExpirations:
     def test_get_options_expirations(self):
-        """测试获取期权到期日列表"""
-        try:
-            expirations = get_options_expirations(underlying_symbol="510300")
-            assert isinstance(expirations, list)
-        except ValueError as e:
-            # 如果没有可用的期权数据，也要接受这种情况
-            if "No options found for underlying symbol" in str(e):
-                pass  # 这是可以接受的情况
-            else:
-                raise
+        """测试获取期权到期日列表 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
+
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006", "10004007", "10004008"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A", "300ETF购3月4300A", "300ETF沽4月4400A"],
+                "最新价": [0.05, 0.03, 0.08, 0.06],
+                "涨跌额": [0.01, -0.01, 0.02, -0.01],
+                "涨跌幅": [20.0, -33.3, 25.0, -15.0],
+                "成交量": [1000, 2000, 1500, 1800],
+                "持仓量": [5000, 6000, 4500, 5200],
+                "行权价": [4.200, 4.200, 4.300, 4.400],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                expirations = get_options_expirations(underlying_symbol="510300")
+                assert isinstance(expirations, list)
 
     def test_expirations_sorted(self):
-        """测试到期日列表有序"""
-        try:
-            expirations = get_options_expirations(underlying_symbol="510300")
-            if expirations:
-                assert expirations == sorted(expirations)
-        except ValueError as e:
-            # 如果没有可用的期权数据，也要接受这种情况
-            if "No options found for underlying symbol" in str(e):
-                pass  # 这是可以接受的情况
-            else:
-                raise
+        """测试到期日列表有序 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
+
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006", "10004007", "10004008"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A", "300ETF购3月4300A", "300ETF沽4月4400A"],
+                "最新价": [0.05, 0.03, 0.08, 0.06],
+                "涨跌额": [0.01, -0.01, 0.02, -0.01],
+                "涨跌幅": [20.0, -33.3, 25.0, -15.0],
+                "成交量": [1000, 2000, 1500, 1800],
+                "持仓量": [5000, 6000, 4500, 5200],
+                "行权价": [4.200, 4.200, 4.300, 4.400],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                expirations = get_options_expirations(underlying_symbol="510300")
+                if expirations:
+                    assert expirations == sorted(expirations)
 
     def test_invalid_expirations_symbol(self):
         """测试无效标的到期日查询"""
@@ -227,72 +334,105 @@ class TestOptionsExpirations:
 @pytest.mark.integration
 class TestOptionsHistory:
     def test_options_hist_data(self):
-        """测试期权历史数据获取 - 使用动态获取的有效 SSE 期权代码
+        """测试期权历史数据获取 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
 
-        Note: option_sse_daily_sina only supports SSE option symbols (1000xxxx format),
-        not commodity option symbols (like au2606P648).
-        """
-        try:
-            chain_df = get_options_chain(underlying_symbol="510300")
-            if chain_df.empty:
-                pytest.skip("No options data available to get valid symbol")
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
 
-            # Find a SSE option symbol (starts with '1000')
-            sse_options = chain_df[chain_df["symbol"].str.match(r"^1000", na=False)]
-            if sse_options.empty:
-                pytest.skip("No SSE options available for history data test")
+        mock_hist_df = pd.DataFrame(
+            {
+                "日期": ["2024-01-01", "2024-01-02"],
+                "开盘": [1.0, 1.1],
+                "收盘": [1.5, 1.6],
+                "最高": [1.8, 1.9],
+                "最低": [0.9, 1.0],
+                "成交量": [10000, 20000],
+            }
+        )
 
-            valid_symbol = sse_options["symbol"].iloc[0]
-            df = get_options_hist(
-                symbol=valid_symbol,
-                start_date="2024-01-01",
-                end_date="2024-01-31",
-            )
-            # History data may be empty for recent options, so we just check structure if data exists
-            if not df.empty:
-                assert "timestamp" in df.columns
-                assert "close" in df.columns
-        except ValueError as e:
-            if "No valid expirations found" in str(e) or "Failed to fetch options chain" in str(e):
-                pytest.skip("No options data available")
-            else:
-                raise
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                valid_symbol = "10004005"
+
+                with patch("akshare_one.modules.options.sina.ak.option_sse_daily_sina", return_value=mock_hist_df):
+                    df = get_options_hist(
+                        symbol=valid_symbol,
+                        start_date="2024-01-01",
+                        end_date="2024-01-31",
+                    )
+                    if not df.empty:
+                        assert "timestamp" in df.columns
+                        assert "close" in df.columns
 
     def test_options_hist_columns(self):
-        """测试期权历史数据字段完整性 - 使用动态获取的有效 SSE 期权代码"""
-        try:
-            chain_df = get_options_chain(underlying_symbol="510300")
-            if chain_df.empty:
-                pytest.skip("No options data available to get valid symbol")
+        """测试期权历史数据字段完整性 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
 
-            # Find a SSE option symbol (starts with '1000')
-            sse_options = chain_df[chain_df["symbol"].str.match(r"^1000", na=False)]
-            if sse_options.empty:
-                pytest.skip("No SSE options available for history data test")
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
 
-            valid_symbol = sse_options["symbol"].iloc[0]
-            df = get_options_hist(
-                symbol=valid_symbol,
-                start_date="2025-01-01",
-                end_date="2025-01-31",
-            )
-            if not df.empty:
-                expected_columns = {
-                    "timestamp",
-                    "symbol",
-                    "open",
-                    "high",
-                    "low",
-                    "close",
-                    "volume",
-                    "open_interest",
-                }
-                assert expected_columns.issubset(set(df.columns))
-        except ValueError as e:
-            if "No valid expirations found" in str(e) or "Failed to fetch options chain" in str(e):
-                pytest.skip("No options data available")
-            else:
-                raise
+        mock_hist_df = pd.DataFrame(
+            {
+                "日期": ["2024-01-01", "2024-01-02"],
+                "开盘": [1.0, 1.1],
+                "收盘": [1.5, 1.6],
+                "最高": [1.8, 1.9],
+                "最低": [0.9, 1.0],
+                "成交量": [10000, 20000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                valid_symbol = "10004005"
+
+                with patch("akshare_one.modules.options.sina.ak.option_sse_daily_sina", return_value=mock_hist_df):
+                    df = get_options_hist(
+                        symbol=valid_symbol,
+                        start_date="2025-01-01",
+                        end_date="2025-01-31",
+                    )
+                    if not df.empty:
+                        expected_columns = {
+                            "timestamp",
+                            "symbol",
+                            "open",
+                            "high",
+                            "low",
+                            "close",
+                            "volume",
+                            "open_interest",
+                        }
+                        assert expected_columns.issubset(set(df.columns))
 
     def test_invalid_hist_dates(self):
         """测试无效日期格式"""
@@ -398,39 +538,65 @@ class TestOptionsErrorHandling:
 @pytest.mark.integration
 class TestOptionsIntegration:
     def test_chain_and_realtime_consistency(self):
-        """测试期权链和实时数据的一致性"""
-        try:
-            chain_df = get_options_chain(underlying_symbol="510300")
-            realtime_df = get_options_realtime(underlying_symbol="510300")
+        """测试期权链和实时数据的一致性 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
 
-            if not chain_df.empty and not realtime_df.empty:
-                # Check that symbols from chain appear in realtime data
-                chain_symbols = set(chain_df["symbol"].tolist())
-                realtime_symbols = set(realtime_df["symbol"].tolist())
-                assert chain_symbols.issubset(realtime_symbols) or chain_symbols & realtime_symbols
-        except ValueError as e:
-            # 如果没有可用的期权数据，也要接受这种情况
-            if "No valid expirations found" in str(e) or "Failed to fetch options chain" in str(e):
-                pass  # 这是可以接受的情况
-            else:
-                raise
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                chain_df = get_options_chain(underlying_symbol="510300")
+                realtime_df = get_options_realtime(underlying_symbol="510300")
+
+                if not chain_df.empty and not realtime_df.empty:
+                    chain_symbols = set(chain_df["symbol"].tolist())
+                    realtime_symbols = set(realtime_df["symbol"].tolist())
+                    assert chain_symbols.issubset(realtime_symbols) or chain_symbols & realtime_symbols
 
     def test_expirations_in_chain(self):
-        """测试到期日在期权链数据中出现"""
-        try:
-            expirations = get_options_expirations(underlying_symbol="510300")
-            chain_df = get_options_chain(underlying_symbol="510300")
+        """测试到期日在期权链数据中出现 - 使用mock数据"""
+        from unittest.mock import patch
+        import pandas as pd
 
-            if expirations and not chain_df.empty and "expiration" in chain_df.columns:
-                chain_expirations = set(chain_df["expiration"].unique().tolist())
-                # At least some expirations should match
-                assert len(set(expirations) & chain_expirations) >= 0
-        except ValueError as e:
-            # 如果没有可用的期权数据，也要接受这种情况
-            if "No options found for underlying symbol" in str(e):
-                pass  # 这是可以接受的情况
-            else:
-                raise
+        mock_raw_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006", "10004007", "10004008"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A", "300ETF购3月4300A", "300ETF沽4月4400A"],
+                "最新价": [0.05, 0.03, 0.08, 0.06],
+                "涨跌额": [0.01, -0.01, 0.02, -0.01],
+                "涨跌幅": [20.0, -33.3, 25.0, -15.0],
+                "成交量": [1000, 2000, 1500, 1800],
+                "持仓量": [5000, 6000, 4500, 5200],
+                "行权价": [4.200, 4.200, 4.300, 4.400],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_raw_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns",
+                return_value=["300ETF", "沪深300ETF"],
+            ):
+                expirations = get_options_expirations(underlying_symbol="510300")
+                chain_df = get_options_chain(underlying_symbol="510300")
+
+                if expirations and not chain_df.empty and "expiration" in chain_df.columns:
+                    chain_expirations = set(chain_df["expiration"].unique().tolist())
+                    assert len(set(expirations) & chain_expirations) >= 0
 
 
 @pytest.mark.unit

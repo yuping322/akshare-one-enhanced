@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from akshare_one.indicators import (
     get_ad,
@@ -137,8 +138,6 @@ class TestIndicators(unittest.TestCase):
         self.assertEqual(len(result_zero), len(df_zero_range))
         self.assertTrue(not result_zero["ad"].isna().all())  # Should handle zero range
 
-    # Explicitly test talib implementation
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_sma(self):
         result = get_sma(self.df, 20, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -146,7 +145,6 @@ class TestIndicators(unittest.TestCase):
         self.assertTrue(result.iloc[:19]["sma"].isna().all())
         self.assertFalse(result.iloc[19:]["sma"].isna().any())
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_ema(self):
         result = get_ema(self.df, 20, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -154,14 +152,12 @@ class TestIndicators(unittest.TestCase):
         self.assertTrue(result.iloc[:19]["ema"].isna().all())
         self.assertFalse(result.iloc[19:]["ema"].isna().any())
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_rsi(self):
         result = get_rsi(self.df, 14, calculator_type="talib")
         self.assertTrue("rsi" in result.columns)
         self.assertTrue(result.iloc[:14]["rsi"].isna().all())
         self.assertFalse(result.iloc[14:]["rsi"].isna().any())
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_macd(self):
         result = get_macd(self.df, 12, 26, 9, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -170,7 +166,6 @@ class TestIndicators(unittest.TestCase):
         self.assertTrue(result.iloc[:33]["signal"].isna().all())
         self.assertTrue(result.iloc[:33]["histogram"].isna().any())
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_bollinger_bands(self):
         result = get_bollinger_bands(self.df, 20, 2, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -178,13 +173,11 @@ class TestIndicators(unittest.TestCase):
         self.assertTrue(result.iloc[:19]["upper_band"].isna().all())
         self.assertFalse(result.iloc[19:]["upper_band"].isna().any())
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_stoch(self):
         result = get_stoch(self.df, 14, 3, 3, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertEqual(set(result.columns), {"slow_k", "slow_d"})
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_atr(self):
         result = get_atr(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -192,166 +185,139 @@ class TestIndicators(unittest.TestCase):
         self.assertTrue(result.iloc[:13]["atr"].isna().all())
         self.assertFalse(result.iloc[14:]["atr"].isna().any())
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_cci(self):
         result = get_cci(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("cci" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_adx(self):
         result = get_adx(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("adx" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_willr(self):
-        result = get_willr(self.df, 14)
+        result = get_willr(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("willr" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_ad(self):
-        result = get_ad(self.df)
+        result = get_ad(self.df, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("ad" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_adosc(self):
-        result = get_adosc(self.df, 3, 10)
+        result = get_adosc(self.df, 3, 10, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("adosc" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_obv(self):
-        result = get_obv(self.df)
+        result = get_obv(self.df, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("obv" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_mom(self):
-        result = get_mom(self.df, 10)
+        result = get_mom(self.df, 10, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("mom" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_sar(self):
-        result = get_sar(self.df, 0.02, 0.2)
+        result = get_sar(self.df, 0.02, 0.2, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("sar" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_tsf(self):
-        result = get_tsf(self.df, 14)
+        result = get_tsf(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("tsf" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_apo(self):
-        result = get_apo(self.df, 12, 26, 0)
+        result = get_apo(self.df, 12, 26, 0, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("apo" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_aroon(self):
-        result = get_aroon(self.df, 14)
+        result = get_aroon(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("aroon_down" in result.columns)
         self.assertTrue("aroon_up" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_aroonosc(self):
-        result = get_aroonosc(self.df, 14)
+        result = get_aroonosc(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("aroonosc" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_bop(self):
-        result = get_bop(self.df)
+        result = get_bop(self.df, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("bop" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_cmo(self):
-        result = get_cmo(self.df, 14)
+        result = get_cmo(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("cmo" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_dx(self):
-        result = get_dx(self.df, 14)
+        result = get_dx(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("dx" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_mfi(self):
-        result = get_mfi(self.df, 14)
+        result = get_mfi(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("mfi" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_minus_di(self):
-        result = get_minus_di(self.df, 14)
+        result = get_minus_di(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("minus_di" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_minus_dm(self):
-        result = get_minus_dm(self.df, 14)
+        result = get_minus_dm(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("minus_dm" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_plus_di(self):
-        result = get_plus_di(self.df, 14)
+        result = get_plus_di(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("plus_di" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_plus_dm(self):
-        result = get_plus_dm(self.df, 14)
+        result = get_plus_dm(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("plus_dm" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_ppo(self):
-        result = get_ppo(self.df, 12, 26, 0)
+        result = get_ppo(self.df, 12, 26, 0, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("ppo" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_roc(self):
-        result = get_roc(self.df, 10)
+        result = get_roc(self.df, 10, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("roc" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_rocp(self):
-        result = get_rocp(self.df, 10)
+        result = get_rocp(self.df, 10, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("rocp" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_rocr(self):
-        result = get_rocr(self.df, 10)
+        result = get_rocr(self.df, 10, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("rocr" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_rocr100(self):
-        result = get_rocr100(self.df, 10)
+        result = get_rocr100(self.df, 10, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("rocr100" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_trix(self):
-        result = get_trix(self.df, 30)
+        result = get_trix(self.df, 30, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("trix" in result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_ultosc(self):
-        result = get_ultosc(self.df, 7, 14, 28)
+        result = get_ultosc(self.df, 7, 14, 28, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
         self.assertTrue("ultosc" in result.columns)
 
@@ -510,7 +476,7 @@ class TestIndicators(unittest.TestCase):
         self.assertTrue("plus_dm" in result.columns)
 
     # Talib-specific comprehensive tests with golden samples
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_macd_calculation(self):
         result = get_macd(self.df, 12, 26, 9, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -526,7 +492,6 @@ class TestIndicators(unittest.TestCase):
             expected_histogram = macd_values.iloc[i] - signal_values.iloc[i]
             self.assertAlmostEqual(histogram_values.iloc[i], expected_histogram, places=6)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_macd_with_missing_data(self):
         df_missing = self.df.copy()
         df_missing.loc[10:20, "close"] = np.nan
@@ -534,7 +499,6 @@ class TestIndicators(unittest.TestCase):
         self.assertEqual(len(result), len(df_missing))
         self.assertIn("macd", result.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_rsi_calculation(self):
         result = get_rsi(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -544,7 +508,6 @@ class TestIndicators(unittest.TestCase):
             self.assertGreaterEqual(rsi_value, 0)
             self.assertLessEqual(rsi_value, 100)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_rsi_boundary_values(self):
         df_uptrend = pd.DataFrame(
             {
@@ -571,7 +534,6 @@ class TestIndicators(unittest.TestCase):
         rsi_values_down = result_down["rsi"].dropna()
         self.assertTrue((rsi_values_down < 50).any())
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_boll_calculation(self):
         result = get_bollinger_bands(self.df, 20, 2, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -586,7 +548,6 @@ class TestIndicators(unittest.TestCase):
                 self.assertGreaterEqual(upper, middle)
                 self.assertGreaterEqual(middle, lower)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_boll_upper_lower(self):
         window = 20
         std_dev = 2
@@ -598,7 +559,6 @@ class TestIndicators(unittest.TestCase):
                 expected_bandwidth = upper - lower
                 self.assertGreater(expected_bandwidth, 0)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_kdj_calculation(self):
         result = get_stoch(self.df, 14, 3, 3, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -613,7 +573,6 @@ class TestIndicators(unittest.TestCase):
             self.assertGreaterEqual(d_val, 0)
             self.assertLessEqual(d_val, 100)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_atr_calculation(self):
         result = get_atr(self.df, 14, calculator_type="talib")
         self.assertEqual(len(result), len(self.df))
@@ -622,7 +581,6 @@ class TestIndicators(unittest.TestCase):
         for atr_val in atr_values:
             self.assertGreater(atr_val, 0)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_ema_sma_calculation(self):
         ema_result = get_ema(self.df, 20, calculator_type="talib")
         sma_result = get_sma(self.df, 20, calculator_type="talib")
@@ -635,7 +593,7 @@ class TestIndicators(unittest.TestCase):
         expected_sma_19 = np.mean(self.df["close"].iloc[0:20])
         self.assertAlmostEqual(sma_values.iloc[0], expected_sma_19, places=5)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_empty_dataframe_handling(self):
         empty_df = pd.DataFrame(
             {
@@ -653,7 +611,6 @@ class TestIndicators(unittest.TestCase):
         with self.assertRaises((KeyError, IndexError, ValueError)):
             get_bollinger_bands(empty_df, 20, 2, calculator_type="talib")
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_sma_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -668,7 +625,6 @@ class TestIndicators(unittest.TestCase):
         expected_sma_2 = (10 + 11 + 12) / 3
         self.assertAlmostEqual(result["sma"].iloc[2], expected_sma_2, places=5)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_ema_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -683,7 +639,6 @@ class TestIndicators(unittest.TestCase):
         ema_values = result["ema"].dropna()
         self.assertGreater(len(ema_values), 0)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_atr_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -705,13 +660,11 @@ class TestIndicators(unittest.TestCase):
             result_macd = get_macd(self.df, 12, 26, 9, calculator_type="talib")
             self.assertIn("macd", result_macd.columns)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_macd_signal_line_calculation(self):
         result = get_macd(self.df, 12, 26, 9, calculator_type="talib")
         signal_values = result["signal"].dropna()
         self.assertGreater(len(signal_values), 0)
 
-    @unittest.skipUnless(TALIB_AVAILABLE, "talib not installed")
     def test_talib_boll_bandwidth(self):
         result = get_bollinger_bands(self.df, 20, 2, calculator_type="talib")
         for i in range(25, len(self.df)):
@@ -780,11 +733,7 @@ def dataframe_with_nan():
     return df
 
 
-talib_skip = pytest.mark.skipif(not TALIB_AVAILABLE, reason="talib not installed")
-
-
 class TestTalibSMA:
-    @talib_skip
     def test_talib_sma_calculation(self, sample_ohlcv_data):
         result = get_sma(sample_ohlcv_data, 20, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
@@ -792,7 +741,6 @@ class TestTalibSMA:
         assert result.iloc[:19]["sma"].isna().all()
         assert not result.iloc[19:]["sma"].isna().any()
 
-    @talib_skip
     def test_talib_sma_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -807,26 +755,23 @@ class TestTalibSMA:
         expected_sma = (10 + 11 + 12) / 3
         assert abs(result["sma"].iloc[2] - expected_sma) < 0.0001
 
-    @talib_skip
     def test_talib_sma_boundary_values(self, small_ohlcv_data):
         result = get_sma(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "sma" in result.columns
 
-    @talib_skip
     def test_talib_sma_missing_data(self, dataframe_with_nan):
         result = get_sma(dataframe_with_nan, 3, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "sma" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_sma_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_sma(empty_dataframe, 20, calculator_type="talib")
 
 
 class TestTalibEMA:
-    @talib_skip
     def test_talib_ema_calculation(self, sample_ohlcv_data):
         result = get_ema(sample_ohlcv_data, 20, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
@@ -834,7 +779,6 @@ class TestTalibEMA:
         assert result.iloc[:19]["ema"].isna().all()
         assert not result.iloc[19:]["ema"].isna().any()
 
-    @talib_skip
     def test_talib_ema_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -849,26 +793,23 @@ class TestTalibEMA:
         ema_values = result["ema"].dropna()
         assert len(ema_values) > 0
 
-    @talib_skip
     def test_talib_ema_boundary_values(self, small_ohlcv_data):
         result = get_ema(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "ema" in result.columns
 
-    @talib_skip
     def test_talib_ema_missing_data(self, dataframe_with_nan):
         result = get_ema(dataframe_with_nan, 3, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "ema" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_ema_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_ema(empty_dataframe, 20, calculator_type="talib")
 
 
 class TestTalibRSI:
-    @talib_skip
     def test_talib_rsi_calculation(self, sample_ohlcv_data):
         result = get_rsi(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
@@ -876,7 +817,6 @@ class TestTalibRSI:
         rsi_values = result["rsi"].dropna()
         assert all(0 <= val <= 100 for val in rsi_values)
 
-    @talib_skip
     def test_talib_rsi_with_known_values(self):
         uptrend_data = pd.DataFrame(
             {
@@ -891,7 +831,6 @@ class TestTalibRSI:
         rsi_values = result["rsi"].dropna()
         assert any(val > 50 for val in rsi_values)
 
-    @talib_skip
     def test_talib_rsi_boundary_values(self):
         downtrend_data = pd.DataFrame(
             {
@@ -906,20 +845,18 @@ class TestTalibRSI:
         rsi_values = result["rsi"].dropna()
         assert any(val < 50 for val in rsi_values)
 
-    @talib_skip
     def test_talib_rsi_missing_data(self, dataframe_with_nan):
         result = get_rsi(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "rsi" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_rsi_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_rsi(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibMACD:
-    @talib_skip
     def test_talib_macd_calculation(self, sample_ohlcv_data):
         result = get_macd(sample_ohlcv_data, 12, 26, 9, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
@@ -927,7 +864,7 @@ class TestTalibMACD:
         assert "signal" in result.columns
         assert "histogram" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_macd_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -945,26 +882,23 @@ class TestTalibMACD:
         assert len(macd_values) == len(signal_values)
         assert len(histogram_values) == len(signal_values)
 
-    @talib_skip
     def test_talib_macd_boundary_values(self, small_ohlcv_data):
         result = get_macd(small_ohlcv_data, 2, 3, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "macd" in result.columns
 
-    @talib_skip
     def test_talib_macd_missing_data(self, dataframe_with_nan):
         result = get_macd(dataframe_with_nan, 12, 26, 9, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "macd" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_macd_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_macd(empty_dataframe, 12, 26, 9, calculator_type="talib")
 
 
 class TestTalibBOLL:
-    @talib_skip
     def test_talib_boll_calculation(self, sample_ohlcv_data):
         result = get_bollinger_bands(sample_ohlcv_data, 20, 2, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
@@ -972,7 +906,6 @@ class TestTalibBOLL:
         assert "middle_band" in result.columns
         assert "lower_band" in result.columns
 
-    @talib_skip
     def test_talib_boll_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -989,33 +922,29 @@ class TestTalibBOLL:
         lower = result["lower_band"].iloc[20]
         assert upper >= middle >= lower
 
-    @talib_skip
     def test_talib_boll_boundary_values(self, small_ohlcv_data):
         result = get_bollinger_bands(small_ohlcv_data, 2, 1, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "upper_band" in result.columns
 
-    @talib_skip
     def test_talib_boll_missing_data(self, dataframe_with_nan):
         result = get_bollinger_bands(dataframe_with_nan, 20, 2, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "upper_band" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_boll_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_bollinger_bands(empty_dataframe, 20, 2, calculator_type="talib")
 
 
 class TestTalibKDJ:
-    @talib_skip
     def test_talib_kdj_calculation(self, sample_ohlcv_data):
         result = get_stoch(sample_ohlcv_data, 9, 3, 3, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "slow_k" in result.columns
         assert "slow_d" in result.columns
 
-    @talib_skip
     def test_talib_kdj_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1032,26 +961,23 @@ class TestTalibKDJ:
         assert all(0 <= val <= 100 for val in k_values)
         assert all(0 <= val <= 100 for val in d_values)
 
-    @talib_skip
     def test_talib_kdj_boundary_values(self, small_ohlcv_data):
         result = get_stoch(small_ohlcv_data, 2, 2, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "slow_k" in result.columns
 
-    @talib_skip
     def test_talib_kdj_missing_data(self, dataframe_with_nan):
         result = get_stoch(dataframe_with_nan, 9, 3, 3, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "slow_k" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_kdj_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_stoch(empty_dataframe, 9, 3, 3, calculator_type="talib")
 
 
 class TestTalibATR:
-    @talib_skip
     def test_talib_atr_calculation(self, sample_ohlcv_data):
         result = get_atr(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
@@ -1059,7 +985,6 @@ class TestTalibATR:
         atr_values = result["atr"].dropna()
         assert all(val > 0 for val in atr_values)
 
-    @talib_skip
     def test_talib_atr_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1074,32 +999,28 @@ class TestTalibATR:
         atr_values = result["atr"].dropna()
         assert len(atr_values) > 0
 
-    @talib_skip
     def test_talib_atr_boundary_values(self, small_ohlcv_data):
         result = get_atr(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "atr" in result.columns
 
-    @talib_skip
     def test_talib_atr_missing_data(self, dataframe_with_nan):
         result = get_atr(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "atr" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_atr_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_atr(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibCCI:
-    @talib_skip
     def test_talib_cci_calculation(self, sample_ohlcv_data):
         result = get_cci(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "cci" in result.columns
 
-    @talib_skip
     def test_talib_cci_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1114,32 +1035,29 @@ class TestTalibCCI:
         cci_values = result["cci"].dropna()
         assert len(cci_values) > 0
 
-    @talib_skip
     def test_talib_cci_boundary_values(self, small_ohlcv_data):
         result = get_cci(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "cci" in result.columns
 
-    @talib_skip
     def test_talib_cci_missing_data(self, dataframe_with_nan):
         result = get_cci(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "cci" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_cci_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_cci(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibOBV:
-    @talib_skip
     def test_talib_obv_calculation(self, sample_ohlcv_data):
         result = get_obv(sample_ohlcv_data, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "obv" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_obv_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1155,32 +1073,28 @@ class TestTalibOBV:
         assert len(obv_values) == 5
         assert obv_values.iloc[0] == 1000
 
-    @talib_skip
     def test_talib_obv_boundary_values(self, small_ohlcv_data):
         result = get_obv(small_ohlcv_data, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "obv" in result.columns
 
-    @talib_skip
     def test_talib_obv_missing_data(self, dataframe_with_nan):
         result = get_obv(dataframe_with_nan, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "obv" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_obv_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_obv(empty_dataframe, calculator_type="talib")
 
 
 class TestTalibMOM:
-    @talib_skip
     def test_talib_mom_calculation(self, sample_ohlcv_data):
         result = get_mom(sample_ohlcv_data, 10, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "mom" in result.columns
 
-    @talib_skip
     def test_talib_mom_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1195,32 +1109,28 @@ class TestTalibMOM:
         mom_values = result["mom"].dropna()
         assert len(mom_values) > 0
 
-    @talib_skip
     def test_talib_mom_boundary_values(self, small_ohlcv_data):
         result = get_mom(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "mom" in result.columns
 
-    @talib_skip
     def test_talib_mom_missing_data(self, dataframe_with_nan):
         result = get_mom(dataframe_with_nan, 10, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "mom" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_mom_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_mom(empty_dataframe, 10, calculator_type="talib")
 
 
 class TestTalibROC:
-    @talib_skip
     def test_talib_roc_calculation(self, sample_ohlcv_data):
         result = get_roc(sample_ohlcv_data, 10, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "roc" in result.columns
 
-    @talib_skip
     def test_talib_roc_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1235,32 +1145,28 @@ class TestTalibROC:
         roc_values = result["roc"].dropna()
         assert len(roc_values) > 0
 
-    @talib_skip
     def test_talib_roc_boundary_values(self, small_ohlcv_data):
         result = get_roc(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "roc" in result.columns
 
-    @talib_skip
     def test_talib_roc_missing_data(self, dataframe_with_nan):
         result = get_roc(dataframe_with_nan, 10, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "roc" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_roc_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_roc(empty_dataframe, 10, calculator_type="talib")
 
 
 class TestTalibWILLR:
-    @talib_skip
     def test_talib_willr_calculation(self, sample_ohlcv_data):
         result = get_willr(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "willr" in result.columns
 
-    @talib_skip
     def test_talib_willr_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1275,32 +1181,28 @@ class TestTalibWILLR:
         willr_values = result["willr"].dropna()
         assert all(-100 <= val <= 0 for val in willr_values)
 
-    @talib_skip
     def test_talib_willr_boundary_values(self, small_ohlcv_data):
         result = get_willr(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "willr" in result.columns
 
-    @talib_skip
     def test_talib_willr_missing_data(self, dataframe_with_nan):
         result = get_willr(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "willr" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_willr_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_willr(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibADX:
-    @talib_skip
     def test_talib_adx_calculation(self, sample_ohlcv_data):
         result = get_adx(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "adx" in result.columns
 
-    @talib_skip
     def test_talib_adx_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1315,32 +1217,28 @@ class TestTalibADX:
         adx_values = result["adx"].dropna()
         assert len(adx_values) > 0
 
-    @talib_skip
     def test_talib_adx_boundary_values(self, small_ohlcv_data):
         result = get_adx(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "adx" in result.columns
 
-    @talib_skip
     def test_talib_adx_missing_data(self, dataframe_with_nan):
         result = get_adx(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "adx" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_adx_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_adx(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibCMO:
-    @talib_skip
     def test_talib_cmo_calculation(self, sample_ohlcv_data):
         result = get_cmo(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "cmo" in result.columns
 
-    @talib_skip
     def test_talib_cmo_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1355,32 +1253,28 @@ class TestTalibCMO:
         cmo_values = result["cmo"].dropna()
         assert len(cmo_values) > 0
 
-    @talib_skip
     def test_talib_cmo_boundary_values(self, small_ohlcv_data):
         result = get_cmo(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "cmo" in result.columns
 
-    @talib_skip
     def test_talib_cmo_missing_data(self, dataframe_with_nan):
         result = get_cmo(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "cmo" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_cmo_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_cmo(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibTRIX:
-    @talib_skip
     def test_talib_trix_calculation(self, sample_ohlcv_data):
         result = get_trix(sample_ohlcv_data, 30, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "trix" in result.columns
 
-    @talib_skip
     def test_talib_trix_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1395,32 +1289,28 @@ class TestTalibTRIX:
         trix_values = result["trix"].dropna()
         assert len(trix_values) > 0
 
-    @talib_skip
     def test_talib_trix_boundary_values(self, small_ohlcv_data):
         result = get_trix(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "trix" in result.columns
 
-    @talib_skip
     def test_talib_trix_missing_data(self, dataframe_with_nan):
         result = get_trix(dataframe_with_nan, 30, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "trix" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_trix_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_trix(empty_dataframe, 30, calculator_type="talib")
 
 
 class TestTalibAD:
-    @talib_skip
     def test_talib_ad_calculation(self, sample_ohlcv_data):
         result = get_ad(sample_ohlcv_data, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "ad" in result.columns
 
-    @talib_skip
     def test_talib_ad_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1435,32 +1325,28 @@ class TestTalibAD:
         ad_values = result["ad"]
         assert len(ad_values) == 5
 
-    @talib_skip
     def test_talib_ad_boundary_values(self, small_ohlcv_data):
         result = get_ad(small_ohlcv_data, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "ad" in result.columns
 
-    @talib_skip
     def test_talib_ad_missing_data(self, dataframe_with_nan):
         result = get_ad(dataframe_with_nan, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "ad" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_ad_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_ad(empty_dataframe, calculator_type="talib")
 
 
 class TestTalibADOSC:
-    @talib_skip
     def test_talib_adosc_calculation(self, sample_ohlcv_data):
         result = get_adosc(sample_ohlcv_data, 3, 10, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "adosc" in result.columns
 
-    @talib_skip
     def test_talib_adosc_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1475,32 +1361,28 @@ class TestTalibADOSC:
         adosc_values = result["adosc"].dropna()
         assert len(adosc_values) > 0
 
-    @talib_skip
     def test_talib_adosc_boundary_values(self, small_ohlcv_data):
         result = get_adosc(small_ohlcv_data, 2, 3, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "adosc" in result.columns
 
-    @talib_skip
     def test_talib_adosc_missing_data(self, dataframe_with_nan):
         result = get_adosc(dataframe_with_nan, 3, 10, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "adosc" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_adosc_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_adosc(empty_dataframe, 3, 10, calculator_type="talib")
 
 
 class TestTalibSAR:
-    @talib_skip
     def test_talib_sar_calculation(self, sample_ohlcv_data):
         result = get_sar(sample_ohlcv_data, 0.02, 0.2, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "sar" in result.columns
 
-    @talib_skip
     def test_talib_sar_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1515,32 +1397,28 @@ class TestTalibSAR:
         sar_values = result["sar"].dropna()
         assert len(sar_values) > 0
 
-    @talib_skip
     def test_talib_sar_boundary_values(self, small_ohlcv_data):
         result = get_sar(small_ohlcv_data, 0.01, 0.1, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "sar" in result.columns
 
-    @talib_skip
     def test_talib_sar_missing_data(self, dataframe_with_nan):
         result = get_sar(dataframe_with_nan, 0.02, 0.2, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "sar" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_sar_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_sar(empty_dataframe, 0.02, 0.2, calculator_type="talib")
 
 
 class TestTalibTSF:
-    @talib_skip
     def test_talib_tsf_calculation(self, sample_ohlcv_data):
         result = get_tsf(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "tsf" in result.columns
 
-    @talib_skip
     def test_talib_tsf_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1555,32 +1433,28 @@ class TestTalibTSF:
         tsf_values = result["tsf"].dropna()
         assert len(tsf_values) > 0
 
-    @talib_skip
     def test_talib_tsf_boundary_values(self, small_ohlcv_data):
         result = get_tsf(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "tsf" in result.columns
 
-    @talib_skip
     def test_talib_tsf_missing_data(self, dataframe_with_nan):
         result = get_tsf(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "tsf" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_tsf_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_tsf(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibAPO:
-    @talib_skip
     def test_talib_apo_calculation(self, sample_ohlcv_data):
         result = get_apo(sample_ohlcv_data, 12, 26, 0, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "apo" in result.columns
 
-    @talib_skip
     def test_talib_apo_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1595,33 +1469,29 @@ class TestTalibAPO:
         apo_values = result["apo"].dropna()
         assert len(apo_values) > 0
 
-    @talib_skip
     def test_talib_apo_boundary_values(self, small_ohlcv_data):
         result = get_apo(small_ohlcv_data, 2, 3, 0, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "apo" in result.columns
 
-    @talib_skip
     def test_talib_apo_missing_data(self, dataframe_with_nan):
         result = get_apo(dataframe_with_nan, 12, 26, 0, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "apo" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_apo_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_apo(empty_dataframe, 12, 26, 0, calculator_type="talib")
 
 
 class TestTalibAROON:
-    @talib_skip
     def test_talib_aroon_calculation(self, sample_ohlcv_data):
         result = get_aroon(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "aroon_down" in result.columns
         assert "aroon_up" in result.columns
 
-    @talib_skip
     def test_talib_aroon_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1638,32 +1508,28 @@ class TestTalibAROON:
         assert len(aroon_up_values) > 0
         assert len(aroon_down_values) > 0
 
-    @talib_skip
     def test_talib_aroon_boundary_values(self, small_ohlcv_data):
         result = get_aroon(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "aroon_up" in result.columns
 
-    @talib_skip
     def test_talib_aroon_missing_data(self, dataframe_with_nan):
         result = get_aroon(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "aroon_up" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_aroon_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_aroon(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibAROONOSC:
-    @talib_skip
     def test_talib_aroonosc_calculation(self, sample_ohlcv_data):
         result = get_aroonosc(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "aroonosc" in result.columns
 
-    @talib_skip
     def test_talib_aroonosc_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1678,32 +1544,28 @@ class TestTalibAROONOSC:
         aroonosc_values = result["aroonosc"].dropna()
         assert len(aroonosc_values) > 0
 
-    @talib_skip
     def test_talib_aroonosc_boundary_values(self, small_ohlcv_data):
         result = get_aroonosc(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "aroonosc" in result.columns
 
-    @talib_skip
     def test_talib_aroonosc_missing_data(self, dataframe_with_nan):
         result = get_aroonosc(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "aroonosc" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_aroonosc_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_aroonosc(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibBOP:
-    @talib_skip
     def test_talib_bop_calculation(self, sample_ohlcv_data):
         result = get_bop(sample_ohlcv_data, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "bop" in result.columns
 
-    @talib_skip
     def test_talib_bop_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1718,32 +1580,28 @@ class TestTalibBOP:
         bop_values = result["bop"]
         assert len(bop_values) == 5
 
-    @talib_skip
     def test_talib_bop_boundary_values(self, small_ohlcv_data):
         result = get_bop(small_ohlcv_data, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "bop" in result.columns
 
-    @talib_skip
     def test_talib_bop_missing_data(self, dataframe_with_nan):
         result = get_bop(dataframe_with_nan, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "bop" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_bop_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_bop(empty_dataframe, calculator_type="talib")
 
 
 class TestTalibDX:
-    @talib_skip
     def test_talib_dx_calculation(self, sample_ohlcv_data):
         result = get_dx(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "dx" in result.columns
 
-    @talib_skip
     def test_talib_dx_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1758,32 +1616,29 @@ class TestTalibDX:
         dx_values = result["dx"].dropna()
         assert len(dx_values) > 0
 
-    @talib_skip
     def test_talib_dx_boundary_values(self, small_ohlcv_data):
         result = get_dx(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "dx" in result.columns
 
-    @talib_skip
     def test_talib_dx_missing_data(self, dataframe_with_nan):
         result = get_dx(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "dx" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_dx_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_dx(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibMFI:
-    @talib_skip
     def test_talib_mfi_calculation(self, sample_ohlcv_data):
         result = get_mfi(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "mfi" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_mfi_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1798,32 +1653,28 @@ class TestTalibMFI:
         mfi_values = result["mfi"].dropna()
         assert len(mfi_values) > 0
 
-    @talib_skip
     def test_talib_mfi_boundary_values(self, small_ohlcv_data):
         result = get_mfi(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "mfi" in result.columns
 
-    @talib_skip
     def test_talib_mfi_missing_data(self, dataframe_with_nan):
         result = get_mfi(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "mfi" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_mfi_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_mfi(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibMinusDI:
-    @talib_skip
     def test_talib_minus_di_calculation(self, sample_ohlcv_data):
         result = get_minus_di(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "minus_di" in result.columns
 
-    @talib_skip
     def test_talib_minus_di_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1838,32 +1689,28 @@ class TestTalibMinusDI:
         minus_di_values = result["minus_di"].dropna()
         assert len(minus_di_values) > 0
 
-    @talib_skip
     def test_talib_minus_di_boundary_values(self, small_ohlcv_data):
         result = get_minus_di(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "minus_di" in result.columns
 
-    @talib_skip
     def test_talib_minus_di_missing_data(self, dataframe_with_nan):
         result = get_minus_di(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "minus_di" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_minus_di_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_minus_di(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibMinusDM:
-    @talib_skip
     def test_talib_minus_dm_calculation(self, sample_ohlcv_data):
         result = get_minus_dm(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "minus_dm" in result.columns
 
-    @talib_skip
     def test_talib_minus_dm_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1878,32 +1725,28 @@ class TestTalibMinusDM:
         minus_dm_values = result["minus_dm"].dropna()
         assert len(minus_dm_values) > 0
 
-    @talib_skip
     def test_talib_minus_dm_boundary_values(self, small_ohlcv_data):
         result = get_minus_dm(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "minus_dm" in result.columns
 
-    @talib_skip
     def test_talib_minus_dm_missing_data(self, dataframe_with_nan):
         result = get_minus_dm(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "minus_dm" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_minus_dm_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_minus_dm(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibPlusDI:
-    @talib_skip
     def test_talib_plus_di_calculation(self, sample_ohlcv_data):
         result = get_plus_di(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "plus_di" in result.columns
 
-    @talib_skip
     def test_talib_plus_di_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1918,32 +1761,28 @@ class TestTalibPlusDI:
         plus_di_values = result["plus_di"].dropna()
         assert len(plus_di_values) > 0
 
-    @talib_skip
     def test_talib_plus_di_boundary_values(self, small_ohlcv_data):
         result = get_plus_di(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "plus_di" in result.columns
 
-    @talib_skip
     def test_talib_plus_di_missing_data(self, dataframe_with_nan):
         result = get_plus_di(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "plus_di" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_plus_di_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_plus_di(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibPlusDM:
-    @talib_skip
     def test_talib_plus_dm_calculation(self, sample_ohlcv_data):
         result = get_plus_dm(sample_ohlcv_data, 14, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "plus_dm" in result.columns
 
-    @talib_skip
     def test_talib_plus_dm_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1958,32 +1797,28 @@ class TestTalibPlusDM:
         plus_dm_values = result["plus_dm"].dropna()
         assert len(plus_dm_values) > 0
 
-    @talib_skip
     def test_talib_plus_dm_boundary_values(self, small_ohlcv_data):
         result = get_plus_dm(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "plus_dm" in result.columns
 
-    @talib_skip
     def test_talib_plus_dm_missing_data(self, dataframe_with_nan):
         result = get_plus_dm(dataframe_with_nan, 14, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "plus_dm" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_plus_dm_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_plus_dm(empty_dataframe, 14, calculator_type="talib")
 
 
 class TestTalibPPO:
-    @talib_skip
     def test_talib_ppo_calculation(self, sample_ohlcv_data):
         result = get_ppo(sample_ohlcv_data, 12, 26, 0, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "ppo" in result.columns
 
-    @talib_skip
     def test_talib_ppo_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -1998,32 +1833,28 @@ class TestTalibPPO:
         ppo_values = result["ppo"].dropna()
         assert len(ppo_values) > 0
 
-    @talib_skip
     def test_talib_ppo_boundary_values(self, small_ohlcv_data):
         result = get_ppo(small_ohlcv_data, 2, 3, 0, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "ppo" in result.columns
 
-    @talib_skip
     def test_talib_ppo_missing_data(self, dataframe_with_nan):
         result = get_ppo(dataframe_with_nan, 12, 26, 0, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "ppo" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_ppo_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_ppo(empty_dataframe, 12, 26, 0, calculator_type="talib")
 
 
 class TestTalibROCP:
-    @talib_skip
     def test_talib_rocp_calculation(self, sample_ohlcv_data):
         result = get_rocp(sample_ohlcv_data, 10, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "rocp" in result.columns
 
-    @talib_skip
     def test_talib_rocp_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -2038,32 +1869,28 @@ class TestTalibROCP:
         rocp_values = result["rocp"].dropna()
         assert len(rocp_values) > 0
 
-    @talib_skip
     def test_talib_rocp_boundary_values(self, small_ohlcv_data):
         result = get_rocp(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "rocp" in result.columns
 
-    @talib_skip
     def test_talib_rocp_missing_data(self, dataframe_with_nan):
         result = get_rocp(dataframe_with_nan, 10, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "rocp" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_rocp_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_rocp(empty_dataframe, 10, calculator_type="talib")
 
 
 class TestTalibROCR:
-    @talib_skip
     def test_talib_rocr_calculation(self, sample_ohlcv_data):
         result = get_rocr(sample_ohlcv_data, 10, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "rocr" in result.columns
 
-    @talib_skip
     def test_talib_rocr_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -2078,32 +1905,28 @@ class TestTalibROCR:
         rocr_values = result["rocr"].dropna()
         assert len(rocr_values) > 0
 
-    @talib_skip
     def test_talib_rocr_boundary_values(self, small_ohlcv_data):
         result = get_rocr(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "rocr" in result.columns
 
-    @talib_skip
     def test_talib_rocr_missing_data(self, dataframe_with_nan):
         result = get_rocr(dataframe_with_nan, 10, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "rocr" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_rocr_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_rocr(empty_dataframe, 10, calculator_type="talib")
 
 
 class TestTalibROCR100:
-    @talib_skip
     def test_talib_rocr100_calculation(self, sample_ohlcv_data):
         result = get_rocr100(sample_ohlcv_data, 10, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "rocr100" in result.columns
 
-    @talib_skip
     def test_talib_rocr100_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -2118,32 +1941,28 @@ class TestTalibROCR100:
         rocr100_values = result["rocr100"].dropna()
         assert len(rocr100_values) > 0
 
-    @talib_skip
     def test_talib_rocr100_boundary_values(self, small_ohlcv_data):
         result = get_rocr100(small_ohlcv_data, 2, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "rocr100" in result.columns
 
-    @talib_skip
     def test_talib_rocr100_missing_data(self, dataframe_with_nan):
         result = get_rocr100(dataframe_with_nan, 10, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "rocr100" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_rocr100_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_rocr100(empty_dataframe, 10, calculator_type="talib")
 
 
 class TestTalibULTOSC:
-    @talib_skip
     def test_talib_ultosc_calculation(self, sample_ohlcv_data):
         result = get_ultosc(sample_ohlcv_data, 7, 14, 28, calculator_type="talib")
         assert len(result) == len(sample_ohlcv_data)
         assert "ultosc" in result.columns
 
-    @talib_skip
     def test_talib_ultosc_with_known_values(self):
         test_data = pd.DataFrame(
             {
@@ -2158,19 +1977,17 @@ class TestTalibULTOSC:
         ultosc_values = result["ultosc"].dropna()
         assert len(ultosc_values) > 0
 
-    @talib_skip
     def test_talib_ultosc_boundary_values(self, small_ohlcv_data):
         result = get_ultosc(small_ohlcv_data, 2, 3, 4, calculator_type="talib")
         assert len(result) == len(small_ohlcv_data)
         assert "ultosc" in result.columns
 
-    @talib_skip
     def test_talib_ultosc_missing_data(self, dataframe_with_nan):
         result = get_ultosc(dataframe_with_nan, 7, 14, 28, calculator_type="talib")
         assert len(result) == len(dataframe_with_nan)
         assert "ultosc" in result.columns
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_ultosc_empty_dataframe(self, empty_dataframe):
         with pytest.raises((KeyError, IndexError, ValueError)):
             get_ultosc(empty_dataframe, 7, 14, 28, calculator_type="talib")
@@ -2179,14 +1996,14 @@ class TestTalibULTOSC:
 class TestTalibModuleImport:
     """测试 talib 模块的导入和基础结构"""
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_module_can_be_imported(self):
         """测试模块可以被导入（需要 TA-Lib）"""
         from akshare_one.modules.indicators.talib import TalibIndicatorCalculator
 
         assert TalibIndicatorCalculator is not None
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_ma_type_mapping_exists(self):
         """测试 MA_TYPE_MAPPING 存在（需要 TA-Lib）"""
         from akshare_one.modules.indicators.talib import MA_TYPE_MAPPING
@@ -2194,7 +2011,7 @@ class TestTalibModuleImport:
         assert isinstance(MA_TYPE_MAPPING, dict)
         assert len(MA_TYPE_MAPPING) > 0
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_indicator_calculator_is_subclass(self):
         """测试 TalibIndicatorCalculator 是 BaseIndicatorCalculator 的子类（需要 TA-Lib）"""
         from akshare_one.modules.indicators.talib import TalibIndicatorCalculator
@@ -2202,7 +2019,7 @@ class TestTalibModuleImport:
 
         assert issubclass(TalibIndicatorCalculator, BaseIndicatorCalculator)
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_indicator_calculator_has_all_methods(self):
         """测试 TalibIndicatorCalculator 包含所有必要的方法（需要 TA-Lib）"""
         from akshare_one.modules.indicators.talib import TalibIndicatorCalculator
@@ -2250,7 +2067,7 @@ class TestTalibModuleImport:
             assert hasattr(calculator, method_name), f"Missing method: {method_name}"
             assert callable(getattr(calculator, method_name)), f"Method {method_name} is not callable"
 
-    @talib_skip
+    @pytest.mark.skipif(not TALIB_AVAILABLE, reason="TA-Lib not installed")
     def test_talib_indicator_calculator_method_signatures(self):
         """测试方法的签名符合预期（需要 TA-Lib）"""
         from akshare_one.modules.indicators.talib import TalibIndicatorCalculator

@@ -6,14 +6,17 @@ for src/akshare_one/modules/macro/official.py.
 """
 
 import json
-from unittest.mock import patch, MagicMock, Mock
 import re
+from unittest.mock import patch
 
+import akshare as ak
 import pandas as pd
 import pytest
 
-from akshare_one.modules.macro.official import OfficialMacroProvider
 from akshare_one.modules.macro import MacroFactory
+from akshare_one.modules.macro.official import OfficialMacroProvider
+
+CAIXIN_PMI_AVAILABLE = hasattr(ak, "macro_china_cx_pmi")
 
 
 class TestOfficialMacroProviderInitialization:
@@ -248,38 +251,34 @@ class TestPMIIndexComprehensive:
         with pytest.raises(RuntimeError, match="Failed to fetch PMI index data"):
             provider.get_pmi_index("2024-01-01", "2024-12-31", "non_manufacturing")
 
-    @patch("akshare.macro_china_cx_pmi")
-    def test_get_pmi_caixin_basic(self, mock_pmi, provider):
+    @pytest.mark.skipif(not CAIXIN_PMI_AVAILABLE, reason="Caixin PMI API not available in akshare")
+    def test_get_pmi_caixin_basic(self, provider):
         """Test basic Caixin PMI data."""
         mock_data = pd.DataFrame({"月份": ["2024年01月份", "2024年02月份"], "指数": [51.0, 51.5]})
-        mock_pmi.return_value = mock_data
 
-        result = provider.get_pmi_index("2024-01-01", "2024-12-31", "caixin")
+        with patch("akshare.macro_china_cx_pmi", return_value=mock_data):
+            result = provider.get_pmi_index("2024-01-01", "2024-12-31", "caixin")
 
         assert not result.empty
         assert "pmi_value" in result.columns
         assert result["pmi_value"].iloc[0] == 51.0
 
-    @patch("akshare.macro_china_cx_pmi")
-    def test_get_pmi_caixin_empty_data(self, mock_pmi, provider):
+    @pytest.mark.skipif(not CAIXIN_PMI_AVAILABLE, reason="Caixin PMI API not available in akshare")
+    def test_get_pmi_caixin_empty_data(self, provider):
         """Test Caixin PMI with empty data."""
-        mock_pmi.return_value = pd.DataFrame()
-
-        result = provider.get_pmi_index("2024-01-01", "2024-12-31", "caixin")
+        with patch("akshare.macro_china_cx_pmi", return_value=pd.DataFrame()):
+            result = provider.get_pmi_index("2024-01-01", "2024-12-31", "caixin")
 
         assert result.empty
 
-    def test_get_pmi_caixin_basic(self, provider):
-        """Test basic Caixin PMI data - skipped due to API limitation."""
-        pytest.skip("akshare does not have macro_china_cx_pmi function")
-
-    def test_get_pmi_caixin_empty_data(self, provider):
-        """Test Caixin PMI with empty data - skipped."""
-        pytest.skip("akshare does not have macro_china_cx_pmi function")
-
+    @pytest.mark.skipif(not CAIXIN_PMI_AVAILABLE, reason="Caixin PMI API not available in akshare")
     def test_get_pmi_caixin_api_error(self, provider):
-        """Test Caixin PMI API error - skipped."""
-        pytest.skip("akshare does not have macro_china_cx_pmi function")
+        """Test Caixin PMI API error."""
+        with (
+            patch("akshare.macro_china_cx_pmi", side_effect=Exception("API Error")),
+            pytest.raises(RuntimeError, match="Failed to fetch PMI index data"),
+        ):
+            provider.get_pmi_index("2024-01-01", "2024-12-31", "caixin")
 
     def test_get_pmi_invalid_type(self, provider):
         """Test PMI with invalid type."""

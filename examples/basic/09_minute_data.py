@@ -179,6 +179,9 @@ def example_visualization():
         if len(df) == 0:
             print("未获取到数据，无法可视化")
             return
+    except Exception as e:
+        print(f"获取数据失败: {e}")
+        return
 
     print(f"\n准备可视化 {len(df)} 条5分钟K线数据...")
 

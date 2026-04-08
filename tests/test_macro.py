@@ -3,21 +3,22 @@ Unit tests for macro economic data module.
 """
 
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
+import akshare as ak
 import pandas as pd
 import pytest
 
 from akshare_one.modules.macro import (
-    get_lpr_rate,
-    get_pmi_index,
+    MacroFactory,
     get_cpi_data,
-    get_ppi_data,
+    get_lpr_rate,
     get_m2_supply,
+    get_pmi_index,
+    get_ppi_data,
     get_shibor_rate,
     get_social_financing,
 )
-from akshare_one.modules.macro import MacroFactory
 from akshare_one.modules.macro.official import OfficialMacroProvider
 
 
@@ -226,9 +227,9 @@ class TestOfficialMacroProvider:
         assert result["pmi_value"].iloc[0] == 50.3
         assert result["date"].iloc[0] == "2024-01-01"
 
+    @pytest.mark.skipif(not hasattr(ak, "macro_china_cx_pmi"), reason="Caixin PMI API not available in akshare")
     def test_get_pmi_index_caixin(self, provider):
         """Test Caixin PMI data."""
-        pytest.skip("akshare does not have macro_china_cx_pmi function")
 
     @patch("akshare.macro_china_cpi")
     def test_get_cpi_data_basic(self, mock_cpi, provider):

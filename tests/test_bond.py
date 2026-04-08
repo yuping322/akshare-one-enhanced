@@ -19,6 +19,19 @@ from akshare_one.modules.exceptions import InvalidParameterError
 from akshare_one.modules.base import MarketType
 
 
+def _is_jsl_available():
+    try:
+        import akshare as ak
+
+        ak.bond_cb_jsl()
+        return True
+    except Exception:
+        return False
+
+
+JSL_AVAILABLE = _is_jsl_available()
+
+
 class TestProviderBasics:
     """Test basic provider functionality."""
 
@@ -68,7 +81,7 @@ class TestGetBondList:
         if not df.empty:
             assert "symbol" in df.columns
 
-    @pytest.mark.skip(reason="jsl source not supported")
+    @pytest.mark.skipif(not JSL_AVAILABLE, reason="JSL not available")
     def test_get_bond_list_jsl(self):
         """Test getting bond list from jsl."""
         df = get_bond_list(source="jsl")
@@ -118,7 +131,7 @@ class TestGetBondRealtimeData:
         assert df is not None
         assert isinstance(df, pd.DataFrame)
 
-    @pytest.mark.skip(reason="jsl source not supported")
+    @pytest.mark.skipif(not JSL_AVAILABLE, reason="JSL not available")
     def test_get_bond_realtime_data_jsl(self):
         """Test getting bond realtime data from jsl."""
         df = get_bond_realtime_data(source="jsl")

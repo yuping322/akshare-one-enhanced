@@ -45,6 +45,7 @@ PERFORMANCE_BASELINES = {
 
 @pytest.mark.integration
 @pytest.mark.performance
+@pytest.mark.timeout(300)
 class TestResponseTime:
     """Test response time for key interfaces."""
 
@@ -96,7 +97,9 @@ class TestResponseTime:
 
         assert not df.empty
         assert elapsed < PERFORMANCE_BASELINES["get_etf_realtime_data"]
-        print(f"get_etf_realtime_data elapsed: {elapsed:.3f}s (baseline: {PERFORMANCE_BASELINES['get_etf_realtime_data']}s)")
+        print(
+            f"get_etf_realtime_data elapsed: {elapsed:.3f}s (baseline: {PERFORMANCE_BASELINES['get_etf_realtime_data']}s)"
+        )
 
     def test_get_fund_manager_info_performance(self):
         """Test get_fund_manager_info response time < 2s."""
@@ -106,7 +109,9 @@ class TestResponseTime:
 
         assert not df.empty
         assert elapsed < PERFORMANCE_BASELINES["get_fund_manager_info"]
-        print(f"get_fund_manager_info elapsed: {elapsed:.3f}s (baseline: {PERFORMANCE_BASELINES['get_fund_manager_info']}s)")
+        print(
+            f"get_fund_manager_info elapsed: {elapsed:.3f}s (baseline: {PERFORMANCE_BASELINES['get_fund_manager_info']}s)"
+        )
 
     def test_get_stock_fund_flow_performance(self):
         """Test get_stock_fund_flow response time < 3s."""
@@ -116,18 +121,20 @@ class TestResponseTime:
 
         assert not df.empty
         assert elapsed < PERFORMANCE_BASELINES["get_stock_fund_flow"]
-        print(f"get_stock_fund_flow elapsed: {elapsed:.3f}s (baseline: {PERFORMANCE_BASELINES['get_stock_fund_flow']}s)")
+        print(
+            f"get_stock_fund_flow elapsed: {elapsed:.3f}s (baseline: {PERFORMANCE_BASELINES['get_stock_fund_flow']}s)"
+        )
 
 
 @pytest.mark.integration
 @pytest.mark.performance
+@pytest.mark.timeout(300)
 class TestConcurrency:
     """Test concurrent access and thread safety."""
 
     def test_concurrent_basic_info_requests(self):
         """Test 10 concurrent get_basic_info requests."""
-        symbols = ["600000", "600001", "600002", "600003", "600004",
-                   "600005", "600006", "600007", "600008", "600009"]
+        symbols = ["600000", "600001", "600002", "600003", "600004", "600005", "600006", "600007", "600008", "600009"]
 
         results = []
         errors = []
@@ -166,14 +173,23 @@ class TestConcurrency:
         """Test concurrent requests to different endpoints."""
         tasks = [
             ("basic_info", lambda: get_basic_info("600000")),
-            ("hist_data", lambda: get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-03-31")),
+            (
+                "hist_data",
+                lambda: get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-03-31"),
+            ),
             ("realtime", lambda: get_realtime_data(symbol="600000")),
             ("fund_flow", lambda: get_stock_fund_flow(symbol="600000", start_date="2024-01-01", end_date="2024-03-31")),
             ("basic_info_2", lambda: get_basic_info("000001")),
-            ("hist_data_2", lambda: get_hist_data("000001", interval="day", start_date="2024-01-01", end_date="2024-03-31")),
+            (
+                "hist_data_2",
+                lambda: get_hist_data("000001", interval="day", start_date="2024-01-01", end_date="2024-03-31"),
+            ),
             ("realtime_2", lambda: get_realtime_data(symbol="000001")),
             ("basic_info_3", lambda: get_basic_info("600519")),
-            ("hist_data_3", lambda: get_hist_data("600519", interval="day", start_date="2024-01-01", end_date="2024-03-31")),
+            (
+                "hist_data_3",
+                lambda: get_hist_data("600519", interval="day", start_date="2024-01-01", end_date="2024-03-31"),
+            ),
             ("realtime_3", lambda: get_realtime_data(symbol="600519")),
         ]
 
@@ -239,6 +255,7 @@ class TestConcurrency:
 
 @pytest.mark.integration
 @pytest.mark.performance
+@pytest.mark.timeout(300)
 class TestMemoryUsage:
     """Test memory usage and detect leaks."""
 
@@ -258,7 +275,7 @@ class TestMemoryUsage:
         snapshot2 = tracemalloc.take_snapshot()
 
         # Calculate memory difference
-        top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+        top_stats = snapshot2.compare_to(snapshot1, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats)
 
         tracemalloc.stop()
@@ -283,7 +300,7 @@ class TestMemoryUsage:
         snapshot2 = tracemalloc.take_snapshot()
 
         # Calculate memory difference
-        top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+        top_stats = snapshot2.compare_to(snapshot1, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats)
 
         tracemalloc.stop()
@@ -315,13 +332,15 @@ class TestMemoryUsage:
         final_snapshot = tracemalloc.take_snapshot()
 
         # Calculate memory growth
-        top_stats = final_snapshot.compare_to(initial_snapshot, 'lineno')
+        top_stats = final_snapshot.compare_to(initial_snapshot, "lineno")
         memory_growth = sum(stat.size_diff for stat in top_stats)
 
         tracemalloc.stop()
 
         # Memory growth should be minimal (< 1MB) - indicates no major leaks
-        assert memory_growth < 1 * 1024 * 1024, f"Potential memory leak: {memory_growth / 1024:.2f} KB growth after 20 calls"
+        assert memory_growth < 1 * 1024 * 1024, (
+            f"Potential memory leak: {memory_growth / 1024:.2f} KB growth after 20 calls"
+        )
         print(f"Memory growth after 20 calls: {memory_growth / 1024:.2f} KB")
 
     def test_memory_cleanup_after_large_operations(self):
@@ -334,7 +353,7 @@ class TestMemoryUsage:
 
         gc.collect()
         baseline_snapshot = tracemalloc.take_snapshot()
-        baseline_memory = sum(stat.size for stat in baseline_snapshot.statistics('lineno'))
+        baseline_memory = sum(stat.size for stat in baseline_snapshot.statistics("lineno"))
 
         # Delete the large dataframe
         del df1
@@ -342,7 +361,7 @@ class TestMemoryUsage:
 
         # Check memory after cleanup
         cleanup_snapshot = tracemalloc.take_snapshot()
-        cleanup_memory = sum(stat.size for stat in cleanup_snapshot.statistics('lineno'))
+        cleanup_memory = sum(stat.size for stat in cleanup_snapshot.statistics("lineno"))
 
         tracemalloc.stop()
 
@@ -357,6 +376,7 @@ class TestMemoryUsage:
 
 @pytest.mark.integration
 @pytest.mark.performance
+@pytest.mark.timeout(300)
 class TestResourceManagement:
     """Test proper resource management and cleanup."""
 
@@ -439,6 +459,7 @@ class TestResourceManagement:
 
 @pytest.mark.integration
 @pytest.mark.performance
+@pytest.mark.timeout(300)
 class TestStabilityUnderLoad:
     """Test system stability under various load conditions."""
 
@@ -498,6 +519,7 @@ class TestStabilityUnderLoad:
 
 @pytest.mark.integration
 @pytest.mark.performance
+@pytest.mark.timeout(300)
 def test_performance_baseline_summary():
     """Generate performance baseline summary report."""
     import time
@@ -507,9 +529,15 @@ def test_performance_baseline_summary():
     # Test each interface
     test_cases = [
         ("get_basic_info", lambda: get_basic_info("600000")),
-        ("get_hist_data", lambda: get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-12-31")),
+        (
+            "get_hist_data",
+            lambda: get_hist_data("600000", interval="day", start_date="2024-01-01", end_date="2024-12-31"),
+        ),
         ("get_realtime_data", lambda: get_realtime_data(symbol="600000")),
-        ("get_stock_fund_flow", lambda: get_stock_fund_flow(symbol="600000", start_date="2024-01-01", end_date="2024-03-31")),
+        (
+            "get_stock_fund_flow",
+            lambda: get_stock_fund_flow(symbol="600000", start_date="2024-01-01", end_date="2024-03-31"),
+        ),
     ]
 
     for name, func in test_cases:
@@ -521,7 +549,7 @@ def test_performance_baseline_summary():
                 "elapsed": elapsed,
                 "baseline": PERFORMANCE_BASELINES.get(name, 5.0),
                 "rows": len(df) if not df.empty else 0,
-                "success": True
+                "success": True,
             }
         except Exception as e:
             results[name] = {
@@ -529,22 +557,24 @@ def test_performance_baseline_summary():
                 "baseline": PERFORMANCE_BASELINES.get(name, 5.0),
                 "rows": 0,
                 "success": False,
-                "error": str(e)
+                "error": str(e),
             }
 
     # Print summary
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("Performance Baseline Summary")
-    print("="*60)
+    print("=" * 60)
 
     for name, data in results.items():
         if data["success"]:
             status = "PASS" if data["elapsed"] < data["baseline"] else "FAIL"
-            print(f"{name:30s} {data['elapsed']:6.3f}s (baseline: {data['baseline']:5.1f}s) [{status}] rows: {data['rows']}")
+            print(
+                f"{name:30s} {data['elapsed']:6.3f}s (baseline: {data['baseline']:5.1f}s) [{status}] rows: {data['rows']}"
+            )
         else:
             print(f"{name:30s} ERROR: {data['error']}")
 
-    print("="*60)
+    print("=" * 60)
 
     # All should pass baseline
     successful_tests = sum(1 for data in results.values() if data["success"])

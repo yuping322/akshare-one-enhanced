@@ -58,7 +58,9 @@ class EastmoneyDirectFinancialProvider(FinancialDataProvider):
 
     @cache(
         "financial_cache",
-        key=lambda self: f"eastmoney_financial_metrics_{self.symbol}",
+        key=lambda self,
+        columns=None,
+        row_filter=None: f"eastmoney_financial_metrics_{self.symbol}_{columns}_{row_filter}",
     )
     def get_financial_metrics(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """获取三大财务报表关键指标"""

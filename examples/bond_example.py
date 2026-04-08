@@ -20,7 +20,7 @@ def example_bond_list():
     print("示例1：获取可转债列表")
     print("=" * 60)
 
-    df = get_bond_list(source="akshare")
+    df = get_bond_list(source="jsl")
 
     print(f"\n获取到 {len(df)} 只可转债")
     if not df.empty:

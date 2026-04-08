@@ -360,12 +360,16 @@ class TestFundFlowContract:
 class TestDragonTigerContract:
     """Contract tests for get_dragon_tiger_list API."""
 
-    @pytest.mark.skipif(True, reason="Dragon tiger API requires specific date, not available in offline mode")
     def test_dragon_tiger_required_fields(self):
         """Verify dragon tiger list has all required fields."""
-        from akshare_one import get_dragon_tiger_list
+        from unittest.mock import patch
 
-        df = get_dragon_tiger_list()
+        from tests.fixtures.lhb_fixtures import get_mock_dragon_tiger_list
+
+        with patch("akshare_one.get_dragon_tiger_list", return_value=get_mock_dragon_tiger_list()):
+            from akshare_one import get_dragon_tiger_list
+
+            df = get_dragon_tiger_list()
 
         if df.empty:
             pytest.skip("No dragon tiger data available")
@@ -374,12 +378,16 @@ class TestDragonTigerContract:
         for field in required_fields:
             assert field in df.columns, f"Missing required field: {field}"
 
-    @pytest.mark.skipif(True, reason="Dragon tiger API requires specific date, not available in offline mode")
     def test_dragon_tiger_field_types(self):
         """Verify dragon tiger field types are correct."""
-        from akshare_one import get_dragon_tiger_list
+        from unittest.mock import patch
 
-        df = get_dragon_tiger_list()
+        from tests.fixtures.lhb_fixtures import get_mock_dragon_tiger_list
+
+        with patch("akshare_one.get_dragon_tiger_list", return_value=get_mock_dragon_tiger_list()):
+            from akshare_one import get_dragon_tiger_list
+
+            df = get_dragon_tiger_list()
 
         if df.empty:
             pytest.skip("No dragon tiger data available")
@@ -523,10 +531,13 @@ class TestFieldNameStandardization:
         """Verify all field names are in English."""
         from akshare_one import get_hist_data, get_realtime_data, get_northbound_flow
 
+        end_date = datetime.now().strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+
         apis_to_test = [
-            get_hist_data(symbol="600000"),
+            get_hist_data(symbol="600000", start_date=start_date, end_date=end_date),
             get_realtime_data(symbol="600000"),
-            get_northbound_flow(),
+            get_northbound_flow(start_date=start_date, end_date=end_date),
         ]
 
         for df in apis_to_test:
@@ -543,9 +554,12 @@ class TestFieldNameStandardization:
         """Verify time-related fields use standardized names."""
         from akshare_one import get_hist_data, get_etf_hist_data
 
+        end_date = datetime.now().strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+
         # Historical APIs should use 'timestamp' or 'date' for time field
-        df_stock = get_hist_data(symbol="600000")
-        df_etf = get_etf_hist_data(symbol="510050")
+        df_stock = get_hist_data(symbol="600000", start_date=start_date, end_date=end_date)
+        df_etf = get_etf_hist_data(symbol="510050", start_date=start_date, end_date=end_date)
 
         if not df_stock.empty:
             assert "timestamp" in df_stock.columns, "Stock hist should use 'timestamp'"

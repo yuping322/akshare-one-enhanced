@@ -4,7 +4,8 @@ Bond module for conversion and standard bonds.
 """
 
 from .base import BondFactory
-from . import akshare
+from . import jsl
+from . import jsl
 from ..factory_base import api_endpoint
 from typing import Optional, Any
 import pandas as pd

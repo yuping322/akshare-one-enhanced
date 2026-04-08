@@ -190,6 +190,9 @@ def example_export_with_statistics():
         )
         output_dir = "output"
         os.makedirs(output_dir, exist_ok=True)
+    except Exception as e:
+        print(f"获取数据失败: {e}")
+        return
 
     # 导出数据
     data_file = f"{output_dir}/600000_with_indicators_2024.csv"

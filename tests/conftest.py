@@ -26,11 +26,8 @@ logging.getLogger("httpx").setLevel(logging.ERROR)
 logging.getLogger("http.client").setLevel(logging.ERROR)
 
 # Configure test logger
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger('test_logger')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("test_logger")
 
 
 # Network error patterns to detect
@@ -68,66 +65,48 @@ def pytest_addoption(parser):
         "--update-golden-samples",
         action="store_true",
         default=False,
-        help="Update golden samples instead of validating against them"
+        help="Update golden samples instead of validating against them",
     )
 
     # Add integration test options
     parser.addoption(
-        "--run-integration",
-        action="store_true",
-        default=False,
-        help="Run integration tests (requires network access)"
+        "--run-integration", action="store_true", default=False, help="Run integration tests (requires network access)"
     )
 
-    parser.addoption(
-        "--run-slow",
-        action="store_true",
-        default=False,
-        help="Run slow tests"
-    )
+    parser.addoption("--run-slow", action="store_true", default=False, help="Run slow tests")
 
-    parser.addoption(
-        "--run-performance",
-        action="store_true",
-        default=False,
-        help="Run performance tests"
-    )
+    parser.addoption("--run-performance", action="store_true", default=False, help="Run performance tests")
 
     parser.addoption(
         "--offline",
         action="store_true",
         default=should_skip_on_network_error(),
-        help="Run tests in offline mode (gracefully handle network errors)"
+        help="Run tests in offline mode (gracefully handle network errors)",
     )
 
 
 def pytest_configure(config):
     """Configure pytest with custom markers."""
-    config.addinivalue_line(
-        "markers", "integration: mark test as integration test (requires network)"
-    )
-    config.addinivalue_line(
-        "markers", "slow: mark test as slow running"
-    )
-    config.addinivalue_line(
-        "markers", "contract: mark test as contract test (golden sample)"
-    )
-    config.addinivalue_line(
-        "markers", "performance: mark test as performance test"
-    )
-    config.addinivalue_line(
-        "markers", "network: mark test as requiring network access"
-    )
+    config.addinivalue_line("markers", "integration: mark test as integration test (requires network)")
+    config.addinivalue_line("markers", "slow: mark test as slow running")
+    config.addinivalue_line("markers", "contract: mark test as contract test (golden sample)")
+    config.addinivalue_line("markers", "performance: mark test as performance test")
+    config.addinivalue_line("markers", "network: mark test as requiring network access")
 
 
 def pytest_collection_modifyitems(config, items):
-    """Modify test collection based on command line options."""
-    # Skip integration tests unless --run-integration is specified
+    """Modify test collection based on command line options or environment variables."""
+    ci_env = os.getenv("CI", "").lower() in ("true", "1", "yes")
+
+    # Integration tests are skipped by default unless --run-integration is specified
+    # In CI environment, provide a clearer skip message
     if not config.getoption("--run-integration"):
-        skip_integration = pytest.mark.skip(reason="need --run-integration option to run")
         for item in items:
             if "integration" in item.keywords:
-                item.add_marker(skip_integration)
+                if ci_env:
+                    item.add_marker(pytest.mark.skip(reason="Integration test skipped in CI environment"))
+                else:
+                    item.add_marker(pytest.mark.skip(reason="need --run-integration option to run"))
 
     # Skip slow tests unless --run-slow is specified
     if not config.getoption("--run-slow"):
@@ -136,8 +115,16 @@ def pytest_collection_modifyitems(config, items):
             if "slow" in item.keywords:
                 item.add_marker(skip_slow)
 
-    # Skip performance tests unless --run-performance or --run-integration is specified
-    if not (config.getoption("--run-performance") or config.getoption("--run-integration")):
+    # Skip performance tests unless --run-performance, --run-integration, or RUN_PERFORMANCE=true
+    run_performance = (
+        config.getoption("--run-performance")
+        or config.getoption("--run-integration")
+        or os.getenv("RUN_PERFORMANCE", "").lower() == "true"
+    )
+    skip_perf_env = os.environ.get("SKIP_PERF", "false").lower() in ("true", "1", "yes")
+    if skip_perf_env:
+        run_performance = False
+    if not run_performance:
         skip_performance = pytest.mark.skip(reason="need --run-performance or --run-integration option to run")
         for item in items:
             if "performance" in item.keywords:
@@ -159,11 +146,9 @@ def pytest_runtest_makereport(item, call):
     if report.when == "call" and report.failed:
         if call.excinfo:
             error_message = str(call.excinfo.value)
-            error_traceback = "".join(traceback.format_exception(
-                type(call.excinfo.value),
-                call.excinfo.value,
-                call.excinfo.tb
-            ))
+            error_traceback = "".join(
+                traceback.format_exception(type(call.excinfo.value), call.excinfo.value, call.excinfo.tb)
+            )
 
             # Check if this is a network error
             if is_network_error(error_message) or is_network_error(error_traceback):
@@ -173,7 +158,7 @@ def pytest_runtest_makereport(item, call):
 
                 # Always skip network errors in offline mode
                 if offline_mode:
-                    report.outcome = 'skipped'
+                    report.outcome = "skipped"
                     report.wasxfail = f"Skipped due to network error (offline mode): {error_message[:100]}"
                 # For tests not marked as integration, provide helpful message
                 elif "integration" not in item.keywords:
@@ -190,6 +175,7 @@ def rate_limiter():
     """Fixture providing rate limiter for integration tests."""
     try:
         from tests.utils.integration_helpers import integration_rate_limiter
+
         return integration_rate_limiter
     except ImportError:
         return None
@@ -200,6 +186,7 @@ def df_validator():
     """Fixture providing DataFrame validator."""
     try:
         from tests.utils.integration_helpers import DataFrameValidator
+
         return DataFrameValidator()
     except ImportError:
         return None
@@ -210,6 +197,7 @@ def mock_data_generator():
     """Fixture providing mock data generator."""
     try:
         from tests.utils.integration_helpers import MockDataGenerator
+
         return MockDataGenerator()
     except ImportError:
         return None
@@ -218,16 +206,13 @@ def mock_data_generator():
 @pytest.fixture
 def sample_symbols():
     """Fixture providing sample stock symbols for testing."""
-    return ['600000', '000001', '300001']
+    return ["600000", "000001", "300001"]
 
 
 @pytest.fixture
 def sample_date_range():
     """Fixture providing sample date range for testing."""
-    return {
-        'start_date': '2024-01-01',
-        'end_date': '2024-01-31'
-    }
+    return {"start_date": "2024-01-01", "end_date": "2024-01-31"}
 
 
 @pytest.fixture
@@ -265,7 +250,7 @@ def retry_on_failure(
     max_retries: int = 3,
     delay: float = 2.0,
     exceptions: tuple = (Exception,),
-    condition: Callable[[Exception], bool] = None
+    condition: Callable[[Exception], bool] = None,
 ):
     """
     Decorator to retry a test function on specific failures.
@@ -284,6 +269,7 @@ def retry_on_failure(
         def test_flaky_api():
             ...
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -308,9 +294,7 @@ def retry_on_failure(
                         time.sleep(delay)
                     else:
                         # Final attempt failed or condition not met
-                        logger.error(
-                            f"Test {func.__name__} failed after {retry_count + 1} attempts: {str(e)}"
-                        )
+                        logger.error(f"Test {func.__name__} failed after {retry_count + 1} attempts: {str(e)}")
                         raise
 
             # Should not reach here, but just in case
@@ -318,6 +302,7 @@ def retry_on_failure(
                 raise last_exception
 
         return wrapper
+
     return decorator
 
 

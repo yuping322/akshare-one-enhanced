@@ -17,7 +17,10 @@ class SinaFinancialReport(FinancialDataProvider):
         super().__init__(symbol, **kwargs)
         self.stock = f"sh{symbol}" if not symbol.startswith(("sh", "sz", "bj")) else symbol
 
-    @cache("financial_cache", key=lambda self: f"sina_balance_{self.symbol}")
+    @cache(
+        "financial_cache",
+        key=lambda self, columns=None, row_filter=None: f"sina_balance_{self.symbol}_{columns}_{row_filter}",
+    )
     def get_balance_sheet(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """获取资产负债表数据"""
         try:
@@ -27,7 +30,10 @@ class SinaFinancialReport(FinancialDataProvider):
         except Exception as e:
             raise ValueError(f"Failed to get balance sheet for symbol {self.symbol}: {str(e)}") from e
 
-    @cache("financial_cache", key=lambda self: f"sina_income_{self.symbol}")
+    @cache(
+        "financial_cache",
+        key=lambda self, columns=None, row_filter=None: f"sina_income_{self.symbol}_{columns}_{row_filter}",
+    )
     def get_income_statement(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """获取利润表数据"""
         try:
@@ -37,7 +43,10 @@ class SinaFinancialReport(FinancialDataProvider):
         except Exception as e:
             raise ValueError(f"Failed to get income statement for symbol {self.symbol}: {str(e)}") from e
 
-    @cache("financial_cache", key=lambda self: f"sina_cash_{self.symbol}")
+    @cache(
+        "financial_cache",
+        key=lambda self, columns=None, row_filter=None: f"sina_cash_{self.symbol}_{columns}_{row_filter}",
+    )
     def get_cash_flow(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """获取现金流量表数据"""
         try:
@@ -63,7 +72,9 @@ class SinaFinancialReport(FinancialDataProvider):
         # Convert timestamp columns if exists
         if "报告日" in raw_df.columns:
             raw_df = self.map_source_fields(raw_df, "sina")
-            raw_df["report_date"] = pd.to_datetime(raw_df["report_date"], format="%Y%m%d")
+            date_col = "report_date" if "report_date" in raw_df.columns else "date"
+            if date_col in raw_df.columns:
+                raw_df[date_col] = pd.to_datetime(raw_df[date_col], format="%Y%m%d")
 
         # Define column mappings and required columns
         column_mapping = {
@@ -261,8 +272,11 @@ class SinaFinancialReport(FinancialDataProvider):
         required_columns = ["report_date"] + list(column_mapping.values())
         return raw_df.reindex(columns=required_columns)
 
-    @cache("financial_cache", key=lambda self: f"sina_metrics_{self.symbol}")
-    def get_financial_metrics(self) -> pd.DataFrame:
+    @cache(
+        "financial_cache",
+        key=lambda self, columns=None, row_filter=None: f"sina_metrics_{self.symbol}_{columns}_{row_filter}",
+    )
+    def get_financial_metrics(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
         """获取三大财务报表关键指标"""
         # Fetch all reports
         try:
