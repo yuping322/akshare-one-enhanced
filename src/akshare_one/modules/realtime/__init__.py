@@ -6,7 +6,7 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from . import eastmoney, eastmoney_direct, efinance, xueqiu
+from . import eastmoney, eastmoney_direct, efinance, tickflow, xueqiu
 from .base import RealtimeDataFactory
 
 

@@ -14,7 +14,7 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
-from . import eastmoney, sina
+from . import eastmoney, efinance, sina
 from .base import FuturesDataFactory, FuturesHistoricalFactory, FuturesRealtimeFactory
 
 

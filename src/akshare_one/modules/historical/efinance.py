@@ -27,9 +27,11 @@ class EfinanceHistoricalProvider(HistoricalDataProvider):
 
     @cache(
         "hist_data_cache",
-        key=lambda self: (f"efinance_hist_{self.symbol}_{self.interval}_{self.interval_multiplier}_{self.adjust}"),
+        key=lambda self, **kwargs: (
+            f"efinance_hist_{self.symbol}_{self.interval}_{self.interval_multiplier}_{self.adjust}"
+        ),
     )
-    def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None) -> pd.DataFrame:
+    def get_hist_data(self, columns: list | None = None, row_filter: dict | None = None, **kwargs) -> pd.DataFrame:
         """Fetches Efinance historical market data
 
         Args:
