@@ -13,6 +13,7 @@
 """
 
 import pandas as pd
+from datetime import datetime, timedelta
 from akshare_one import get_hist_data, get_realtime_data
 from akshare_one.modules.etf import ETFFactory
 
@@ -23,19 +24,24 @@ def example_etf_hist_data():
     print("示例1：获取ETF历史数据")
     print("=" * 60)
 
-    # 获取沪深300ETF历史数据
-    df = get_hist_data(
-        symbol="510300",  # 沪深300ETF
-        interval="day",
-        start_date="2024-01-01",
-        end_date="2024-12-31",
-        adjust="none",
-        source="eastmoney_direct",
-    )
+    # 使用最近30天数据，减少资源消耗
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
-    print(f"\n获取到 {len(df)} 条ETF日线数据")
-    print("\n最近5天的数据：")
-    print(df.head().to_string(index=False))
+    try:
+        df = get_hist_data(
+            symbol="510300",
+            interval="day",
+            start_date=start_date,
+            end_date=end_date,
+            adjust="none",
+            source="eastmoney_direct",
+        )
+        print(f"\n获取到 {len(df)} 条ETF日线数据")
+        print("\n最近5天的数据：")
+        print(df.head().to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_etf_realtime():
@@ -44,11 +50,12 @@ def example_etf_realtime():
     print("示例2：获取ETF实时行情")
     print("=" * 60)
 
-    # 获取单个ETF实时行情
-    df = get_realtime_data(symbol="510300", source="eastmoney_direct")
-
-    print("\n沪深300ETF实时行情：")
-    print(df.to_string(index=False))
+    try:
+        df = get_realtime_data(symbol="510300", source="eastmoney_direct")
+        print("\n沪深300ETF实时行情：")
+        print(df.to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
     # 数据包含以下字段：
     # - symbol: ETF代码
@@ -65,15 +72,14 @@ def example_etf_info():
     print("示例3：获取ETF基本信息")
     print("=" * 60)
 
-    # 使用 ETF 工厂获取 ETF 列表
-    df = ETFFactory.call_provider_method("get_etf_spot", source="eastmoney")
-
-    # 过滤特定ETF
-    if not df.empty and "symbol" in df.columns:
-        df = df[df["symbol"] == "510300"]
-
-    print("\nETF基本信息：")
-    print(df.to_string(index=False))
+    try:
+        df = ETFFactory.call_provider_method("get_etf_spot", source="eastmoney")
+        if not df.empty and "symbol" in df.columns:
+            df = df[df["symbol"] == "510300"]
+        print("\nETF基本信息：")
+        print(df.to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_multiple_etfs():
@@ -90,15 +96,15 @@ def example_multiple_etfs():
 
     for symbol, name in etf_list:
         print(f"\n{name} ({symbol})：")
-
-        # 获取实时行情
-        df = get_realtime_data(symbol=symbol, source="eastmoney_direct")
-
-        if not df.empty:
-            latest = df.iloc[0]
-            print(f"  最新价: {latest['price']:.3f}")
-            print(f"  涨跌幅: {latest['pct_change']:.2f}%")
-            print(f"  成交量: {latest['volume']:.0f}手")
+        try:
+            df = get_realtime_data(symbol=symbol, source="eastmoney_direct")
+            if not df.empty:
+                latest = df.iloc[0]
+                print(f"  最新价: {latest['price']:.3f}")
+                print(f"  涨跌幅: {latest['pct_change']:.2f}%")
+                print(f"  成交量: {latest['volume']:.0f}手")
+        except Exception as e:
+            print(f"  获取数据失败: {e}")
 
 
 def example_etf_minute_data():
@@ -107,19 +113,24 @@ def example_etf_minute_data():
     print("示例5：获取ETF分钟线数据")
     print("=" * 60)
 
-    # 获取15分钟K线数据
-    df = get_hist_data(
-        symbol="510300",
-        interval="minute",
-        interval_multiplier=15,
-        start_date="2024-12-01",
-        end_date="2024-12-31",
-        source="eastmoney_direct",
-    )
+    # 使用最近3天数据，减少资源消耗
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
 
-    print(f"\n获取到 {len(df)} 条15分钟数据")
-    print("\n最近10条数据：")
-    print(df.head(10).to_string(index=False))
+    try:
+        df = get_hist_data(
+            symbol="510300",
+            interval="minute",
+            interval_multiplier=15,
+            start_date=start_date,
+            end_date=end_date,
+            source="eastmoney_direct",
+        )
+        print(f"\n获取到 {len(df)} 条15分钟数据")
+        print("\n最近10条数据：")
+        print(df.head(10).to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def main():

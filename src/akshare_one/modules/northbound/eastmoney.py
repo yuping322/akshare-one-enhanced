@@ -261,9 +261,8 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         # Apply field name validation if available
         try:
             result = self.apply_field_standardization(result, field_types)
-        except Exception:
-            # If validation fails, return the result as is
-            pass
+        except (ValueError, KeyError) as e:
+            self.logger.warning(f"Field standardization failed for holdings data: {e}")
 
         return self.ensure_json_compatible(result)
 
@@ -402,8 +401,7 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         # Apply field name validation if available
         try:
             result = self.apply_field_standardization(result, field_types)
-        except Exception:
-            # If validation fails, return the result as is
-            pass
+        except (ValueError, KeyError) as e:
+            self.logger.warning(f"Field standardization failed for ranking data: {e}")
 
         return self.ensure_json_compatible(result)

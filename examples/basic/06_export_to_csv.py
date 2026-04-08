@@ -13,7 +13,7 @@
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 from akshare_one import get_hist_data_multi_source, get_realtime_data_multi_source, get_basic_info
 
@@ -24,29 +24,27 @@ def example_export_to_csv():
     print("示例1：导出为CSV格式")
     print("=" * 60)
 
-    # 获取历史数据
-    df = get_hist_data_multi_source(
-        symbol="600000",
-        interval="day",
-        start_date="2024-01-01",
-        end_date="2024-12-31",
-        sources=["eastmoney_direct", "eastmoney", "sina"],
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
-    # 创建输出目录
-    output_dir = "output"
-    os.makedirs(output_dir, exist_ok=True)
-
-    # 导出为CSV
-    filename = f"{output_dir}/600000_daily_2024.csv"
-    df.to_csv(filename, index=False, encoding="utf-8-sig")
-
-    print(f"\n数据已导出到: {filename}")
-    print(f"数据条数: {len(df)}")
-
-    # 验证文件
-    df_loaded = pd.read_csv(filename)
-    print(f"验证: 成功加载 {len(df_loaded)} 条数据")
+    try:
+        df = get_hist_data_multi_source(
+            symbol="600000",
+            interval="day",
+            start_date=start_date,
+            end_date=end_date,
+            sources=["eastmoney_direct", "eastmoney", "sina"],
+        )
+        output_dir = "output"
+        os.makedirs(output_dir, exist_ok=True)
+        filename = f"{output_dir}/600000_daily_recent.csv"
+        df.to_csv(filename, index=False, encoding="utf-8-sig")
+        print(f"\n数据已导出到: {filename}")
+        print(f"数据条数: {len(df)}")
+        df_loaded = pd.read_csv(filename)
+        print(f"验证: 成功加载 {len(df_loaded)} 条数据")
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_export_to_excel():
@@ -55,28 +53,28 @@ def example_export_to_excel():
     print("示例2：导出为Excel格式")
     print("=" * 60)
 
-    # 获取历史数据
-    df = get_hist_data_multi_source(
-        symbol="000001",
-        interval="day",
-        start_date="2024-01-01",
-        end_date="2024-12-31",
-        sources=["eastmoney_direct", "eastmoney", "sina"],
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
-    # 创建输出目录
-    output_dir = "output"
-    os.makedirs(output_dir, exist_ok=True)
-
-    # 导出为Excel（需要移除时区信息）
-    filename = f"{output_dir}/000001_daily_2024.xlsx"
-    df_excel = df.copy()
-    if df_excel["timestamp"].dt.tz is not None:
-        df_excel["timestamp"] = df_excel["timestamp"].dt.tz_convert(None)
-    df_excel.to_excel(filename, index=False, engine="openpyxl")
-
-    print(f"\n数据已导出到: {filename}")
-    print(f"数据条数: {len(df)}")
+    try:
+        df = get_hist_data_multi_source(
+            symbol="000001",
+            interval="day",
+            start_date=start_date,
+            end_date=end_date,
+            sources=["eastmoney_direct", "eastmoney", "sina"],
+        )
+        output_dir = "output"
+        os.makedirs(output_dir, exist_ok=True)
+        filename = f"{output_dir}/000001_daily_recent.xlsx"
+        df_excel = df.copy()
+        if df_excel["timestamp"].dt.tz is not None:
+            df_excel["timestamp"] = df_excel["timestamp"].dt.tz_convert(None)
+        df_excel.to_excel(filename, index=False, engine="openpyxl")
+        print(f"\n数据已导出到: {filename}")
+        print(f"数据条数: {len(df)}")
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_export_with_formatting():
@@ -85,41 +83,33 @@ def example_export_with_formatting():
     print("示例3：导出并格式化")
     print("=" * 60)
 
-    # 获取实时行情
-    df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
-
-    # 添加时间戳列
-    df["export_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # 排序：按涨跌幅降序
-    df_sorted = df.sort_values("pct_change", ascending=False)
-
-    # 重命名列（中文）
-    df_formatted = df_sorted.rename(
-        columns={
-            "symbol": "股票代码",
-            "price": "最新价",
-            "change": "涨跌额",
-            "pct_change": "涨跌幅(%)",
-            "open": "今开",
-            "high": "最高",
-            "low": "最低",
-            "prev_close": "昨收",
-            "volume": "成交量(手)",
-            "amount": "成交额(元)",
-            "export_time": "导出时间",
-        }
-    )
-
-    # 导出
-    output_dir = "output"
-    os.makedirs(output_dir, exist_ok=True)
-
-    filename = f"{output_dir}/market_overview_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    df_formatted.to_csv(filename, index=False, encoding="utf-8-sig")
-
-    print(f"\n市场概览已导出到: {filename}")
-    print(f"股票数量: {len(df_formatted)}")
+    try:
+        df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
+        df["export_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        df_sorted = df.sort_values("pct_change", ascending=False)
+        df_formatted = df_sorted.rename(
+            columns={
+                "symbol": "股票代码",
+                "price": "最新价",
+                "change": "涨跌额",
+                "pct_change": "涨跌幅(%)",
+                "open": "今开",
+                "high": "最高",
+                "low": "最低",
+                "prev_close": "昨收",
+                "volume": "成交量(手)",
+                "amount": "成交额(元)",
+                "export_time": "导出时间",
+            }
+        )
+        output_dir = "output"
+        os.makedirs(output_dir, exist_ok=True)
+        filename = f"{output_dir}/market_overview_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        df_formatted.to_csv(filename, index=False, encoding="utf-8-sig")
+        print(f"\n市场概览已导出到: {filename}")
+        print(f"股票数量: {len(df_formatted)}")
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_export_multiple_stocks():
@@ -128,27 +118,28 @@ def example_export_multiple_stocks():
     print("示例4：批量导出多个股票")
     print("=" * 60)
 
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+
     stocks = ["600000", "000001", "600519", "000858", "600036"]
     output_dir = "output/stocks"
     os.makedirs(output_dir, exist_ok=True)
 
     for symbol in stocks:
         print(f"\n处理股票: {symbol}")
-
-        # 获取数据
-        df = get_hist_data_multi_source(
-            symbol=symbol,
-            interval="day",
-            start_date="2024-01-01",
-            end_date="2024-12-31",
-            sources=["eastmoney_direct", "eastmoney", "sina"],
-        )
-
-        # 导出
-        filename = f"{output_dir}/{symbol}_2024.csv"
-        df.to_csv(filename, index=False, encoding="utf-8-sig")
-
-        print(f"  已导出: {filename} ({len(df)} 条数据)")
+        try:
+            df = get_hist_data_multi_source(
+                symbol=symbol,
+                interval="day",
+                start_date=start_date,
+                end_date=end_date,
+                sources=["eastmoney_direct", "eastmoney", "sina"],
+            )
+            filename = f"{output_dir}/{symbol}_recent.csv"
+            df.to_csv(filename, index=False, encoding="utf-8-sig")
+            print(f"  已导出: {filename} ({len(df)} 条数据)")
+        except Exception as e:
+            print(f"  获取失败: {e}")
 
 
 def example_export_with_statistics():
@@ -157,50 +148,48 @@ def example_export_with_statistics():
     print("示例5：导出带统计数据")
     print("=" * 60)
 
-    # 获取数据
-    df = get_hist_data_multi_source(
-        symbol="600000",
-        interval="day",
-        start_date="2024-01-01",
-        end_date="2024-12-31",
-        sources=["eastmoney_direct", "eastmoney", "sina"],
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
 
-    # 计算统计指标
-    df["pct_change"] = df["close"].pct_change() * 100
-    df["ma5"] = df["close"].rolling(window=5).mean()
-    df["ma10"] = df["close"].rolling(window=10).mean()
-    df["ma20"] = df["close"].rolling(window=20).mean()
-
-    # 创建统计摘要
-    stats = pd.DataFrame(
-        {
-            "统计项": [
-                "数据条数",
-                "平均收盘价",
-                "最高价",
-                "最低价",
-                "平均涨跌幅(%)",
-                "最大涨幅(%)",
-                "最大跌幅(%)",
-                "平均成交量(手)",
-            ],
-            "值": [
-                len(df),
-                f"{df['close'].mean():.2f}",
-                f"{df['high'].max():.2f}",
-                f"{df['low'].min():.2f}",
-                f"{df['pct_change'].mean():.2f}",
-                f"{df['pct_change'].max():.2f}",
-                f"{df['pct_change'].min():.2f}",
-                f"{df['volume'].mean():.0f}",
-            ],
-        }
-    )
-
-    # 导出
-    output_dir = "output"
-    os.makedirs(output_dir, exist_ok=True)
+    try:
+        df = get_hist_data_multi_source(
+            symbol="600000",
+            interval="day",
+            start_date=start_date,
+            end_date=end_date,
+            sources=["eastmoney_direct", "eastmoney", "sina"],
+        )
+        df["pct_change"] = df["close"].pct_change() * 100
+        df["ma5"] = df["close"].rolling(window=5).mean()
+        df["ma10"] = df["close"].rolling(window=10).mean()
+        if len(df) >= 20:
+            df["ma20"] = df["close"].rolling(window=20).mean()
+        stats = pd.DataFrame(
+            {
+                "统计项": [
+                    "数据条数",
+                    "平均收盘价",
+                    "最高价",
+                    "最低价",
+                    "平均涨跌幅(%)",
+                    "最大涨幅(%)",
+                    "最大跌幅(%)",
+                    "平均成交量(手)",
+                ],
+                "值": [
+                    len(df),
+                    f"{df['close'].mean():.2f}",
+                    f"{df['high'].max():.2f}",
+                    f"{df['low'].min():.2f}",
+                    f"{df['pct_change'].mean():.2f}",
+                    f"{df['pct_change'].max():.2f}",
+                    f"{df['pct_change'].min():.2f}",
+                    f"{df['volume'].mean():.0f}",
+                ],
+            }
+        )
+        output_dir = "output"
+        os.makedirs(output_dir, exist_ok=True)
 
     # 导出数据
     data_file = f"{output_dir}/600000_with_indicators_2024.csv"

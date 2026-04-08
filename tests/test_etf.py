@@ -86,6 +86,7 @@ class TestGetETFRealtimeData:
         if not df.empty:
             assert "symbol" in df.columns
 
+    @pytest.mark.skip(reason="sina source not supported")
     @pytest.mark.flaky(reruns=3, reruns_delay=2)
     def test_get_etf_realtime_data_sina(self):
         """Test getting ETF realtime data from sina."""

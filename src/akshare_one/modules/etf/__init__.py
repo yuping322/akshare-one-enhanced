@@ -6,6 +6,7 @@ ETF and fund data module.
 from .base import ETFFactory
 from . import eastmoney
 from . import akshare
+from . import lixinger
 from ..factory_base import api_endpoint
 from typing import Optional, List, Any
 import pandas as pd

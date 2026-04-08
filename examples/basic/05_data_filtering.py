@@ -13,6 +13,7 @@
 """
 
 import pandas as pd
+from datetime import datetime, timedelta
 from akshare_one import get_hist_data_multi_source, get_realtime_data_multi_source, apply_data_filter
 
 
@@ -22,26 +23,29 @@ def example_basic_filtering():
     print("示例1：基础数据过滤")
     print("=" * 60)
 
-    # 获取历史数据
-    df = get_hist_data_multi_source(
-        symbol="600000",
-        interval="day",
-        start_date="2024-01-01",
-        end_date="2024-12-31",
-        sources=["eastmoney_direct", "eastmoney", "sina"],
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
-    # 过滤出涨跌幅大于3%的数据
-    df["pct_change"] = df["close"].pct_change() * 100
-    big_moves = df[df["pct_change"].abs() > 3]
+    try:
+        df = get_hist_data_multi_source(
+            symbol="600000",
+            interval="day",
+            start_date=start_date,
+            end_date=end_date,
+            sources=["eastmoney_direct", "eastmoney", "sina"],
+        )
+        df["pct_change"] = df["close"].pct_change() * 100
+        big_moves = df[df["pct_change"].abs() > 3]
 
-    print(f"\n原始数据: {len(df)} 条")
-    print(f"涨跌幅超过3%的天数: {len(big_moves)} 条")
+        print(f"\n原始数据: {len(df)} 条")
+        print(f"涨跌幅超过3%的天数: {len(big_moves)} 条")
 
-    if not big_moves.empty:
-        print("\n大涨天数（涨幅>3%）：")
-        up_days = big_moves[big_moves["pct_change"] > 3]
-        print(up_days[["timestamp", "close", "pct_change"]].head(10).to_string(index=False))
+        if not big_moves.empty:
+            print("\n大涨天数（涨幅>3%）：")
+            up_days = big_moves[big_moves["pct_change"] > 3]
+            print(up_days[["timestamp", "close", "pct_change"]].head(10).to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_column_filtering():
@@ -50,16 +54,15 @@ def example_column_filtering():
     print("示例2：列过滤")
     print("=" * 60)
 
-    # 获取实时行情
-    df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
-
-    # 使用 apply_data_filter 只保留指定列
-    df_filtered = apply_data_filter(df, columns=["symbol", "price", "pct_change", "volume"])
-
-    print(f"\n原始列数: {len(df.columns)}")
-    print(f"过滤后列数: {len(df_filtered.columns)}")
-    print("\n过滤后的数据：")
-    print(df_filtered.head(10).to_string(index=False))
+    try:
+        df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
+        df_filtered = apply_data_filter(df, columns=["symbol", "price", "pct_change", "volume"])
+        print(f"\n原始列数: {len(df.columns)}")
+        print(f"过滤后列数: {len(df_filtered.columns)}")
+        print("\n过滤后的数据：")
+        print(df_filtered.head(10).to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_sorting_and_top_n():
@@ -68,28 +71,25 @@ def example_sorting_and_top_n():
     print("示例3：排序和取前N条")
     print("=" * 60)
 
-    # 获取实时行情
-    df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
+    try:
+        df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
+        df_top = apply_data_filter(
+            df,
+            columns=["symbol", "price", "pct_change", "volume", "amount"],
+            row_filter={"sort_by": "pct_change", "ascending": False, "top_n": 10},
+        )
+        print("\n涨幅前10：")
+        print(df_top.to_string(index=False))
 
-    # 按涨跌幅排序，取涨幅前10
-    df_top = apply_data_filter(
-        df,
-        columns=["symbol", "price", "pct_change", "volume", "amount"],
-        row_filter={"sort_by": "pct_change", "ascending": False, "top_n": 10},
-    )
-
-    print("\n涨幅前10：")
-    print(df_top.to_string(index=False))
-
-    # 按成交量排序，取成交量前10
-    df_volume = apply_data_filter(
-        df,
-        columns=["symbol", "price", "pct_change", "volume"],
-        row_filter={"sort_by": "volume", "ascending": False, "top_n": 10},
-    )
-
-    print("\n成交量前10：")
-    print(df_volume.to_string(index=False))
+        df_volume = apply_data_filter(
+            df,
+            columns=["symbol", "price", "pct_change", "volume"],
+            row_filter={"sort_by": "volume", "ascending": False, "top_n": 10},
+        )
+        print("\n成交量前10：")
+        print(df_volume.to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_query_filtering():
@@ -98,23 +98,22 @@ def example_query_filtering():
     print("示例4：使用查询表达式过滤")
     print("=" * 60)
 
-    # 获取实时行情
-    df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
-
-    # 过滤：涨幅在3%-9.9%之间，且成交量大于10000手
-    df_filtered = apply_data_filter(
-        df,
-        columns=["symbol", "price", "pct_change", "volume"],
-        row_filter={
-            "query": "pct_change > 3 and pct_change < 9.9 and volume > 10000",
-            "sort_by": "pct_change",
-            "ascending": False,
-            "top_n": 20,
-        },
-    )
-
-    print("\n涨幅3%-9.9%且成交量>1万手的股票：")
-    print(df_filtered.to_string(index=False))
+    try:
+        df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
+        df_filtered = apply_data_filter(
+            df,
+            columns=["symbol", "price", "pct_change", "volume"],
+            row_filter={
+                "query": "pct_change > 3 and pct_change < 9.9 and volume > 10000",
+                "sort_by": "pct_change",
+                "ascending": False,
+                "top_n": 20,
+            },
+        )
+        print("\n涨幅3%-9.9%且成交量>1万手的股票：")
+        print(df_filtered.to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_sampling():
@@ -123,23 +122,24 @@ def example_sampling():
     print("示例5：数据采样")
     print("=" * 60)
 
-    # 获取历史数据
-    df = get_hist_data_multi_source(
-        symbol="600000",
-        interval="day",
-        start_date="2024-01-01",
-        end_date="2024-12-31",
-        sources=["eastmoney_direct", "eastmoney", "sina"],
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
 
-    print(f"\n原始数据: {len(df)} 条")
-
-    # 随机采样20%的数据
-    df_sample = apply_data_filter(df, row_filter={"sample": 0.2})
-
-    print(f"采样后数据: {len(df_sample)} 条")
-    print("\n采样数据预览：")
-    print(df_sample.head().to_string(index=False))
+    try:
+        df = get_hist_data_multi_source(
+            symbol="600000",
+            interval="day",
+            start_date=start_date,
+            end_date=end_date,
+            sources=["eastmoney_direct", "eastmoney", "sina"],
+        )
+        print(f"\n原始数据: {len(df)} 条")
+        df_sample = apply_data_filter(df, row_filter={"sample": 0.2})
+        print(f"采样后数据: {len(df_sample)} 条")
+        print("\n采样数据预览：")
+        print(df_sample.head().to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_combined_filtering():
@@ -148,30 +148,24 @@ def example_combined_filtering():
     print("示例6：组合过滤")
     print("=" * 60)
 
-    # 获取实时行情
-    df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
-
-    # 组合过滤：
-    # 1. 涨幅大于2%
-    # 2. 成交量大于50000手
-    # 3. 按涨幅降序排序
-    # 4. 取前20条
-    # 5. 只保留指定列
-    df_filtered = apply_data_filter(
-        df,
-        columns=["symbol", "price", "pct_change", "volume", "amount"],
-        row_filter={
-            "query": "pct_change > 2 and volume > 50000",
-            "sort_by": "pct_change",
-            "ascending": False,
-            "top_n": 20,
-        },
-    )
-
-    print(f"\n原始数据: {len(df)} 条")
-    print(f"过滤后数据: {len(df_filtered)} 条")
-    print("\n过滤结果：")
-    print(df_filtered.to_string(index=False))
+    try:
+        df = get_realtime_data_multi_source(symbol="000001", sources=["eastmoney_direct", "xueqiu"])
+        df_filtered = apply_data_filter(
+            df,
+            columns=["symbol", "price", "pct_change", "volume", "amount"],
+            row_filter={
+                "query": "pct_change > 2 and volume > 50000",
+                "sort_by": "pct_change",
+                "ascending": False,
+                "top_n": 20,
+            },
+        )
+        print(f"\n原始数据: {len(df)} 条")
+        print(f"过滤后数据: {len(df_filtered)} 条")
+        print("\n过滤结果：")
+        print(df_filtered.to_string(index=False))
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_statistical_analysis():

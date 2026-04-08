@@ -242,12 +242,11 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             # Ensure JSON compatibility
             return self.ensure_json_compatible(standardized)
 
+        except (TypeError, KeyError):
+            return self.create_empty_dataframe(
+                ["symbol", "name", "goodwill_balance", "expected_impairment", "risk_level"]
+            )
         except Exception as e:
-            err_msg = str(e)
-            if "NoneType" in err_msg or "subscriptable" in err_msg:
-                return self.create_empty_dataframe(
-                    ["symbol", "name", "goodwill_balance", "expected_impairment", "risk_level"]
-                )
             raise RuntimeError(f"Failed to fetch goodwill impairment expectations: {e}") from e
 
     def get_goodwill_by_industry(self, date: str) -> pd.DataFrame:
@@ -354,10 +353,9 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             # Ensure JSON compatibility
             return self.ensure_json_compatible(industry_stats)
 
+        except (TypeError, KeyError):
+            return self.create_empty_dataframe(
+                ["industry", "total_goodwill", "avg_ratio", "total_impairment", "company_count"]
+            )
         except Exception as e:
-            err_msg = str(e)
-            if "NoneType" in err_msg or "subscriptable" in err_msg:
-                return self.create_empty_dataframe(
-                    ["industry", "total_goodwill", "avg_ratio", "total_impairment", "company_count"]
-                )
             raise RuntimeError(f"Failed to fetch goodwill statistics by industry: {e}") from e

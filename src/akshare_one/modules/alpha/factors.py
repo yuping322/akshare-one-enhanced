@@ -61,7 +61,9 @@ def get_factor_values(securities: List[str], factor_names: List[str], end_date: 
                 try:
                     val = func(sec, end_date=end_date, count=count)
                     sec_results[name] = val
-                except Exception:
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Factor '{name}' calculation failed for '{sec}': {e}")
                     sec_results[name] = np.nan
         results[sec] = sec_results
     return pd.DataFrame(results).T

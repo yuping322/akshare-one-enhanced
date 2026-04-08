@@ -132,7 +132,7 @@ class EastmoneyEquityPledgeProvider(EquityPledgeProvider):
                     standardized["pledge_date"] = ""
 
                 # Filter by date range
-                if standardized["pledge_date"].iloc[0]:  # Check if date column has data
+                if len(standardized) > 0 and standardized["pledge_date"].iloc[0]:
                     mask = (standardized["pledge_date"] >= start_date) & (standardized["pledge_date"] <= end_date)
                     result = standardized[mask].reset_index(drop=True)
                 else:

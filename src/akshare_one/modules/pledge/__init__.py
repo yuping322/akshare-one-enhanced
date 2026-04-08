@@ -13,6 +13,7 @@ from ..factory_base import api_endpoint
 from .base import EquityPledgeFactory
 from . import eastmoney
 from . import sina
+from . import lixinger
 
 
 @api_endpoint(EquityPledgeFactory)

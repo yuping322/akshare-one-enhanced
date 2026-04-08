@@ -65,18 +65,22 @@ class SinaIndexProvider(IndexProvider):
         """
         import akshare as ak
 
-        period_map = {"daily": "daily", "weekly": "weekly", "monthly": "monthly"}
-        period = period_map.get(interval, "daily")
+        try:
+            period_map = {"daily": "daily", "weekly": "weekly", "monthly": "monthly"}
+            period = period_map.get(interval, "daily")
 
-        start_date_fmt = start_date.replace("-", "")
-        end_date_fmt = end_date.replace("-", "")
+            start_date_fmt = start_date.replace("-", "")
+            end_date_fmt = end_date.replace("-", "")
 
-        df = ak.index_zh_a_hist(symbol=symbol, period=period, start_date=start_date_fmt, end_date=end_date_fmt)
-        df = self.standardize_and_filter(df, self.get_source_name(), columns=columns, row_filter=row_filter)
+            df = ak.index_zh_a_hist(symbol=symbol, period=period, start_date=start_date_fmt, end_date=end_date_fmt)
+            df = self.standardize_and_filter(df, self.get_source_name(), columns=columns, row_filter=row_filter)
 
-        if not df.empty:
-            df["symbol"] = symbol
-        return df
+            if not df.empty:
+                df["symbol"] = symbol
+            return df
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch index historical data for {symbol}: {e}")
+            return pd.DataFrame()
 
     def get_index_realtime(
         self,
@@ -104,7 +108,8 @@ class SinaIndexProvider(IndexProvider):
             if symbol and not df.empty:
                 df = df[df["symbol"] == symbol]
             return df
-        except Exception:
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch index realtime data: {e}")
             return pd.DataFrame()
 
     def get_index_list(
@@ -141,7 +146,8 @@ class SinaIndexProvider(IndexProvider):
                 return df
             else:
                 return pd.DataFrame(columns=["symbol", "name", "type"])
-        except Exception:
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch index list (category={category}): {e}")
             return pd.DataFrame(columns=["symbol", "name", "type"])
 
     def get_index_constituents(
@@ -169,6 +175,6 @@ class SinaIndexProvider(IndexProvider):
             df = ak.index_stock_cons_weight_csindex(symbol=symbol)
             df = self.standardize_and_filter(df, self.get_source_name(), columns=columns, row_filter=row_filter)
             return df
-        except Exception:
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch index constituents for {symbol}: {e}")
             return pd.DataFrame(columns=["symbol", "name", "weight"])
-

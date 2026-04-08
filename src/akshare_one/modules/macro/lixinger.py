@@ -145,3 +145,85 @@ class LixingerMacroProvider(MacroProvider):
         return self.standardize_and_filter(
             df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
         )
+
+    def get_gdp(self, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
+        """
+        Get GDP data from Lixinger.
+
+        Args:
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            area_code: Area code ('cn' for China, 'us' for USA). Default: 'cn'
+            metrics_list: List of metrics (e.g., ['q.gdp.t', 'q.gdp.t_y2y'])
+            limit: Number of recent data points to return
+
+        Returns:
+            pd.DataFrame: GDP data
+        """
+        client = get_lixinger_client()
+
+        params = {
+            "startDate": start_date,
+            "endDate": end_date,
+            "areaCode": kwargs.get("area_code", "cn"),
+            "metricsList": kwargs.get("metrics_list", ["q.gdp.t"]),
+        }
+
+        if "limit" in kwargs:
+            params["limit"] = kwargs["limit"]
+
+        response = client.query_api("macro/gdp", params)
+
+        if response.get("code") != 1:
+            return pd.DataFrame()
+
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.json_normalize(data)
+
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )
+
+    def get_foreign_trade(self, start_date: str, end_date: str, **kwargs) -> pd.DataFrame:
+        """
+        Get foreign trade data from Lixinger.
+
+        Args:
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            area_code: Area code ('cn' for China). Default: 'cn'
+            metrics_list: List of metrics (e.g., ['m.tiae_rmb.t', 'm.te_usd.t'])
+            limit: Number of recent data points to return
+
+        Returns:
+            pd.DataFrame: Foreign trade data
+        """
+        client = get_lixinger_client()
+
+        params = {
+            "startDate": start_date,
+            "endDate": end_date,
+            "areaCode": kwargs.get("area_code", "cn"),
+            "metricsList": kwargs.get("metrics_list", ["m.tiae_rmb.t"]),
+        }
+
+        if "limit" in kwargs:
+            params["limit"] = kwargs["limit"]
+
+        response = client.query_api("macro/foreign-trade", params)
+
+        if response.get("code") != 1:
+            return pd.DataFrame()
+
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.json_normalize(data)
+
+        return self.standardize_and_filter(
+            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+        )

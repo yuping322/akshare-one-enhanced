@@ -6,8 +6,8 @@ import pandas as pd
 
 from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
+from . import cninfo, eastmoney_direct, lixinger, sina
 from .base import FinancialDataFactory
-from . import eastmoney_direct, sina, cninfo
 
 
 @api_endpoint(FinancialDataFactory)

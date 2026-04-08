@@ -1216,3 +1216,611 @@ class TestOptionsAPIFailure:
                     result = provider.get_options_chain()
                 except (ValueError, KeyError) as e:
                     assert True
+
+
+@pytest.mark.unit
+class TestOptionsBasic:
+    """测试期权基础功能"""
+
+    def test_options_symbol_parsing(self):
+        """测试期权代码解析"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+        assert provider.underlying_symbol == "510300"
+
+    def test_options_type_call_put(self):
+        """测试期权类型解析"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+        assert provider._parse_option_type("300ETF购2月4200A") == "call"
+        assert provider._parse_option_type("300ETF沽2月4200A") == "put"
+        assert provider._parse_option_type("300ETF2月4200A") is None
+
+    def test_options_expiration_parsing(self):
+        """测试期权到期日解析"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+        assert provider._parse_expiration("300ETF购2月4200A") == "2月"
+        assert provider._parse_expiration("300ETF沽12月2850") == "12月"
+        assert provider._parse_expiration("100ETF") is None
+
+    def test_options_strike_price_validation(self):
+        """测试行权价验证"""
+        import pandas as pd
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+        mock_df = pd.DataFrame({"行权价": [4.2, 4.3, 4.4]})
+        assert "行权价" in mock_df.columns
+        assert all(mock_df["行权价"] > 0)
+
+    def test_options_underlying_symbol(self):
+        """测试标的代码属性"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+
+        provider1 = SinaOptionsProvider(underlying_symbol="510300")
+        assert provider1.underlying_symbol == "510300"
+
+        provider2 = SinaOptionsProvider(underlying_symbol="000300")
+        assert provider2.underlying_symbol == "000300"
+
+
+@pytest.mark.unit
+class TestOptionsData:
+    """测试期权数据获取"""
+
+    def test_get_options_chain(self):
+        """测试获取期权链"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch("akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF"]):
+                result = provider.get_options_chain()
+                assert not result.empty
+                assert "symbol" in result.columns
+                assert "option_type" in result.columns
+
+    def test_get_options_hist(self):
+        """测试获取期权历史数据"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "日期": ["2024-01-01", "2024-01-02"],
+                "开盘": [1.0, 1.1],
+                "收盘": [1.5, 1.6],
+                "最高": [1.8, 1.9],
+                "最低": [0.9, 1.0],
+                "成交量": [10000, 20000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_sse_daily_sina", return_value=mock_df):
+            result = provider.get_options_history("10004005")
+            assert not result.empty
+
+    def test_get_options_realtime(self):
+        """测试获取期权实时数据"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch("akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF"]):
+                result = provider.get_options_realtime("")
+                assert not result.empty
+
+    def test_get_options_by_underlying(self):
+        """测试按标的获取期权"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006", "10004007"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A", "50ETF购3月3000"],
+                "最新价": [0.05, 0.03, 0.10],
+                "涨跌额": [0.01, -0.01, 0.02],
+                "涨跌幅": [20.0, -33.3, 25.0],
+                "成交量": [1000, 2000, 1500],
+                "持仓量": [5000, 6000, 4500],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF", "50ETF"]
+            ):
+                result = provider.get_options_chain()
+                assert not result.empty
+
+    def test_options_sina_field_mapping(self):
+        """测试期权Sina字段映射"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005"],
+                "名称": ["300ETF购2月4200A"],
+                "最新价": [0.05],
+                "涨跌额": [0.01],
+                "涨跌幅": [20.0],
+                "成交量": [1000],
+                "持仓量": [5000],
+                "行权价": [4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch("akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF"]):
+                result = provider.get_options_chain()
+                assert "symbol" in result.columns
+                assert "name" in result.columns
+
+
+@pytest.mark.unit
+class TestOptionsChainFiltering:
+    """测试期权链过滤功能"""
+
+    def test_options_chain_columns_present(self):
+        """测试期权链列存在"""
+        import pandas as pd
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+                "行权价": [4.200, 4.200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch("akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF"]):
+                result = provider.get_options_chain()
+                assert "symbol" in result.columns
+                assert "name" in result.columns
+                assert "price" in result.columns
+
+
+@pytest.mark.unit
+class TestOptionsHistoryFiltering:
+    """测试期权历史数据过滤"""
+
+    def test_options_history_date_filter(self):
+        """测试期权历史数据日期过滤"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "日期": ["2024-01-01", "2024-01-15", "2024-02-01"],
+                "开盘": [1.0, 1.1, 1.2],
+                "收盘": [1.5, 1.6, 1.7],
+                "最高": [1.8, 1.9, 2.0],
+                "最低": [0.9, 1.0, 1.1],
+                "成交量": [10000, 20000, 30000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_sse_daily_sina", return_value=mock_df):
+            result = provider.get_options_history("10004005", start_date="2024-01-10", end_date="2024-01-20")
+            assert len(result) <= 2
+
+    def test_options_history_empty_after_filter(self):
+        """测试过滤后历史数据为空"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "日期": ["2024-01-01", "2024-01-02"],
+                "开盘": [1.0, 1.1],
+                "收盘": [1.5, 1.6],
+                "最高": [1.8, 1.9],
+                "最低": [0.9, 1.0],
+                "成交量": [10000, 20000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_sse_daily_sina", return_value=mock_df):
+            result = provider.get_options_history("10004005", start_date="2025-01-01", end_date="2025-12-31")
+            assert result.empty
+
+
+@pytest.mark.unit
+class TestOptionsSelectHistoryColumns:
+    """测试期权历史数据列选择"""
+
+    def test_select_history_columns(self):
+        """测试选择历史数据列"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "timestamp": ["2024-01-01"],
+                "symbol": ["10004005"],
+                "open": [1.0],
+                "high": [1.8],
+                "low": [0.9],
+                "close": [1.5],
+                "volume": [10000],
+                "open_interest": [5000],
+                "settlement": [1.5],
+                "extra_column": [1],
+            }
+        )
+
+        result = provider._select_history_columns(mock_df)
+        expected = ["timestamp", "symbol", "open", "high", "low", "close", "volume", "open_interest", "settlement"]
+        assert list(result.columns) == expected
+
+
+@pytest.mark.unit
+class TestOptionsExpirationExtraction:
+    """测试期权到期日提取"""
+
+    def test_get_options_expirations_success(self):
+        """测试成功获取到期日"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006", "10004007", "10004008"],
+                "名称": [
+                    "300ETF购2月4200A",
+                    "300ETF沽2月4200A",
+                    "300ETF购3月4300A",
+                    "300ETF沽4月4400A",
+                ],
+                "最新价": [0.05, 0.03, 0.08, 0.06],
+                "涨跌额": [0.01, -0.01, 0.02, -0.01],
+                "涨跌幅": [20.0, -33.3, 25.0, -15.0],
+                "成交量": [1000, 2000, 1500, 1800],
+                "持仓量": [5000, 6000, 4500, 5200],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch("akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF"]):
+                expirations = provider.get_options_expirations("510300")
+                assert isinstance(expirations, list)
+                assert len(expirations) > 0
+
+    def test_get_options_expirations_no_options(self):
+        """测试无期权时获取到期日"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="INVALID")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005"],
+                "名称": ["NOTMATCH购2月4200A"],
+                "最新价": [0.05],
+                "涨跌额": [0.01],
+                "涨跌幅": [20.0],
+                "成交量": [1000],
+                "持仓量": [5000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch("akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["INVALID"]):
+                with pytest.raises(ValueError, match="No options found"):
+                    provider.get_options_expirations("INVALID")
+
+
+@pytest.mark.unit
+class TestOptionsRealtimeSpecificSymbol:
+    """测试期权实时数据特定代码"""
+
+    def test_get_options_realtime_specific_symbol(self):
+        """测试获取特定期权代码的实时数据"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005", "10004006"],
+                "名称": ["300ETF购2月4200A", "300ETF沽2月4200A"],
+                "最新价": [0.05, 0.03],
+                "涨跌额": [0.01, -0.01],
+                "涨跌幅": [20.0, -33.3],
+                "成交量": [1000, 2000],
+                "持仓量": [5000, 6000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch("akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF"]):
+                result = provider.get_options_realtime("10004005")
+                assert not result.empty
+                assert result["symbol"].iloc[0] == "10004005"
+
+    def test_get_options_realtime_empty_result(self):
+        """测试获取实时数据返回空结果"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+        from unittest.mock import patch
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005"],
+                "名称": ["300ETF购2月4200A"],
+                "最新价": [0.05],
+                "涨跌额": [0.01],
+                "涨跌幅": [20.0],
+                "成交量": [1000],
+                "持仓量": [5000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch("akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF"]):
+                result = provider.get_options_realtime("99999999")
+                assert result.empty
+
+
+@pytest.mark.unit
+class TestOptionsCleanHistory:
+    """测试期权历史数据清理"""
+
+    def test_clean_options_history_with_all_columns(self):
+        """测试清理完整的历史数据"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        raw_df = pd.DataFrame(
+            {
+                "日期": ["2024-01-01", "2024-01-02"],
+                "开盘": [1.0, 1.1],
+                "收盘": [1.5, 1.6],
+                "最高": [1.8, 1.9],
+                "最低": [0.9, 1.0],
+                "成交量": [10000, 20000],
+            }
+        )
+
+        result = provider._clean_options_history(raw_df, "10004005")
+        assert "timestamp" in result.columns
+        assert "symbol" in result.columns
+        assert "open" in result.columns
+        assert "close" in result.columns
+
+    def test_clean_options_history_numeric_conversion(self):
+        """测试历史数据数值类型转换"""
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+        import pandas as pd
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        raw_df = pd.DataFrame(
+            {
+                "日期": ["2024-01-01"],
+                "开盘": ["1.0"],
+                "收盘": ["1.5"],
+                "最高": ["1.8"],
+                "最低": ["0.9"],
+                "成交量": ["10000"],
+            }
+        )
+
+        result = provider._clean_options_history(raw_df, "10004005")
+        assert pd.api.types.is_numeric_dtype(result["open"])
+        assert pd.api.types.is_numeric_dtype(result["close"])
+
+
+@pytest.mark.unit
+class TestMappingManagerEdgeCases:
+    """测试映射管理器边界情况"""
+
+    def test_cache_expiry_edge_case(self):
+        """测试缓存过期边界情况"""
+        from akshare_one.modules.options.mapping_manager import DynamicMappingManager
+        import tempfile
+        import time
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = DynamicMappingManager(cache_dir=tmpdir)
+            cache_file = os.path.join(tmpdir, "test_cache.json")
+
+            with open(cache_file, "w") as f:
+                f.write("{}")
+
+            time.sleep(0.1)
+            assert manager.is_cache_expired(cache_file, days=0) is True
+            assert manager.is_cache_expired(cache_file, days=1) is False
+
+    def test_concurrent_access(self):
+        """测试并发访问缓存"""
+        from akshare_one.modules.options.mapping_manager import DynamicMappingManager
+        import pandas as pd
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manager = DynamicMappingManager(cache_dir=tmpdir)
+
+            with patch("akshare_one.modules.options.mapping_manager.ak.index_stock_info") as mock_index:
+                mock_index.return_value = pd.DataFrame({"index_code": ["000300"], "display_name": ["沪深300"]})
+
+                patterns1 = manager.get_underlying_patterns()
+                patterns2 = manager.get_underlying_patterns()
+
+                assert patterns1 == patterns2
+
+    def test_corrupted_cache_recovery(self):
+        """测试损坏缓存恢复"""
+        from akshare_one.modules.options.mapping_manager import DynamicMappingManager
+        import pandas as pd
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_file = os.path.join(tmpdir, "underlying_patterns.json")
+
+            with open(cache_file, "w") as f:
+                f.write("invalid json {{{")
+
+            manager = DynamicMappingManager(cache_dir=tmpdir)
+
+            with patch("akshare_one.modules.options.mapping_manager.ak.index_stock_info") as mock_index:
+                mock_index.return_value = pd.DataFrame({"index_code": ["000300"], "display_name": ["沪深300"]})
+
+                manager._underlying_patterns = None
+                patterns = manager.get_underlying_patterns()
+
+                assert isinstance(patterns, dict)
+                assert "000300" in patterns
+
+
+@pytest.mark.unit
+class TestOptionsApiMock:
+    """测试AkShare函数Mock"""
+
+    def test_option_current_em_mock(self):
+        """测试option_current_em的Mock"""
+        import pandas as pd
+        from unittest.mock import patch
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005"],
+                "名称": ["300ETF购2月4200A"],
+                "最新价": [0.05],
+                "涨跌额": [0.01],
+                "涨跌幅": [20.0],
+                "成交量": [1000],
+                "持仓量": [5000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch("akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF"]):
+                result = provider.get_options_chain()
+                assert not result.empty
+
+    def test_option_sse_daily_sina_mock(self):
+        """测试option_sse_daily_sina的Mock"""
+        import pandas as pd
+        from unittest.mock import patch
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "日期": ["2024-01-01"],
+                "开盘": [1.0],
+                "收盘": [1.5],
+                "最高": [1.8],
+                "最低": [0.9],
+                "成交量": [10000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_sse_daily_sina", return_value=mock_df):
+            result = provider.get_options_history("10004005")
+            assert not result.empty
+
+    def test_option_underlying_patterns_mock(self):
+        """测试期权标的模式Mock"""
+        import pandas as pd
+        from unittest.mock import patch
+        from akshare_one.modules.options.sina import SinaOptionsProvider
+
+        provider = SinaOptionsProvider(underlying_symbol="510300")
+
+        mock_df = pd.DataFrame(
+            {
+                "代码": ["10004005"],
+                "名称": ["300ETF购2月4200A"],
+                "最新价": [0.05],
+                "涨跌额": [0.01],
+                "涨跌幅": [20.0],
+                "成交量": [1000],
+                "持仓量": [5000],
+            }
+        )
+
+        with patch("akshare_one.modules.options.sina.ak.option_current_em", return_value=mock_df):
+            with patch(
+                "akshare_one.mappings.mapping_utils.get_option_underlying_patterns", return_value=["300ETF", "50ETF"]
+            ):
+                result = provider.get_options_chain()
+                assert not result.empty

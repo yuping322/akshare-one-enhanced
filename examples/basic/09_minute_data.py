@@ -13,6 +13,7 @@
 """
 
 import pandas as pd
+from datetime import datetime, timedelta
 from akshare_one import get_hist_data
 
 try:
@@ -61,17 +62,22 @@ def example_5min_data():
     print("场景1：获取5分钟K线数据")
     print("=" * 60)
 
-    df = get_hist_data(
-        symbol="000001",
-        interval="minute",
-        interval_multiplier=5,
-        start_date="2024-12-01",
-        end_date="2024-12-31",
-        adjust="none",
-        source="eastmoney_direct",
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=5)).strftime("%Y-%m-%d")
 
-    print_data_summary(df, "5分钟K线数据")
+    try:
+        df = get_hist_data(
+            symbol="000001",
+            interval="minute",
+            interval_multiplier=5,
+            start_date=start_date,
+            end_date=end_date,
+            adjust="none",
+            source="eastmoney_direct",
+        )
+        print_data_summary(df, "5分钟K线数据")
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_15min_data():
@@ -80,17 +86,22 @@ def example_15min_data():
     print("场景2：获取15分钟K线数据")
     print("=" * 60)
 
-    df = get_hist_data(
-        symbol="600000",
-        interval="minute",
-        interval_multiplier=15,
-        start_date="2024-12-01",
-        end_date="2024-12-31",
-        adjust="none",
-        source="eastmoney_direct",
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=5)).strftime("%Y-%m-%d")
 
-    print_data_summary(df, "15分钟K线数据")
+    try:
+        df = get_hist_data(
+            symbol="600000",
+            interval="minute",
+            interval_multiplier=15,
+            start_date=start_date,
+            end_date=end_date,
+            adjust="none",
+            source="eastmoney_direct",
+        )
+        print_data_summary(df, "15分钟K线数据")
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_30min_data():
@@ -99,17 +110,22 @@ def example_30min_data():
     print("场景3：获取30分钟K线数据")
     print("=" * 60)
 
-    df = get_hist_data(
-        symbol="600519",
-        interval="minute",
-        interval_multiplier=30,
-        start_date="2024-12-01",
-        end_date="2024-12-31",
-        adjust="none",
-        source="eastmoney_direct",
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%d")
 
-    print_data_summary(df, "30分钟K线数据")
+    try:
+        df = get_hist_data(
+            symbol="600519",
+            interval="minute",
+            interval_multiplier=30,
+            start_date=start_date,
+            end_date=end_date,
+            adjust="none",
+            source="eastmoney_direct",
+        )
+        print_data_summary(df, "30分钟K线数据")
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_60min_data():
@@ -118,17 +134,22 @@ def example_60min_data():
     print("场景4：获取60分钟K线数据")
     print("=" * 60)
 
-    df = get_hist_data(
-        symbol="000002",
-        interval="minute",
-        interval_multiplier=60,
-        start_date="2024-12-01",
-        end_date="2024-12-31",
-        adjust="none",
-        source="eastmoney_direct",
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%d")
 
-    print_data_summary(df, "60分钟K线数据")
+    try:
+        df = get_hist_data(
+            symbol="000002",
+            interval="minute",
+            interval_multiplier=60,
+            start_date=start_date,
+            end_date=end_date,
+            adjust="none",
+            source="eastmoney_direct",
+        )
+        print_data_summary(df, "60分钟K线数据")
+    except Exception as e:
+        print(f"\n获取数据失败: {e}")
 
 
 def example_visualization():
@@ -142,19 +163,22 @@ def example_visualization():
         print("如需使用可视化功能，请运行: pip install matplotlib")
         return
 
-    df = get_hist_data(
-        symbol="000001",
-        interval="minute",
-        interval_multiplier=5,
-        start_date="2024-12-20",
-        end_date="2024-12-31",
-        adjust="none",
-        source="eastmoney_direct",
-    )
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=5)).strftime("%Y-%m-%d")
 
-    if len(df) == 0:
-        print("未获取到数据，无法可视化")
-        return
+    try:
+        df = get_hist_data(
+            symbol="000001",
+            interval="minute",
+            interval_multiplier=5,
+            start_date=start_date,
+            end_date=end_date,
+            adjust="none",
+            source="eastmoney_direct",
+        )
+        if len(df) == 0:
+            print("未获取到数据，无法可视化")
+            return
 
     print(f"\n准备可视化 {len(df)} 条5分钟K线数据...")
 
@@ -204,6 +228,9 @@ def example_different_stocks():
     print("附加示例：不同股票的分钟线数据对比")
     print("=" * 60)
 
+    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
+
     symbols = ["000001", "600000", "600519", "000002"]
     interval_multiplier = 5
 
@@ -212,37 +239,34 @@ def example_different_stocks():
 
     results = []
     for symbol in symbols:
-        df = get_hist_data(
-            symbol=symbol,
-            interval="minute",
-            interval_multiplier=interval_multiplier,
-            start_date="2024-12-20",
-            end_date="2024-12-31",
-            adjust="none",
-            source="eastmoney_direct",
-        )
-
-        if len(df) > 0:
-            results.append(
-                {
-                    "symbol": symbol,
-                    "count": len(df),
-                    "min_time": df["timestamp"].min(),
-                    "max_time": df["timestamp"].max(),
-                    "avg_close": df["close"].mean(),
-                    "avg_volume": df["volume"].mean(),
-                }
+        try:
+            df = get_hist_data(
+                symbol=symbol,
+                interval="minute",
+                interval_multiplier=interval_multiplier,
+                start_date=start_date,
+                end_date=end_date,
+                adjust="none",
+                source="eastmoney_direct",
             )
+            if len(df) > 0:
+                results.append(
+                    {
+                        "symbol": symbol,
+                        "count": len(df),
+                        "min_time": df["timestamp"].min(),
+                        "max_time": df["timestamp"].max(),
+                        "avg_close": df["close"].mean(),
+                        "avg_volume": df["volume"].mean(),
+                    }
+                )
+        except Exception as e:
+            print(f"  {symbol}: 获取失败")
 
     if results:
         df_results = pd.DataFrame(results)
         print("\n各股票数据统计:")
         print(df_results.to_string(index=False))
-
-        print("\n说明:")
-        print(f"  - 股票代码: {', '.join(symbols)}")
-        print(f"  - 时间间隔: {interval_multiplier}分钟")
-        print(f"  - 时间范围: 2024-12-20 至 2024-12-31")
     else:
         print("未获取到任何数据")
 

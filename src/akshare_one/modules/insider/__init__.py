@@ -12,6 +12,7 @@ from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import InsiderDataFactory
 from . import eastmoney
+from . import lixinger
 from . import xueqiu
 
 

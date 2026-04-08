@@ -8,6 +8,7 @@ from ..base import ColumnsType, FilterType, SourceType
 from ..factory_base import api_endpoint
 from .base import HKUSFactory
 from . import eastmoney
+from . import lixinger
 
 
 @api_endpoint(HKUSFactory)

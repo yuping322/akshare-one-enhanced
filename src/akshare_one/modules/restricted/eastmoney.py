@@ -129,7 +129,7 @@ class EastmoneyRestrictedReleaseProvider(RestrictedReleaseProvider):
                 standardized.insert(0, "symbol", symbol.zfill(6))
 
                 # Filter by date range
-                if standardized["release_date"].iloc[0]:  # Check if date column has data
+                if len(standardized) > 0 and standardized["release_date"].iloc[0]:
                     mask = (standardized["release_date"] >= start_date) & (standardized["release_date"] <= end_date)
                     result = standardized[mask].reset_index(drop=True)
                 else:

@@ -105,7 +105,8 @@ class EastmoneyIndexProvider(IndexProvider):
             if symbol and not df.empty:
                 df = df[df["symbol"] == symbol]
             return df
-        except Exception:
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch index realtime data: {e}")
             return pd.DataFrame()
 
     def get_index_list(
@@ -136,7 +137,8 @@ class EastmoneyIndexProvider(IndexProvider):
                 return df
             else:
                 return pd.DataFrame(columns=["symbol", "name", "type"])
-        except Exception:
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch index list (category={category}): {e}")
             return pd.DataFrame(columns=["symbol", "name", "type"])
 
     def get_index_constituents(
@@ -164,6 +166,7 @@ class EastmoneyIndexProvider(IndexProvider):
             df = ak.index_stock_cons_weight_csindex(symbol=symbol)
             df = self.standardize_and_filter(df, self.get_source_name(), columns=columns, row_filter=row_filter)
             return df
-        except Exception:
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch index constituents for {symbol}: {e}")
             return pd.DataFrame(columns=["symbol", "name", "weight"])
 

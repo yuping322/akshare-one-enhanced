@@ -37,7 +37,9 @@ class ShareholderProvider(BaseProvider):
         """
         Get shareholder changes (增减持) data.
         """
-        return self._execute_api_mapped("get_shareholder_changes", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs)
+        return self._execute_api_mapped(
+            "get_shareholder_changes", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs
+        )
 
     def get_top_shareholders(self, symbol: str, **kwargs) -> pd.DataFrame:
         """
@@ -50,6 +52,36 @@ class ShareholderProvider(BaseProvider):
         Get institution holdings of a stock.
         """
         return self._execute_api_mapped("get_institution_holdings", symbol=symbol, **kwargs)
+
+    def get_top10_shareholders(
+        self, symbol: str, start_date: str = "1970-01-01", end_date: str = "2030-12-31", **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get top 10 shareholders of a stock.
+        """
+        return self._execute_api_mapped(
+            "get_top10_shareholders", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs
+        )
+
+    def get_top10_float_shareholders(
+        self, symbol: str, start_date: str = "1970-01-01", end_date: str = "2030-12-31", **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get top 10 float shareholders of a stock.
+        """
+        return self._execute_api_mapped(
+            "get_top10_float_shareholders", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs
+        )
+
+    def get_fund_shareholders(
+        self, symbol: str, start_date: str = "1970-01-01", end_date: str = "2030-12-31", **kwargs
+    ) -> pd.DataFrame:
+        """
+        Get fund shareholders of a stock.
+        """
+        return self._execute_api_mapped(
+            "get_fund_shareholders", symbol=symbol, start_date=start_date, end_date=end_date, **kwargs
+        )
 
 
 class ShareholderFactory(BaseFactory["ShareholderProvider"]):
