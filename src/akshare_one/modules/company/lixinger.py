@@ -4,9 +4,12 @@ Lixinger provider for company data.
 This module implements company data provider using Lixinger OpenAPI.
 """
 
+import time
+
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...metrics import get_stats_collector
 from .base import CompanyFactory, CompanyProvider
 
 
@@ -44,26 +47,41 @@ class LixingerCompanyProvider(CompanyProvider):
                 - actual_controller_name: Actual controller name
                 - history_stock_names: Historical names
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        stock_codes = [symbols] if isinstance(symbols, str) else symbols
+            stock_codes = [symbols] if isinstance(symbols, str) else symbols
 
-        params = {"stockCodes": stock_codes}
+            params = {"stockCodes": stock_codes}
 
-        response = client.query_api("cn/company/profile", params)
+            response = client.query_api("cn/company/profile", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_indices(self, symbol: str, date: str | None = None, **kwargs) -> pd.DataFrame:
         """
@@ -80,27 +98,42 @@ class LixingerCompanyProvider(CompanyProvider):
                 - area_code: Area code
                 - source: Index source (csi/cni/hsi/usi/lxri)
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol}
+            params = {"stockCode": symbol}
 
-        if date:
-            params["date"] = date
+            if date:
+                params["date"] = date
 
-        response = client.query_api("cn/company/indices", params)
+            response = client.query_api("cn/company/indices", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_industries(self, symbol: str, date: str | None = None, **kwargs) -> pd.DataFrame:
         """
@@ -117,27 +150,42 @@ class LixingerCompanyProvider(CompanyProvider):
                 - area_code: Area code
                 - source: Industry source (sw/sw_2021/cni)
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol}
+            params = {"stockCode": symbol}
 
-        if date:
-            params["date"] = date
+            if date:
+                params["date"] = date
 
-        response = client.query_api("cn/company/industries", params)
+            response = client.query_api("cn/company/industries", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_mutual_market(
         self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
@@ -156,30 +204,45 @@ class LixingerCompanyProvider(CompanyProvider):
                 - date: Data date
                 - shareholdings: Holding quantity
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/mutual-market", params)
+            response = client.query_api("cn/company/mutual-market", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_fundamental_financial(
         self,
@@ -220,36 +283,51 @@ class LixingerCompanyProvider(CompanyProvider):
         Returns:
             pd.DataFrame: Fundamental data with requested metrics
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        stock_codes = [symbols] if isinstance(symbols, str) else symbols
+            stock_codes = [symbols] if isinstance(symbols, str) else symbols
 
-        params = {"stockCodes": stock_codes, "metricsList": metrics}
+            params = {"stockCodes": stock_codes, "metricsList": metrics}
 
-        if date:
-            params["date"] = date
-        elif start_date:
-            params["startDate"] = start_date
-            if end_date:
-                params["endDate"] = end_date
+            if date:
+                params["date"] = date
+            elif start_date:
+                params["startDate"] = start_date
+                if end_date:
+                    params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/fundamental/financial", params)
+            response = client.query_api("cn/company/fundamental/financial", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_allotment(
         self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
@@ -271,30 +349,45 @@ class LixingerCompanyProvider(CompanyProvider):
                 - allotmentPrice: Allotment price
                 - allotmentShares: Actual allotment shares
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/allotment", params)
+            response = client.query_api("cn/company/allotment", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_split(self, symbol: str, start_date: str, end_date: str | None = None, **kwargs) -> pd.DataFrame:
         """
@@ -312,30 +405,45 @@ class LixingerCompanyProvider(CompanyProvider):
                 - content: Content
                 - splitRatio: Split ratio
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/split", params)
+            response = client.query_api("cn/company/split", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_customers(
         self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
@@ -355,30 +463,45 @@ class LixingerCompanyProvider(CompanyProvider):
                 - dataList: List of customer details (ratio, tradeAmount, trader)
                 - top5Customer: Top 5 customer data
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/customers", params)
+            response = client.query_api("cn/company/customers", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_suppliers(
         self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
@@ -398,30 +521,45 @@ class LixingerCompanyProvider(CompanyProvider):
                 - dataList: List of supplier details (ratio, tradeAmount, trader)
                 - top5Supplier: Top 5 supplier data
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/suppliers", params)
+            response = client.query_api("cn/company/suppliers", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_equity_change(
         self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
@@ -448,30 +586,45 @@ class LixingerCompanyProvider(CompanyProvider):
                 - limitedSharesAChangeRatio: Limited A shares change ratio
                 - outstandingSharesHChangeRatio: Outstanding H shares change ratio
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/equity-change", params)
+            response = client.query_api("cn/company/equity-change", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_operating_data(
         self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
@@ -491,30 +644,45 @@ class LixingerCompanyProvider(CompanyProvider):
                 - startDate: Start date
                 - dataList: List of operating data items (itemName, parentItemName, unitText, value)
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/operating-data", params)
+            response = client.query_api("cn/company/operating-data", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_operation_revenue_constitution(
         self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
@@ -535,30 +703,45 @@ class LixingerCompanyProvider(CompanyProvider):
                   (classifyType, itemName, parentItemName, revenue, revenuePercentage,
                    costs, costPercentage, grossProfitMargin)
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/operation-revenue-constitution", params)
+            response = client.query_api("cn/company/operation-revenue-constitution", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_fund_collection_shareholders(
         self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
@@ -583,30 +766,45 @@ class LixingerCompanyProvider(CompanyProvider):
                 - outstandingSharesA: Outstanding A shares
                 - proportionOfCapitalization: Outstanding A shares proportion
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/fund-shareholders", params)
+            response = client.query_api("cn/company/fund-shareholders", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_hot_tr_dri(self, symbols: list[str] | str, **kwargs) -> pd.DataFrame:
         """
@@ -636,26 +834,41 @@ class LixingerCompanyProvider(CompanyProvider):
                 - p_r_fs: Since IPO total investment return rate
                 - period_date: Investment return rate calculation start date
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        stock_codes = [symbols] if isinstance(symbols, str) else symbols
+            stock_codes = [symbols] if isinstance(symbols, str) else symbols
 
-        params = {"stockCodes": stock_codes}
+            params = {"stockCodes": stock_codes}
 
-        response = client.query_api("cn/company/hot/tr_dri", params)
+            response = client.query_api("cn/company/hot/tr_dri", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_inquiry(self, symbol: str, start_date: str, end_date: str | None = None, **kwargs) -> pd.DataFrame:
         """
@@ -676,30 +889,45 @@ class LixingerCompanyProvider(CompanyProvider):
                 - linkUrl: Link URL
                 - linkType: Link type
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/inquiry", params)
+            response = client.query_api("cn/company/inquiry", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_company_measures(self, symbol: str, start_date: str, end_date: str | None = None, **kwargs) -> pd.DataFrame:
         """
@@ -721,27 +949,42 @@ class LixingerCompanyProvider(CompanyProvider):
                 - linkType: Link type
                 - referent: Object
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date}
+            params = {"stockCode": symbol, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/measures", params)
+            response = client.query_api("cn/company/measures", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise

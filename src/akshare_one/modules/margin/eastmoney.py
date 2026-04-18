@@ -7,6 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import MarginFactory, MarginProvider
 
 
@@ -128,7 +129,7 @@ class EastmoneyMarginProvider(MarginProvider):
                 # Standardize the data
                 standardized = pd.DataFrame()
                 standardized["date"] = pd.to_datetime(raw_df["信用交易日期"]).dt.strftime("%Y-%m-%d")
-                standardized["symbol"] = symbol.zfill(6)
+                standardized["symbol"] = symbol.zfill(SYMBOL_ZFILL_WIDTH)
                 standardized["name"] = raw_df["股票简称"].iloc[0] if "股票简称" in raw_df.columns else ""
                 standardized["margin_balance"] = raw_df["融资余额"].astype(float)
                 standardized["margin_buy"] = raw_df["融资买入额"].astype(float)
@@ -178,7 +179,7 @@ class EastmoneyMarginProvider(MarginProvider):
                 # Standardize the data
                 standardized = pd.DataFrame()
                 standardized["date"] = end_date
-                standardized["symbol"] = raw_df["标的代码"].astype(str).str.zfill(6)
+                standardized["symbol"] = raw_df["标的代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
                 standardized["name"] = raw_df["标的简称"].astype(str)
 
                 # Map columns based on available data

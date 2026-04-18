@@ -4,6 +4,7 @@ import akshare as ak
 import pandas as pd
 
 from ...logging_config import get_logger, log_api_request
+from ...metrics import get_stats_collector
 from ..cache import cache
 from .base import RealtimeDataFactory, RealtimeDataProvider
 
@@ -42,6 +43,9 @@ class EastmoneyRealtimeProvider(RealtimeDataProvider):
 
             duration_ms = (time.time() - start_time) * 1000
 
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, True)
+
             log_api_request(
                 logger=self.logger,
                 source="eastmoney",
@@ -56,6 +60,9 @@ class EastmoneyRealtimeProvider(RealtimeDataProvider):
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
+
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
 
             log_api_request(
                 logger=self.logger,

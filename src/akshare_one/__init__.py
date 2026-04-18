@@ -25,65 +25,9 @@ from .akshare_compat import (
     check_akshare_function,
     get_adapter,
 )
+from .constants import DEFAULT_RANDOM_STATE
 from .http_client import configure_ssl_verification
-
-
-def apply_data_filter(
-    df: pd.DataFrame,
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
-) -> pd.DataFrame:
-    """
-    通用数据过滤方法（行列过滤），用于 LLM Skills 数据筛选。
-
-    Args:
-        df: 原始 DataFrame
-        columns: 需要保留的列名列表
-        row_filter: 行过滤配置字典，支持：
-            - top_n: 返回前 N 行
-            - sample: 随机采样比例 (0-1)
-            - query: pandas query 表达式
-            - sort_by: 排序字段
-            - ascending: 是否升序排序（默认 False 降序）
-
-    Returns:
-        过滤后的 DataFrame
-    """
-    if df.empty:
-        return df
-
-    df = df.copy()
-
-    if row_filter:
-        if "sort_by" in row_filter:
-            sort_col = row_filter["sort_by"]
-            if sort_col in df.columns:
-                ascending = row_filter.get("ascending", False)
-                df = df.sort_values(by=sort_col, ascending=ascending).reset_index(drop=True)
-
-        if "query" in row_filter:
-            try:
-                df = df.query(row_filter["query"]).reset_index(drop=True)
-            except Exception:
-                pass
-
-        if "sample" in row_filter:
-            frac = row_filter["sample"]
-            if 0 < frac <= 1:
-                df = df.sample(frac=frac, random_state=42).reset_index(drop=True)
-
-        if "top_n" in row_filter:
-            df = df.head(row_filter["top_n"])
-
-    if columns:
-        available_cols = [col for col in columns if col in df.columns]
-        if available_cols:
-            df = df[available_cols]
-
-    return df
-
-
-_apply_data_filter = apply_data_filter
+from .modules.base import apply_data_filter
 
 from .modules.financial import FinancialDataFactory
 
@@ -939,6 +883,76 @@ def get_options_hist(
     return apply_data_filter(df, columns, row_filter)
 
 
+# ==================== Multi-Source API泛型函数 ====================
+
+
+def _get_data_multi_source(
+    method_name: str,
+    sources: list[str] | None = None,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
+    method_map: dict[str, str] | None = None,
+    execute_args: tuple = (),
+    execute_kwargs: dict | None = None,
+    router_factory=None,
+    factory_class=None,
+    default_sources: list[str] | None = None,
+    router_kwargs: dict | None = None,
+    **factory_kwargs,
+) -> pd.DataFrame:
+    """Generic multi-source data fetcher.
+
+    Args:
+        method_name: Method name to call on router.execute()
+        sources: Data source list
+        columns: Columns to select
+        row_filter: Row filter configuration
+        method_map: Dict mapping data_type to method_name (for financial_data)
+        execute_args: Positional args for router.execute()
+        execute_kwargs: Keyword args for router.execute()
+        router_factory: Router creation function (e.g., create_historical_router)
+        factory_class: Factory class for direct provider creation
+        default_sources: Default sources if not provided
+        router_kwargs: Additional kwargs for router_factory
+        **factory_kwargs: Additional kwargs passed to factory.get_provider
+    """
+    import logging
+
+    if sources is None:
+        sources = default_sources
+
+    if execute_kwargs is None:
+        execute_kwargs = {}
+
+    if router_kwargs is None:
+        router_kwargs = {}
+
+    if router_factory is not None:
+        router_kwargs.update(factory_kwargs)
+        router = router_factory(sources=sources, **router_kwargs)
+    elif factory_class is not None:
+        providers = []
+        symbol = factory_kwargs.get("symbol")
+        for source in sources or []:
+            try:
+                provider = factory_class.get_provider(
+                    source, symbol=symbol, **{k: v for k, v in factory_kwargs.items() if k != "symbol"}
+                )
+                providers.append((source, provider))
+            except Exception as e:
+                logging.warning(f"Failed to initialize provider '{source}': {e}")
+        router = MultiSourceRouter(providers)
+    else:
+        raise ValueError("Either router_factory or factory_class must be provided")
+
+    actual_method = method_name
+    if method_map and method_name in method_map:
+        actual_method = method_map[method_name]
+
+    df = router.execute(actual_method, *execute_args, **execute_kwargs)
+    return apply_data_filter(df, columns, row_filter)
+
+
 # ==================== Multi-Source API with Auto-Failover ====================
 
 
@@ -959,23 +973,17 @@ def get_basic_info_multi_source(
     Returns:
         pd.DataFrame: 股票基础信息
     """
-    import logging
     from .modules.info import InfoDataFactory
 
-    if sources is None:
-        sources = ["sina", "eastmoney"]
-
-    providers = []
-    for source in sources:
-        try:
-            provider = InfoDataFactory.get_provider(source, symbol=symbol)
-            providers.append((source, provider))
-        except Exception as e:
-            logging.warning(f"Failed to initialize info provider '{source}': {e}")
-
-    router = MultiSourceRouter(providers)
-    df = router.execute("get_basic_info")
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_basic_info",
+        symbol=symbol,
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        factory_class=InfoDataFactory,
+        default_sources=["sina", "eastmoney"],
+    )
 
 
 def get_hist_data_multi_source(
@@ -1013,17 +1021,19 @@ def get_hist_data_multi_source(
         ...     sources=["sina", "lixinger"]  # 自定义数据源优先级
         ... )
     """
-    router = create_historical_router(
+    return _get_data_multi_source(
+        method_name="get_hist_data",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_historical_router,
         symbol=symbol,
         interval=interval,
         interval_multiplier=interval_multiplier,
         start_date=start_date,
         end_date=end_date,
         adjust=adjust,
-        sources=sources,
     )
-    df = router.execute("get_hist_data")
-    return apply_data_filter(df, columns, row_filter)
 
 
 def get_realtime_data_multi_source(
@@ -1050,9 +1060,14 @@ def get_realtime_data_multi_source(
         ...     sources=["sina", "xueqiu"]
         ... )
     """
-    router = create_realtime_router(symbol=symbol, sources=sources)
-    df = router.execute("get_current_data")
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_current_data",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_realtime_router,
+        symbol=symbol,
+    )
 
 
 def get_news_data_multi_source(
@@ -1072,23 +1087,17 @@ def get_news_data_multi_source(
     Returns:
         pd.DataFrame: 新闻数据
     """
-    import logging
     from .modules.news import NewsDataFactory
 
-    if sources is None:
-        sources = ["eastmoney", "sina"]
-
-    providers = []
-    for source in sources:
-        try:
-            provider = NewsDataFactory.get_provider(source, symbol=symbol)
-            providers.append((source, provider))
-        except Exception as e:
-            logging.warning(f"Failed to initialize news provider '{source}': {e}")
-
-    router = MultiSourceRouter(providers)
-    df = router.execute("get_news_data")
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_news_data",
+        symbol=symbol,
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        factory_class=NewsDataFactory,
+        default_sources=["eastmoney", "sina"],
+    )
 
 
 def get_inner_trade_data_multi_source(
@@ -1108,23 +1117,17 @@ def get_inner_trade_data_multi_source(
     Returns:
         pd.DataFrame: 内部交易数据
     """
-    import logging
     from .modules.insider import InsiderDataFactory
 
-    if sources is None:
-        sources = ["xueqiu"]
-
-    providers = []
-    for source in sources:
-        try:
-            provider = InsiderDataFactory.get_provider(source, symbol=symbol)
-            providers.append((source, provider))
-        except Exception as e:
-            logging.warning(f"Failed to initialize insider provider '{source}': {e}")
-
-    router = MultiSourceRouter(providers)
-    df = router.execute("get_inner_trade_data")
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_inner_trade_data",
+        symbol=symbol,
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        factory_class=InsiderDataFactory,
+        default_sources=["xueqiu"],
+    )
 
 
 def get_financial_data_multi_source(
@@ -1146,21 +1149,7 @@ def get_financial_data_multi_source(
     Returns:
         pd.DataFrame: 财务数据
     """
-    import logging
     from .modules.financial import FinancialDataFactory
-
-    if sources is None:
-        sources = ["eastmoney_direct", "sina", "cninfo"]
-
-    providers = []
-    for source in sources:
-        try:
-            provider = FinancialDataFactory.get_provider(source, symbol=symbol)
-            providers.append((source, provider))
-        except Exception as e:
-            logging.warning(f"Failed to initialize financial provider '{source}': {e}")
-
-    router = MultiSourceRouter(providers)
 
     method_map = {
         "balance_sheet": "get_balance_sheet",
@@ -1168,8 +1157,16 @@ def get_financial_data_multi_source(
         "cash_flow": "get_cash_flow",
     }
 
-    df = router.execute(method_map[data_type])
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name=data_type,
+        method_map=method_map,
+        symbol=symbol,
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        factory_class=FinancialDataFactory,
+        default_sources=["eastmoney_direct", "sina", "cninfo"],
+    )
 
 
 def get_financial_metrics_multi_source(
@@ -1193,9 +1190,14 @@ def get_financial_metrics_multi_source(
     Example:
         >>> df = get_financial_metrics_multi_source("600000")
     """
-    router = create_financial_router(symbol=symbol, sources=sources)
-    df = router.execute("get_financial_metrics")
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_financial_metrics",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_financial_router,
+        symbol=symbol,
+    )
 
 
 # ==================== 北向资金多源API ====================
@@ -1208,9 +1210,14 @@ def get_northbound_flow_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取北向资金流量数据（多数据源自动切换）"""
-    router = create_northbound_router(sources=sources)
-    df = router.execute("get_northbound_flow", start_date, end_date, market)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_northbound_flow",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_northbound_router,
+        execute_args=(start_date, end_date, market),
+    )
 
 
 def get_northbound_holdings_multi_source(
@@ -1222,9 +1229,14 @@ def get_northbound_holdings_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取北向资金持仓数据（多数据源自动切换）"""
-    router = create_northbound_router(sources=sources)
-    df = router.execute("get_northbound_holdings", symbol, start_date, end_date)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_northbound_holdings",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_northbound_router,
+        execute_args=(symbol, start_date, end_date),
+    )
 
 
 def get_northbound_top_stocks_multi_source(
@@ -1236,9 +1248,14 @@ def get_northbound_top_stocks_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取北向资金持仓排名（多数据源自动切换）"""
-    router = create_northbound_router(sources=sources)
-    df = router.execute("get_northbound_top_stocks", date, market, top_n)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_northbound_top_stocks",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_northbound_router,
+        execute_args=(date, market, top_n),
+    )
 
 
 # ==================== 资金流多源API ====================
@@ -1251,9 +1268,15 @@ def get_stock_fund_flow_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取个股资金流数据（多数据源自动切换）"""
-    router = create_fundflow_router(symbol=symbol, sources=sources)
-    df = router.execute("get_stock_fund_flow", start_date, end_date)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_stock_fund_flow",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_fundflow_router,
+        symbol=symbol,
+        execute_args=(start_date, end_date),
+    )
 
 
 def get_sector_fund_flow_multi_source(
@@ -1265,9 +1288,14 @@ def get_sector_fund_flow_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取板块资金流数据（多数据源自动切换）"""
-    router = create_fundflow_router(sources=sources)
-    df = router.execute("get_sector_fund_flow", sector_type, start_date, end_date)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_sector_fund_flow",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_fundflow_router,
+        execute_args=(sector_type, start_date, end_date),
+    )
 
 
 def get_main_fund_flow_rank_multi_source(
@@ -1278,9 +1306,14 @@ def get_main_fund_flow_rank_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取主力资金流排名（多数据源自动切换）"""
-    router = create_fundflow_router(sources=sources)
-    df = router.execute("get_main_fund_flow_rank", date, indicator)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_main_fund_flow_rank",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_fundflow_router,
+        execute_args=(date, indicator),
+    )
 
 
 # ==================== 龙虎榜多源API ====================
@@ -1292,9 +1325,14 @@ def get_dragon_tiger_list_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取龙虎榜数据（多数据源自动切换）"""
-    router = create_dragon_tiger_router(sources=sources)
-    df = router.execute("get_dragon_tiger_list", date, symbol)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_dragon_tiger_list",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_dragon_tiger_router,
+        execute_args=(date, symbol),
+    )
 
 
 def get_dragon_tiger_summary_multi_source(
@@ -1306,9 +1344,14 @@ def get_dragon_tiger_summary_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取龙虎榜统计数据（多数据源自动切换）"""
-    router = create_dragon_tiger_router(sources=sources)
-    df = router.execute("get_dragon_tiger_summary", start_date, end_date, group_by)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_dragon_tiger_summary",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_dragon_tiger_router,
+        execute_args=(start_date, end_date, group_by),
+    )
 
 
 # ==================== 涨跌停多源API ====================
@@ -1319,9 +1362,14 @@ def get_limit_up_pool_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取涨停池数据（多数据源自动切换）"""
-    router = create_limit_up_down_router(sources=sources)
-    df = router.execute("get_limit_up_pool", date)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_limit_up_pool",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_limit_up_down_router,
+        execute_args=(date,),
+    )
 
 
 def get_limit_down_pool_multi_source(
@@ -1331,9 +1379,14 @@ def get_limit_down_pool_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取跌停池数据（多数据源自动切换）"""
-    router = create_limit_up_down_router(sources=sources)
-    df = router.execute("get_limit_down_pool", date)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_limit_down_pool",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_limit_up_down_router,
+        execute_args=(date,),
+    )
 
 
 # ==================== 大宗交易多源API ====================
@@ -1346,6 +1399,12 @@ def get_block_deal_multi_source(
     row_filter: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     """获取大宗交易数据（多数据源自动切换）"""
-    router = create_block_deal_router(symbol=symbol, sources=sources)
-    df = router.execute("get_block_deal", start_date, end_date)
-    return apply_data_filter(df, columns, row_filter)
+    return _get_data_multi_source(
+        method_name="get_block_deal",
+        sources=sources,
+        columns=columns,
+        row_filter=row_filter,
+        router_factory=create_block_deal_router,
+        symbol=symbol,
+        execute_args=(start_date, end_date),
+    )

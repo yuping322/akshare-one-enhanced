@@ -12,6 +12,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, TypeAlias
 
+from ..constants import DEFAULT_RANDOM_STATE, SYMBOL_ZFILL_WIDTH
+
 import numpy as np
 import pandas as pd
 
@@ -402,7 +404,7 @@ class BaseProvider:
                 # Only apply zfill to values that look like stock codes (all digits)
                 # This avoids zfilling placeholder values like 'ALL', 'SH', 'SZ', etc.
                 mask = df[col].str.match(r"^\d+$", na=False)
-                df.loc[mask, col] = df.loc[mask, col].str.zfill(6)
+                df.loc[mask, col] = df.loc[mask, col].str.zfill(SYMBOL_ZFILL_WIDTH)
 
         return df
 
@@ -451,7 +453,7 @@ class BaseProvider:
         Returns:
             str: Standardized symbol (6 digits)
         """
-        return str(symbol).zfill(6)
+        return str(symbol).zfill(SYMBOL_ZFILL_WIDTH)
 
     @staticmethod
     def standardize_date(date_value: Any) -> str | None:
@@ -1153,7 +1155,7 @@ class BaseProvider:
             if "sample" in row_filter:
                 frac = row_filter["sample"]
                 if 0 < frac <= 1:
-                    df = df.sample(frac=frac, random_state=42).reset_index(drop=True)
+                    df = df.sample(frac=frac, random_state=DEFAULT_RANDOM_STATE).reset_index(drop=True)
 
             # 截取前N条（最后执行）
             if "top_n" in row_filter:
@@ -1218,3 +1220,60 @@ class BaseProvider:
         final_df = self.standardize_data(converted_df)
 
         return self.ensure_json_compatible(final_df)
+
+
+def apply_data_filter(
+    df: pd.DataFrame,
+    columns: list[str] | None = None,
+    row_filter: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    """通用数据过滤方法（行列过滤），用于 LLM Skills 数据筛选。
+
+    Args:
+        df: 原始 DataFrame
+        columns: 需要保留的列名列表
+        row_filter: 行过滤配置字典，支持：
+            - top_n: 返回前 N 行
+            - sample: 随机采样比例 (0-1)
+            - query: pandas query 表达式
+            - sort_by: 排序字段
+            - ascending: 是否升序排序（默认 False 降序）
+
+    Returns:
+        过滤后的 DataFrame
+
+    Example:
+        >>> df = pd.DataFrame({"close": [10, 20, 30], "volume": [100, 200, 300]})
+        >>> # 排序后取前2条
+        >>> df = apply_data_filter(df, row_filter={"sort_by": "close", "top_n": 2})
+    """
+    if df.empty:
+        return df
+
+    df = df.copy()
+
+    if row_filter:
+        if "sort_by" in row_filter:
+            sort_col = row_filter["sort_by"]
+            if sort_col in df.columns:
+                ascending = row_filter.get("ascending", False)
+                df = df.sort_values(by=sort_col, ascending=ascending).reset_index(drop=True)
+
+        if "query" in row_filter:
+            with contextlib.suppress(Exception):
+                df = df.query(row_filter["query"]).reset_index(drop=True)
+
+        if "sample" in row_filter:
+            frac = row_filter["sample"]
+            if 0 < frac <= 1:
+                df = df.sample(frac=frac, random_state=42).reset_index(drop=True)
+
+        if "top_n" in row_filter:
+            df = df.head(row_filter["top_n"])
+
+    if columns:
+        available_cols = [col for col in columns if col in df.columns]
+        if available_cols:
+            df = df[available_cols]
+
+    return df

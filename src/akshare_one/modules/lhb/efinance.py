@@ -7,6 +7,7 @@ It wraps efinance functions and standardizes the output format.
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import DragonTigerFactory, DragonTigerProvider
 
 try:
@@ -105,7 +106,7 @@ class EfinanceDragonTigerProvider(DragonTigerProvider):
                 )
 
             if symbol:
-                raw_df = raw_df[raw_df["股票代码"].astype(str).str.zfill(6) == symbol]
+                raw_df = raw_df[raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH) == symbol]
                 if raw_df.empty:
                     return self.create_empty_dataframe(
                         [
@@ -125,7 +126,7 @@ class EfinanceDragonTigerProvider(DragonTigerProvider):
 
             standardized = pd.DataFrame()
             standardized["date"] = pd.to_datetime(raw_df["上榜日期"]).dt.strftime("%Y-%m-%d")
-            standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["股票名称"].astype(str)
             standardized["close"] = raw_df["收盘价"].astype(float)
             standardized["pct_change"] = raw_df["涨跌幅"].astype(float)
@@ -191,7 +192,7 @@ class EfinanceDragonTigerProvider(DragonTigerProvider):
                 )
 
                 result = pd.DataFrame()
-                result["symbol"] = grouped["股票代码"].astype(str).str.zfill(6)
+                result["symbol"] = grouped["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
                 result["name"] = grouped["股票名称"].astype(str)
                 result["list_count"] = grouped["上榜日期"].astype(int)
                 result["net_buy_amount"] = grouped["龙虎榜净买额"].astype(float)
@@ -318,7 +319,7 @@ class EfinanceDragonTigerProvider(DragonTigerProvider):
 
             standardized = pd.DataFrame()
             standardized["date"] = pd.to_datetime(raw_df["上榜日期"]).dt.strftime("%Y-%m-%d")
-            standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["股票名称"].astype(str)
             standardized["close"] = raw_df["收盘价"].astype(float)
             standardized["pct_change"] = raw_df["涨跌幅"].astype(float)

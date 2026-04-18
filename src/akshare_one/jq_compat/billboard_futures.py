@@ -9,11 +9,13 @@ import akshare as ak
 from datetime import datetime
 from typing import Optional, List, Union
 
+from ..constants import SYMBOL_ZFILL_WIDTH
+
 logger = logging.getLogger(__name__)
 
 
 def _jq_symbol(code: str) -> str:
-    code = str(code).zfill(6)
+    code = str(code).zfill(SYMBOL_ZFILL_WIDTH)
     return f"{code}.XSHG" if code.startswith("6") else f"{code}.XSHE"
 
 
@@ -82,8 +84,14 @@ def get_broker_statistics(start_date=None, end_date=None, top_n=20) -> pd.DataFr
         df = ak.stock_lhb_jgzz_em(start_date=sd, end_date=ed)
         if df is None or df.empty:
             return pd.DataFrame()
-        df = df.rename(columns={"机构名称": "broker_name", "买入总额": "buy_amount",
-                                 "卖出总额": "sell_amount", "净买入": "net_buy"})
+        df = df.rename(
+            columns={
+                "机构名称": "broker_name",
+                "买入总额": "buy_amount",
+                "卖出总额": "sell_amount",
+                "净买入": "net_buy",
+            }
+        )
         return df.head(top_n).reset_index(drop=True)
     except Exception as e:
         logger.warning(f"get_broker_statistics failed: {e}")
@@ -128,8 +136,9 @@ def get_dominant_future(underlying_symbol: str, date: Optional[str] = None) -> s
         return ""
 
 
-def get_future_contracts(underlying_symbol: str, exchange: Optional[str] = None,
-                         date: Optional[str] = None) -> List[str]:
+def get_future_contracts(
+    underlying_symbol: str, exchange: Optional[str] = None, date: Optional[str] = None
+) -> List[str]:
     """Get futures contract list. JQ-compatible."""
     try:
         df = ak.futures_display_main_sina()
@@ -140,8 +149,9 @@ def get_future_contracts(underlying_symbol: str, exchange: Optional[str] = None,
         return []
 
 
-def get_futures_info(contract_code: Optional[str] = None, exchange: Optional[str] = None,
-                     fields: Optional[List[str]] = None) -> pd.DataFrame:
+def get_futures_info(
+    contract_code: Optional[str] = None, exchange: Optional[str] = None, fields: Optional[List[str]] = None
+) -> pd.DataFrame:
     """Get futures contract info. JQ-compatible."""
     try:
         df = ak.futures_comm_info(symbol="all")
@@ -162,9 +172,16 @@ get_future_contracts_jq = get_future_contracts
 get_dominant_contracts = get_dominant_future
 
 __all__ = [
-    "get_billboard_list", "get_institutional_holdings", "get_dominant_future",
-    "get_billboard_hot_stocks", "get_broker_statistics", "get_futures_info",
-    "get_future_contracts", "get_settlement_price",
-    "get_dominant_future_jq", "get_futures_info_jq", "get_future_contracts_jq",
+    "get_billboard_list",
+    "get_institutional_holdings",
+    "get_dominant_future",
+    "get_billboard_hot_stocks",
+    "get_broker_statistics",
+    "get_futures_info",
+    "get_future_contracts",
+    "get_settlement_price",
+    "get_dominant_future_jq",
+    "get_futures_info_jq",
+    "get_future_contracts_jq",
     "get_dominant_contracts",
 ]

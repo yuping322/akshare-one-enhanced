@@ -5,8 +5,12 @@ This module implements the goodwill data provider using Eastmoney as the data so
 It wraps akshare functions and standardizes the output format.
 """
 
+import time
+
 import pandas as pd
 
+from ...metrics import get_stats_collector
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import GoodwillFactory, GoodwillProvider
 
 
@@ -67,6 +71,8 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
         if symbol:
             self.validate_symbol(symbol)
 
+        start_time = time.time()
+
         try:
             import akshare as ak
 
@@ -76,14 +82,18 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
                 raw_df = ak.stock_financial_abstract_ths(symbol=symbol, indicator="商誉")
 
                 if raw_df.empty:
-                    return self.create_empty_dataframe(
+                    result = self.create_empty_dataframe(
                         ["symbol", "report_date", "goodwill_balance", "goodwill_ratio", "goodwill_impairment"]
                     )
+                    duration_ms = (time.time() - start_time) * 1000
+                    stats_collector = get_stats_collector()
+                    stats_collector.record_request("eastmoney", duration_ms, True)
+                    return result
 
                 # Standardize the data
                 standardized = pd.DataFrame()
                 standardized["report_date"] = pd.to_datetime(raw_df["报告期"]).dt.strftime("%Y-%m-%d")
-                standardized["symbol"] = symbol.zfill(6)
+                standardized["symbol"] = symbol.zfill(SYMBOL_ZFILL_WIDTH)
 
                 # Extract goodwill balance (商誉余额)
                 if "商誉" in raw_df.columns:
@@ -112,9 +122,13 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
                 raw_df = ak.stock_sy_profile_em()
 
                 if raw_df.empty:
-                    return self.create_empty_dataframe(
+                    result = self.create_empty_dataframe(
                         ["symbol", "report_date", "goodwill_balance", "goodwill_ratio", "goodwill_impairment"]
                     )
+                    duration_ms = (time.time() - start_time) * 1000
+                    stats_collector = get_stats_collector()
+                    stats_collector.record_request("eastmoney", duration_ms, True)
+                    return result
 
                 # Standardize the data
                 standardized = pd.DataFrame()
@@ -129,7 +143,7 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
                 # Handle both cases: with stock codes (individual data) or without (aggregate data)
                 if "股票代码" in raw_df.columns:
                     # Individual stock data - normalize stock codes with zfill
-                    standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+                    standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
                 else:
                     # Aggregate data without stock codes - use 'ALL' placeholder without zfill
                     standardized["symbol"] = pd.Series(["ALL"] * len(standardized), dtype=str)
@@ -161,9 +175,18 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
                 result = standardized[mask].reset_index(drop=True)
 
             # Ensure JSON compatibility
-            return self.ensure_json_compatible(result)
+            result = self.ensure_json_compatible(result)
+
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, True)
+
+            return result
 
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             raise RuntimeError(f"Failed to fetch goodwill data: {e}") from e
 
     def get_goodwill_impairment(self, date: str) -> pd.DataFrame:
@@ -192,6 +215,8 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
         except ValueError as e:
             raise ValueError(f"Invalid date format: {date}. Expected YYYY-MM-DD") from e
 
+        start_time = time.time()
+
         try:
             import akshare as ak
 
@@ -200,13 +225,17 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             raw_df = ak.stock_sy_jz_em()
 
             if raw_df is None or raw_df.empty:
-                return self.create_empty_dataframe(
+                result = self.create_empty_dataframe(
                     ["symbol", "name", "goodwill_balance", "expected_impairment", "risk_level"]
                 )
+                duration_ms = (time.time() - start_time) * 1000
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("eastmoney", duration_ms, True)
+                return result
 
             # Standardize the data
             standardized = pd.DataFrame()
-            standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["股票简称"].astype(str)
 
             # Extract goodwill balance
@@ -240,13 +269,25 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             standardized["risk_level"] = standardized.apply(calculate_risk_level, axis=1)
 
             # Ensure JSON compatibility
-            return self.ensure_json_compatible(standardized)
+            result = self.ensure_json_compatible(standardized)
+
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, True)
+
+            return result
 
         except (TypeError, KeyError):
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             return self.create_empty_dataframe(
                 ["symbol", "name", "goodwill_balance", "expected_impairment", "risk_level"]
             )
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             raise RuntimeError(f"Failed to fetch goodwill impairment expectations: {e}") from e
 
     def get_goodwill_by_industry(self, date: str) -> pd.DataFrame:
@@ -275,6 +316,8 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
         except ValueError as e:
             raise ValueError(f"Invalid date format: {date}. Expected YYYY-MM-DD") from e
 
+        start_time = time.time()
+
         try:
             import akshare as ak
 
@@ -283,9 +326,13 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             raw_df = ak.stock_sy_profile_em()
 
             if raw_df is None or raw_df.empty:
-                return self.create_empty_dataframe(
+                result = self.create_empty_dataframe(
                     ["industry", "total_goodwill", "avg_ratio", "total_impairment", "company_count"]
                 )
+                duration_ms = (time.time() - start_time) * 1000
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("eastmoney", duration_ms, True)
+                return result
 
             # Check if data contains industry column for grouping
             # If "所属行业" exists, group by industry
@@ -351,11 +398,23 @@ class EastmoneyGoodwillProvider(GoodwillProvider):
             industry_stats = industry_stats.sort_values("total_goodwill", ascending=False).reset_index(drop=True)
 
             # Ensure JSON compatibility
-            return self.ensure_json_compatible(industry_stats)
+            result = self.ensure_json_compatible(industry_stats)
+
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, True)
+
+            return result
 
         except (TypeError, KeyError):
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             return self.create_empty_dataframe(
                 ["industry", "total_goodwill", "avg_ratio", "total_impairment", "company_count"]
             )
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             raise RuntimeError(f"Failed to fetch goodwill statistics by industry: {e}") from e

@@ -7,6 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import EquityPledgeFactory, EquityPledgeProvider
 
 
@@ -105,7 +106,7 @@ class EastmoneyEquityPledgeProvider(EquityPledgeProvider):
                     standardized["shareholder_name"] = ""
 
                 # Set symbol for all rows
-                standardized.insert(0, "symbol", symbol.zfill(6))
+                standardized.insert(0, "symbol", symbol.zfill(SYMBOL_ZFILL_WIDTH))
 
                 if "质押股数" in raw_df.columns:
                     standardized["pledge_shares"] = raw_df["质押股数"].astype(float)
@@ -152,7 +153,7 @@ class EastmoneyEquityPledgeProvider(EquityPledgeProvider):
                 standardized = pd.DataFrame()
 
                 if "股票代码" in raw_df.columns:
-                    standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+                    standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
                 else:
                     standardized["symbol"] = ""
 
@@ -242,7 +243,7 @@ class EastmoneyEquityPledgeProvider(EquityPledgeProvider):
             standardized = pd.DataFrame()
 
             if "股票代码" in raw_df.columns:
-                standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+                standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             else:
                 standardized["symbol"] = ""
 

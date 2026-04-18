@@ -8,6 +8,8 @@ import re
 from enum import Enum
 from typing import Any
 
+from ...constants import SYMBOL_ZFILL_WIDTH
+
 
 class StockCodeFormat(Enum):
     """股票代码格式"""
@@ -145,7 +147,7 @@ class FieldFormatter:
         numeric_part = re.sub(r"[^\d]", "", numeric_part)
 
         # 补全到6位
-        numeric_part = numeric_part.zfill(6)
+        numeric_part = numeric_part.zfill(SYMBOL_ZFILL_WIDTH)
 
         # 2. 按目标格式输出
         if target_format == StockCodeFormat.PURE_NUMERIC:

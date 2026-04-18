@@ -7,6 +7,7 @@ This module implements equity pledge data provider using Lixinger OpenAPI.
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import EquityPledgeFactory, EquityPledgeProvider
 
 
@@ -87,7 +88,7 @@ class LixingerPledgeProvider(EquityPledgeProvider):
 
         standardized = pd.DataFrame()
 
-        standardized["symbol"] = symbol.zfill(6)
+        standardized["symbol"] = symbol.zfill(SYMBOL_ZFILL_WIDTH)
 
         if "date" in df.columns:
             standardized["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")

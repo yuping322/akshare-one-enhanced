@@ -7,6 +7,7 @@ This module implements dragon tiger list data provider using Lixinger OpenAPI.
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import DragonTigerFactory, DragonTigerProvider
 
 
@@ -117,7 +118,9 @@ class LixingerDragonTigerProvider(DragonTigerProvider):
 
         standardized = pd.DataFrame()
         standardized["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
-        standardized["symbol"] = df["stockCode"].astype(str).str.zfill(6) if "stockCode" in df.columns else None
+        standardized["symbol"] = (
+            df["stockCode"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH) if "stockCode" in df.columns else None
+        )
         standardized["name"] = df["stockName"].astype(str) if "stockName" in df.columns else None
         standardized["close_price"] = pd.to_numeric(df.get("closePrice"), errors="coerce")
         standardized["pct_change"] = pd.to_numeric(df.get("pctChange"), errors="coerce")
@@ -215,7 +218,7 @@ class LixingerDragonTigerProvider(DragonTigerProvider):
         df = pd.json_normalize(data)
 
         if group_by == "stock":
-            df["stockCode"] = df["stockCode"].astype(str).str.zfill(6)
+            df["stockCode"] = df["stockCode"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             summary = (
                 df.groupby(["stockCode", "stockName"] if "stockName" in df.columns else ["stockCode"])
                 .agg(

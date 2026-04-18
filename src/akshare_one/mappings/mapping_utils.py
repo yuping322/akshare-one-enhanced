@@ -7,6 +7,8 @@ import pandas as pd
 import os
 from typing import Dict, List, Optional
 
+from ..constants import SYMBOL_ZFILL_WIDTH
+
 
 class MappingUtils:
     """映射工具类"""
@@ -24,16 +26,16 @@ class MappingUtils:
             csv_path = os.path.join(self.mappings_dir, f"{table_name}.csv")
             if os.path.exists(csv_path):
                 # 读取CSV时保持代码为字符串格式
-                df = pd.read_csv(csv_path, encoding='utf-8-sig', dtype={'code': str})
+                df = pd.read_csv(csv_path, encoding="utf-8-sig", dtype={"code": str})
 
                 # 处理数值转为字符串的情况（如股票代码）
                 processed_mapping = {}
-                for code, name in zip(df['code'], df['name']):
+                for code, name in zip(df["code"], df["name"]):
                     # 确保股票代码是6位数字格式
                     str_code = str(code).strip()
                     if str_code.isdigit() and len(str_code) < 6:
                         # 补齐到6位
-                        str_code = str_code.zfill(6)
+                        str_code = str_code.zfill(SYMBOL_ZFILL_WIDTH)
                     processed_mapping[str_code] = name
 
                 self._mappings[table_name] = processed_mapping
@@ -87,38 +89,38 @@ def get_all_codes(table_name: str) -> List[str]:
 
 def get_stock_name(stock_code: str) -> Optional[str]:
     """获取股票名称"""
-    return get_name_by_code('stock_code_to_name', stock_code)
+    return get_name_by_code("stock_code_to_name", stock_code)
 
 
 def get_index_name(index_code: str) -> Optional[str]:
     """获取指数名称"""
-    return get_name_by_code('index_code_to_name', index_code)
+    return get_name_by_code("index_code_to_name", index_code)
 
 
 def get_etf_name(etf_code: str) -> Optional[str]:
     """获取ETF名称"""
-    return get_name_by_code('etf_code_to_name', etf_code)
+    return get_name_by_code("etf_code_to_name", etf_code)
 
 
 def get_industry_name(industry_code: str) -> Optional[str]:
     """获取行业名称"""
-    return get_name_by_code('industry_code_to_name', industry_code)
+    return get_name_by_code("industry_code_to_name", industry_code)
 
 
 def get_option_underlying_patterns(underlying_code: str) -> List[str]:
     """获取期权底层资产匹配模式"""
-    mapping = _mapping_utils.get_mapping('option_underlying_patterns')
+    mapping = _mapping_utils.get_mapping("option_underlying_patterns")
     return mapping.get(underlying_code, [underlying_code])
 
 
 # 预加载常用映射
 def preload_mappings():
     """预加载常用映射表"""
-    _mapping_utils.get_mapping('stock_code_to_name')
-    _mapping_utils.get_mapping('index_code_to_name')
-    _mapping_utils.get_mapping('etf_code_to_name')
-    _mapping_utils.get_mapping('industry_code_to_name')
-    _mapping_utils.get_mapping('option_underlying_patterns')
+    _mapping_utils.get_mapping("stock_code_to_name")
+    _mapping_utils.get_mapping("index_code_to_name")
+    _mapping_utils.get_mapping("etf_code_to_name")
+    _mapping_utils.get_mapping("industry_code_to_name")
+    _mapping_utils.get_mapping("option_underlying_patterns")
 
 
 if __name__ == "__main__":

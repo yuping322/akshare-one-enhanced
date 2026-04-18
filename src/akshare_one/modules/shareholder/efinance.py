@@ -10,6 +10,7 @@ from datetime import datetime
 import pandas as pd
 
 from ...logging_config import get_logger, log_api_request
+from ...constants import SYMBOL_ZFILL_WIDTH
 from ..cache import cache
 from .base import ShareholderFactory, ShareholderProvider
 
@@ -227,7 +228,7 @@ class EfinanceShareholderProvider(ShareholderProvider):
             df = df.rename(columns=rename_cols)
 
         if "symbol" in df.columns:
-            df["symbol"] = df["symbol"].astype(str).str.zfill(6)
+            df["symbol"] = df["symbol"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
 
         if "holder_number" in df.columns:
             df["holder_number"] = pd.to_numeric(df["holder_number"], errors="coerce")

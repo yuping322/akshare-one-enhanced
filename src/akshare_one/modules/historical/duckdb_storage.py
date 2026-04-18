@@ -10,6 +10,8 @@ try:
 except ImportError:
     raise ImportError("Please install duckdb: pip install duckdb")
 
+from ..constants import SYMBOL_ZFILL_WIDTH
+
 logger = logging.getLogger(__name__)
 
 # Process-level singleton cache
@@ -28,13 +30,13 @@ def normalize_to_jq_format(symbol: str) -> str:
         return symbol
 
     if symbol.startswith("SH"):
-        return f"{symbol[2:].zfill(6)}.XSHG"
+        return f"{symbol[2:].zfill(SYMBOL_ZFILL_WIDTH)}.XSHG"
     if symbol.startswith("SZ"):
-        return f"{symbol[2:].zfill(6)}.XSHE"
+        return f"{symbol[2:].zfill(SYMBOL_ZFILL_WIDTH)}.XSHE"
 
     # Pure numeric
     if symbol.isdigit():
-        code = symbol.zfill(6)
+        code = symbol.zfill(SYMBOL_ZFILL_WIDTH)
         if code.startswith("6"):
             return f"{code}.XSHG"
         else:

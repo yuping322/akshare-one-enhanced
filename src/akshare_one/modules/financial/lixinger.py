@@ -7,6 +7,7 @@ This module implements financial data provider using Lixinger OpenAPI.
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import FinancialDataFactory, FinancialDataProvider
 
 
@@ -282,7 +283,7 @@ class LixingerFinancialProvider(FinancialDataProvider):
         }
         df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
 
-        df["symbol"] = self.symbol.zfill(6) if self.symbol else ""
+        df["symbol"] = self.symbol.zfill(SYMBOL_ZFILL_WIDTH) if self.symbol else ""
 
         for date_col in ["announcement_date", "record_date", "ex_date", "payment_date", "fiscal_year_end"]:
             if date_col in df.columns:

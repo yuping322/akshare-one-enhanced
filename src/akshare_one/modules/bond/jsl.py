@@ -6,6 +6,7 @@ This module implements the bond data provider using JiSiLu as the data source.
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import BondFactory, BondProvider
 
 
@@ -200,7 +201,7 @@ class JslBondProvider(BondProvider):
 
             # Filter by symbol if provided
             if symbol:
-                df = df[df["代码"] == symbol.zfill(6)]
+                df = df[df["代码"] == symbol.zfill(SYMBOL_ZFILL_WIDTH)]
 
             df = df.rename(
                 columns={

@@ -4,9 +4,12 @@ Lixinger provider for shareholder data.
 This module implements shareholder data provider using Lixinger OpenAPI.
 """
 
+import time
+
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...metrics import get_stats_collector
 from .base import ShareholderFactory, ShareholderProvider
 
 
@@ -51,28 +54,43 @@ class LixingerShareholderProvider(ShareholderProvider):
                 - capitalization: Total share capital
                 - proportion_of_capitalization: Proportion of total share capital
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date, "endDate": end_date}
+            params = {"stockCode": symbol, "startDate": start_date, "endDate": end_date}
 
-        response = client.query_api("cn/company/majority-shareholders", params)
+            response = client.query_api("cn/company/majority-shareholders", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
-        df["symbol"] = symbol
+            df = pd.json_normalize(data)
+            df["symbol"] = symbol
 
-        if "proportionOfCapitalization" in df.columns:
-            df = df.rename(columns={"proportionOfCapitalization": "proportion_of_capitalization"})
+            if "proportionOfCapitalization" in df.columns:
+                df = df.rename(columns={"proportionOfCapitalization": "proportion_of_capitalization"})
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_top10_float_shareholders(
         self, symbol: str, start_date: str = "1970-01-01", end_date: str = "2030-12-31", **kwargs
@@ -95,31 +113,46 @@ class LixingerShareholderProvider(ShareholderProvider):
                 - outstanding_shares_a: Outstanding shares A
                 - proportion_of_outstanding_shares_a: Proportion of outstanding shares A
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date, "endDate": end_date}
+            params = {"stockCode": symbol, "startDate": start_date, "endDate": end_date}
 
-        response = client.query_api("cn/company/nolimit-shareholders", params)
+            response = client.query_api("cn/company/nolimit-shareholders", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
-        df["symbol"] = symbol
+            df = pd.json_normalize(data)
+            df["symbol"] = symbol
 
-        column_mapping = {
-            "outstandingSharesA": "outstanding_shares_a",
-            "proportionOfOutstandingSharesA": "proportion_of_outstanding_shares_a",
-        }
-        df = df.rename(columns={k: v for k, v in column_mapping.items() if k in df.columns})
+            column_mapping = {
+                "outstandingSharesA": "outstanding_shares_a",
+                "proportionOfOutstandingSharesA": "proportion_of_outstanding_shares_a",
+            }
+            df = df.rename(columns={k: v for k, v in column_mapping.items() if k in df.columns})
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_fund_shareholders(
         self, symbol: str, start_date: str = "1970-01-01", end_date: str = "2030-12-31", **kwargs
@@ -145,35 +178,50 @@ class LixingerShareholderProvider(ShareholderProvider):
                 - outstanding_shares_a: Outstanding shares A
                 - proportion_of_capitalization: Proportion of outstanding shares A
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": symbol, "startDate": start_date, "endDate": end_date}
+            params = {"stockCode": symbol, "startDate": start_date, "endDate": end_date}
 
-        response = client.query_api("cn/company/fund-shareholders", params)
+            response = client.query_api("cn/company/fund-shareholders", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
-        df["symbol"] = symbol
+            df = pd.json_normalize(data)
+            df["symbol"] = symbol
 
-        column_mapping = {
-            "fundCode": "fund_code",
-            "marketCap": "market_cap",
-            "marketCapRank": "market_cap_rank",
-            "netValueRatio": "net_value_ratio",
-            "outstandingSharesA": "outstanding_shares_a",
-            "proportionOfCapitalization": "proportion_of_capitalization",
-        }
-        df = df.rename(columns={k: v for k, v in column_mapping.items() if k in df.columns})
+            column_mapping = {
+                "fundCode": "fund_code",
+                "marketCap": "market_cap",
+                "marketCapRank": "market_cap_rank",
+                "netValueRatio": "net_value_ratio",
+                "outstandingSharesA": "outstanding_shares_a",
+                "proportionOfCapitalization": "proportion_of_capitalization",
+            }
+            df = df.rename(columns={k: v for k, v in column_mapping.items() if k in df.columns})
 
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_shareholder_changes(
         self,
@@ -190,9 +238,7 @@ class LixingerShareholderProvider(ShareholderProvider):
         """
         return pd.DataFrame()
 
-    def get_shareholders_num(
-        self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
-    ) -> pd.DataFrame:
+    def get_shareholders_num(self, symbol: str, start_date: str, end_date: str | None = None, **kwargs) -> pd.DataFrame:
         """
         Get shareholders number history from Lixinger (cn/company/shareholders-num).
 
@@ -204,34 +250,49 @@ class LixingerShareholderProvider(ShareholderProvider):
         Returns:
             pd.DataFrame: Columns: date, total, shareholders_number_change_rate, spc
         """
-        client = get_lixinger_client()
-        params = {"stockCode": symbol, "startDate": start_date}
-        if end_date:
-            params["endDate"] = end_date
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
+            params = {"stockCode": symbol, "startDate": start_date}
+            if end_date:
+                params["endDate"] = end_date
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/shareholders-num", params)
-        if response.get("code") != 1:
-            return pd.DataFrame()
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            response = client.query_api("cn/company/shareholders-num", params)
+            if response.get("code") != 1:
+                return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
-        df["symbol"] = symbol
-        rename = {
-            "date": "date",
-            "total": "total",
-            "shareholdersNumberChangeRate": "shareholders_number_change_rate",
-            "spc": "spc",
-        }
-        df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
-        if "date" in df.columns:
-            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            df = pd.json_normalize(data)
+            df["symbol"] = symbol
+            rename = {
+                "date": "date",
+                "total": "total",
+                "shareholdersNumberChangeRate": "shareholders_number_change_rate",
+                "spc": "spc",
+            }
+            df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
+            if "date" in df.columns:
+                df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_fund_collection_shareholders(
         self, symbol: str, start_date: str, end_date: str | None = None, **kwargs
@@ -249,34 +310,49 @@ class LixingerShareholderProvider(ShareholderProvider):
             pd.DataFrame: Columns: date, name, fund_collection_code, holdings,
                 market_cap, outstanding_shares_a, proportion_of_capitalization
         """
-        client = get_lixinger_client()
-        params = {"stockCode": symbol, "startDate": start_date}
-        if end_date:
-            params["endDate"] = end_date
-        if "limit" in kwargs:
-            params["limit"] = kwargs["limit"]
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
+            params = {"stockCode": symbol, "startDate": start_date}
+            if end_date:
+                params["endDate"] = end_date
+            if "limit" in kwargs:
+                params["limit"] = kwargs["limit"]
 
-        response = client.query_api("cn/company/fund-collection-shareholders", params)
-        if response.get("code") != 1:
-            return pd.DataFrame()
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            response = client.query_api("cn/company/fund-collection-shareholders", params)
+            if response.get("code") != 1:
+                return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
-        df["symbol"] = symbol
-        rename = {
-            "fundCollectionCode": "fund_collection_code",
-            "marketCap": "market_cap",
-            "outstandingSharesA": "outstanding_shares_a",
-            "proportionOfCapitalization": "proportion_of_capitalization",
-        }
-        df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
-        if "date" in df.columns:
-            df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
+            df = pd.json_normalize(data)
+            df["symbol"] = symbol
+            rename = {
+                "fundCollectionCode": "fund_collection_code",
+                "marketCap": "market_cap",
+                "outstandingSharesA": "outstanding_shares_a",
+                "proportionOfCapitalization": "proportion_of_capitalization",
+            }
+            df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
+            if "date" in df.columns:
+                df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+            result = self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_top_shareholders(self, symbol: str, **kwargs) -> pd.DataFrame:
         """

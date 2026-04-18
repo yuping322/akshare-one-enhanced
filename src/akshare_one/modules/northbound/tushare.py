@@ -4,9 +4,13 @@ Tushare provider for northbound capital data.
 This module implements the northbound capital data provider using Tushare as the data source.
 """
 
+import time
+
 import pandas as pd
 
+from ...metrics import get_stats_collector
 from ...tushare_client import get_tushare_client
+from ...constants import SYMBOL_ZFILL_WIDTH
 from ..cache import cache
 from .base import NorthboundFactory, NorthboundProvider
 
@@ -60,11 +64,19 @@ class TushareNorthboundProvider(NorthboundProvider):
                 ["date", "market", "northbound_net_buy", "northbound_buy_amount", "northbound_sell_amount"]
             )
 
+        start_time = time.time()
         try:
             start_date_ts = self._convert_date_format(start_date)
             end_date_ts = self._convert_date_format(end_date)
 
             raw_df = client.get_moneyflow_hkctl(start_date=start_date_ts, end_date=end_date_ts)
+
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, True)
+            except (ImportError, AttributeError):
+                pass
 
             if raw_df.empty:
                 return self.create_empty_dataframe(
@@ -76,6 +88,12 @@ class TushareNorthboundProvider(NorthboundProvider):
             return self.ensure_json_compatible(df)
 
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, False)
+            except (ImportError, AttributeError):
+                pass
             self.logger.error(f"Failed to fetch northbound flow from Tushare: {e}")
             return self.create_empty_dataframe(
                 ["date", "market", "northbound_net_buy", "northbound_buy_amount", "northbound_sell_amount"]
@@ -112,6 +130,7 @@ class TushareNorthboundProvider(NorthboundProvider):
                 ["date", "symbol", "holdings_shares", "holdings_value", "holdings_ratio"]
             )
 
+        start_time = time.time()
         try:
             start_date_ts = self._convert_date_format(start_date)
             end_date_ts = self._convert_date_format(end_date)
@@ -121,6 +140,13 @@ class TushareNorthboundProvider(NorthboundProvider):
                 ts_code = self._convert_symbol_to_ts_code(symbol)
 
             raw_df = client.get_hk_hold(ts_code=ts_code, start_date=start_date_ts, end_date=end_date_ts)
+
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, True)
+            except (ImportError, AttributeError):
+                pass
 
             if raw_df.empty:
                 return self.create_empty_dataframe(
@@ -132,6 +158,12 @@ class TushareNorthboundProvider(NorthboundProvider):
             return self.ensure_json_compatible(df)
 
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, False)
+            except (ImportError, AttributeError):
+                pass
             self.logger.error(f"Failed to fetch northbound holdings from Tushare: {e}")
             return self.create_empty_dataframe(
                 ["date", "symbol", "holdings_shares", "holdings_value", "holdings_ratio"]
@@ -170,12 +202,20 @@ class TushareNorthboundProvider(NorthboundProvider):
                 ["rank", "symbol", "name", "northbound_net_buy", "buy_amount", "sell_amount"]
             )
 
+        start_time = time.time()
         try:
             trade_date = None
             if date:
                 trade_date = self._convert_date_format(date)
 
             raw_df = client.get_hk_top10(trade_date=trade_date)
+
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, True)
+            except (ImportError, AttributeError):
+                pass
 
             if raw_df.empty:
                 return self.create_empty_dataframe(
@@ -188,6 +228,12 @@ class TushareNorthboundProvider(NorthboundProvider):
             return self.ensure_json_compatible(df)
 
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, False)
+            except (ImportError, AttributeError):
+                pass
             self.logger.error(f"Failed to fetch northbound top stocks from Tushare: {e}")
             return self.create_empty_dataframe(
                 ["rank", "symbol", "name", "northbound_net_buy", "buy_amount", "sell_amount"]
@@ -229,7 +275,7 @@ class TushareNorthboundProvider(NorthboundProvider):
             df["date"] = pd.to_datetime(df["trade_date"], format="%Y%m%d").dt.strftime("%Y-%m-%d")
 
         if "ts_code" in df.columns:
-            df["symbol"] = df["ts_code"].astype(str).str.split(".").str[0].str.zfill(6)
+            df["symbol"] = df["ts_code"].astype(str).str.split(".").str[0].str.zfill(SYMBOL_ZFILL_WIDTH)
 
         return df
 
@@ -241,7 +287,7 @@ class TushareNorthboundProvider(NorthboundProvider):
             df["date"] = pd.to_datetime(df["trade_date"], format="%Y%m%d").dt.strftime("%Y-%m-%d")
 
         if "ts_code" in df.columns:
-            df["symbol"] = df["ts_code"].astype(str).str.split(".").str[0].str.zfill(6)
+            df["symbol"] = df["ts_code"].astype(str).str.split(".").str[0].str.zfill(SYMBOL_ZFILL_WIDTH)
 
         if market == "sh":
             df = df[df["symbol"].str.startswith("6")].reset_index(drop=True)

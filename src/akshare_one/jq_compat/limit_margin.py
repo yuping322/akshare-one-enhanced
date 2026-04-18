@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List, Union
 from .market import get_price as _get_price_jq
 from ..modules.utils import normalize_symbol as _normalize_symbol
+from ..constants import SYMBOL_ZFILL_WIDTH
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +26,9 @@ def _normalize_date(date_val) -> Optional[str]:
         return str(date_val)
 
 
-def get_recent_limit_up_stock(stock_list: List[str], recent_days: int = 5,
-                               date: Optional[str] = None, context=None) -> List[str]:
+def get_recent_limit_up_stock(
+    stock_list: List[str], recent_days: int = 5, date: Optional[str] = None, context=None
+) -> List[str]:
     """Get stocks that hit limit up recently. JQ-compatible."""
     if not stock_list:
         return []
@@ -36,8 +38,7 @@ def get_recent_limit_up_stock(stock_list: List[str], recent_days: int = 5,
     limit_up_stocks = []
     for stock in stock_list:
         try:
-            df = _get_price_jq(stock, start_date=start_date, end_date=end_date,
-                               fields=["close", "high_limit"])
+            df = _get_price_jq(stock, start_date=start_date, end_date=end_date, fields=["close", "high_limit"])
             if df is None or df.empty:
                 continue
             recent_df = df.tail(recent_days + 2)
@@ -52,8 +53,9 @@ def get_recent_limit_up_stock(stock_list: List[str], recent_days: int = 5,
     return limit_up_stocks
 
 
-def get_recent_limit_down_stock(stock_list: List[str], recent_days: int = 5,
-                                 date: Optional[str] = None, context=None) -> List[str]:
+def get_recent_limit_down_stock(
+    stock_list: List[str], recent_days: int = 5, date: Optional[str] = None, context=None
+) -> List[str]:
     """Get stocks that hit limit down recently. JQ-compatible."""
     if not stock_list:
         return []
@@ -63,8 +65,7 @@ def get_recent_limit_down_stock(stock_list: List[str], recent_days: int = 5,
     limit_down_stocks = []
     for stock in stock_list:
         try:
-            df = _get_price_jq(stock, start_date=start_date, end_date=end_date,
-                               fields=["close", "low_limit"])
+            df = _get_price_jq(stock, start_date=start_date, end_date=end_date, fields=["close", "low_limit"])
             if df is None or df.empty:
                 continue
             recent_df = df.tail(recent_days + 2)
@@ -94,9 +95,13 @@ def get_mtss(
             codes = [security] if isinstance(security, str) else security
             results = []
             for sym in codes:
-                code = sym.split(".")[0].zfill(6)
+                code = sym.split(".")[0].zfill(SYMBOL_ZFILL_WIDTH)
                 market = "sh" if code.startswith("6") else "sz"
-                df = ak.stock_margin_detail_szse(symbol=code) if market == "sz" else ak.stock_margin_detail_sse(symbol=code)
+                df = (
+                    ak.stock_margin_detail_szse(symbol=code)
+                    if market == "sz"
+                    else ak.stock_margin_detail_sse(symbol=code)
+                )
                 if df is not None and not df.empty:
                     df["code"] = sym
                     if start_date and "date" in df.columns:
@@ -111,7 +116,11 @@ def get_mtss(
             # Market-wide summary
             df_sh = ak.stock_margin_account_info_sse()
             df_sz = ak.stock_margin_account_info_szse()
-            res = pd.concat([df_sh, df_sz], ignore_index=True) if df_sh is not None and df_sz is not None else pd.DataFrame()
+            res = (
+                pd.concat([df_sh, df_sz], ignore_index=True)
+                if df_sh is not None and df_sz is not None
+                else pd.DataFrame()
+            )
 
         if count and not res.empty:
             res = res.tail(count)
@@ -130,9 +139,9 @@ def get_margincash_stocks(date: Optional[str] = None) -> List[str]:
         df_sz = ak.stock_margin_underlying_info_szse()
         stocks = []
         if df_sh is not None and not df_sh.empty:
-            stocks.extend([f"{str(c).zfill(6)}.XSHG" for c in df_sh["证券代码"]])
+            stocks.extend([f"{str(c).zfill(SYMBOL_ZFILL_WIDTH)}.XSHG" for c in df_sh["证券代码"]])
         if df_sz is not None and not df_sz.empty:
-            stocks.extend([f"{str(c).zfill(6)}.XSHE" for c in df_sz["证券代码"]])
+            stocks.extend([f"{str(c).zfill(SYMBOL_ZFILL_WIDTH)}.XSHE" for c in df_sz["证券代码"]])
         return list(set(stocks))
     except Exception as e:
         logger.warning(f"get_margincash_stocks failed: {e}")
@@ -152,8 +161,14 @@ get_margine_stocks_jq = get_margincash_stocks
 get_margine_stocks = get_margincash_stocks
 
 __all__ = [
-    "get_recent_limit_up_stock", "get_recent_limit_down_stock",
-    "get_mtss", "get_margincash_stocks", "get_marginsec_stocks",
-    "get_margine_stocks", "get_mtss_jq",
-    "get_margincash_stocks_jq", "get_marginsec_stocks_jq", "get_margine_stocks_jq",
+    "get_recent_limit_up_stock",
+    "get_recent_limit_down_stock",
+    "get_mtss",
+    "get_margincash_stocks",
+    "get_marginsec_stocks",
+    "get_margine_stocks",
+    "get_mtss_jq",
+    "get_margincash_stocks_jq",
+    "get_marginsec_stocks_jq",
+    "get_margine_stocks_jq",
 ]

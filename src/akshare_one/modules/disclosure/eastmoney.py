@@ -5,8 +5,12 @@ This module implements the disclosure news data provider using Eastmoney as the 
 It wraps akshare functions and standardizes the output format.
 """
 
+import time
+
 import pandas as pd
 
+from ...metrics import get_stats_collector
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import DisclosureFactory, DisclosureProvider
 
 
@@ -66,6 +70,8 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
                 f"Invalid category: {category}. Must be one of: 'all', 'dividend', 'repurchase', 'st', 'major_event'"
             )
 
+        start_time = time.time()
+
         # Fetch data from akshare
         try:
             from datetime import datetime, timedelta
@@ -97,15 +103,27 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
 
             # Combine all data
             if not all_data:
-                return self.create_empty_dataframe(["date", "symbol", "title", "category", "content", "url"])
+                result = self.create_empty_dataframe(["date", "symbol", "title", "category", "content", "url"])
+                duration_ms = (time.time() - start_time) * 1000
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("eastmoney", duration_ms, True)
+                return result
 
             raw_df = pd.concat(all_data, ignore_index=True)
 
             # Standardize the data
-            return self._standardize_disclosure_news(raw_df, symbol, category)
+            result = self._standardize_disclosure_news(raw_df, symbol, category)
 
-        except Exception:
-            # Return empty DataFrame on error
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, True)
+
+            return result
+
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             return self.create_empty_dataframe(["date", "symbol", "title", "category", "content", "url"])
 
     def _standardize_disclosure_news(
@@ -130,7 +148,7 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
 
         # Map fields
         standardized["date"] = pd.to_datetime(raw_df["公告日期"]).dt.strftime("%Y-%m-%d")
-        standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+        standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
         standardized["title"] = raw_df["公告标题"].astype(str)
         standardized["category"] = raw_df["公告类型"].astype(str)
         standardized["content"] = ""  # Not available in this data source
@@ -138,7 +156,7 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
 
         # Filter by symbol if specified
         if symbol_filter:
-            standardized = standardized[standardized["symbol"] == symbol_filter.zfill(6)]
+            standardized = standardized[standardized["symbol"] == symbol_filter.zfill(SYMBOL_ZFILL_WIDTH)]
 
         # Filter by category if not 'all'
         if category_filter != "all":
@@ -212,6 +230,8 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
             self.validate_symbol(symbol)
         self.validate_date_range(start_date, end_date)
 
+        start_time = time.time()
+
         # Fetch data from akshare
         try:
             import akshare as ak
@@ -220,7 +240,7 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
                 # Fetch data for single stock
                 raw_df = ak.stock_dividend_cninfo(symbol=symbol)
                 if raw_df.empty:
-                    return self.create_empty_dataframe(
+                    result = self.create_empty_dataframe(
                         [
                             "symbol",
                             "fiscal_year",
@@ -231,14 +251,24 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
                             "dividend_ratio",
                         ]
                     )
+                    duration_ms = (time.time() - start_time) * 1000
+                    stats_collector = get_stats_collector()
+                    stats_collector.record_request("eastmoney", duration_ms, True)
+                    return result
 
                 # Standardize the data
-                return self._standardize_dividend_data(raw_df, symbol, start_date, end_date)
+                result = self._standardize_dividend_data(raw_df, symbol, start_date, end_date)
+
+                duration_ms = (time.time() - start_time) * 1000
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("eastmoney", duration_ms, True)
+
+                return result
             else:
                 # For all stocks, we would need to iterate through all symbols
                 # This is not practical, so return empty DataFrame
                 # In production, this would require a different data source or approach
-                return self.create_empty_dataframe(
+                result = self.create_empty_dataframe(
                     [
                         "symbol",
                         "fiscal_year",
@@ -249,8 +279,15 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
                         "dividend_ratio",
                     ]
                 )
+                duration_ms = (time.time() - start_time) * 1000
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("eastmoney", duration_ms, True)
+                return result
 
         except Exception:
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             # Return empty DataFrame on error
             return self.create_empty_dataframe(
                 [
@@ -296,7 +333,7 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
         standardized = pd.DataFrame()
 
         # Add symbol (repeat for each row)
-        standardized["symbol"] = [symbol.zfill(6)] * len(raw_df)
+        standardized["symbol"] = [symbol.zfill(SYMBOL_ZFILL_WIDTH)] * len(raw_df)
 
         # Extract fiscal year from report time
         standardized["fiscal_year"] = raw_df["报告时间"].astype(str)
@@ -362,6 +399,8 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
             self.validate_symbol(symbol)
         self.validate_date_range(start_date, end_date)
 
+        start_time = time.time()
+
         # Fetch data from akshare
         try:
             import akshare as ak
@@ -370,14 +409,27 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
             raw_df = ak.stock_repurchase_em()
 
             if raw_df.empty:
-                return self.create_empty_dataframe(
+                result = self.create_empty_dataframe(
                     ["symbol", "announcement_date", "progress", "amount", "quantity", "price_range"]
                 )
+                duration_ms = (time.time() - start_time) * 1000
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("eastmoney", duration_ms, True)
+                return result
 
             # Standardize the data
-            return self._standardize_repurchase_data(raw_df, symbol, start_date, end_date)
+            result = self._standardize_repurchase_data(raw_df, symbol, start_date, end_date)
+
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, True)
+
+            return result
 
         except Exception:
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             # Return empty DataFrame on error
             return self.create_empty_dataframe(
                 ["symbol", "announcement_date", "progress", "amount", "quantity", "price_range"]
@@ -407,7 +459,7 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
         standardized = pd.DataFrame()
 
         # Map fields
-        standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+        standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
 
         # Convert announcement date
         standardized["announcement_date"] = pd.to_datetime(raw_df["最新公告日期"], errors="coerce").dt.strftime(
@@ -429,7 +481,7 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
 
         # Filter by symbol if specified
         if symbol_filter:
-            standardized = standardized[standardized["symbol"] == symbol_filter.zfill(6)]
+            standardized = standardized[standardized["symbol"] == symbol_filter.zfill(SYMBOL_ZFILL_WIDTH)]
 
         # Filter by date range
         if start_date or end_date:
@@ -472,6 +524,8 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
         if symbol:
             self.validate_symbol(symbol)
 
+        start_time = time.time()
+
         # Fetch data from akshare
         try:
             import akshare as ak
@@ -490,21 +544,32 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
                 all_data.append(self._standardize_delist_data(sz_df, "sz"))
 
             if not all_data:
-                return self.create_empty_dataframe(["symbol", "name", "st_type", "risk_level", "announcement_date"])
+                result = self.create_empty_dataframe(["symbol", "name", "st_type", "risk_level", "announcement_date"])
+                duration_ms = (time.time() - start_time) * 1000
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("eastmoney", duration_ms, True)
+                return result
 
             # Combine all data
             combined_df = pd.concat(all_data, ignore_index=True)
 
             # Filter by symbol if specified
             if symbol:
-                combined_df = combined_df[combined_df["symbol"] == symbol.zfill(6)]
+                combined_df = combined_df[combined_df["symbol"] == symbol.zfill(SYMBOL_ZFILL_WIDTH)]
 
             # Ensure JSON compatibility
-            combined_df = self.ensure_json_compatible(combined_df)
+            result = self.ensure_json_compatible(combined_df)
 
-            return combined_df
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, True)
+
+            return result
 
         except Exception:
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             # Return empty DataFrame on error
             return self.create_empty_dataframe(["symbol", "name", "st_type", "risk_level", "announcement_date"])
 
@@ -527,11 +592,11 @@ class EastmoneyDisclosureProvider(DisclosureProvider):
 
         # Map fields based on market
         if market == "sh":
-            standardized["symbol"] = raw_df["公司代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["公司代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["公司简称"].astype(str)
             date_col = "暂停上市日期"
         else:  # sz
-            standardized["symbol"] = raw_df["证券代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["证券代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["证券简称"].astype(str)
             date_col = "终止上市日期"
 

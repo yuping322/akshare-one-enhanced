@@ -9,6 +9,7 @@ import time
 import pandas as pd
 
 from ...logging_config import get_logger, log_api_request
+from ...metrics import get_stats_collector
 from .base import InstrumentFactory, InstrumentProvider
 
 
@@ -132,6 +133,9 @@ class BaostockInstrumentProvider(InstrumentProvider):
 
             duration_ms = (time.time() - start_time) * 1000
 
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, True)
+
             log_api_request(
                 logger=self.logger,
                 source="baostock",
@@ -146,6 +150,9 @@ class BaostockInstrumentProvider(InstrumentProvider):
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
+
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, False)
 
             log_api_request(
                 logger=self.logger,
@@ -219,6 +226,9 @@ class BaostockInstrumentProvider(InstrumentProvider):
 
             duration_ms = (time.time() - start_time) * 1000
 
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, True)
+
             log_api_request(
                 logger=self.logger,
                 source="baostock",
@@ -233,6 +243,9 @@ class BaostockInstrumentProvider(InstrumentProvider):
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
+
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, False)
 
             log_api_request(
                 logger=self.logger,
@@ -304,6 +317,9 @@ class BaostockInstrumentProvider(InstrumentProvider):
 
             duration_ms = (time.time() - start_time) * 1000
 
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, True)
+
             log_api_request(
                 logger=self.logger,
                 source="baostock",
@@ -318,6 +334,9 @@ class BaostockInstrumentProvider(InstrumentProvider):
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
+
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, False)
 
             log_api_request(
                 logger=self.logger,
@@ -458,6 +477,9 @@ class BaostockInstrumentProvider(InstrumentProvider):
 
             duration_ms = (time.time() - start_time) * 1000
 
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, True)
+
             log_api_request(
                 logger=self.logger,
                 source="baostock",
@@ -472,6 +494,9 @@ class BaostockInstrumentProvider(InstrumentProvider):
 
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
+
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, False)
 
             log_api_request(
                 logger=self.logger,

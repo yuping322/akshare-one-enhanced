@@ -9,6 +9,7 @@ from typing import Optional
 
 from ..cache import cache
 from .base import MarginFactory, MarginProvider
+from ...constants import SYMBOL_ZFILL_WIDTH
 from ...tushare_client import get_tushare_client
 
 
@@ -146,7 +147,7 @@ class TushareMarginProvider(MarginProvider):
             df["date"] = pd.to_datetime(raw_df["trade_date"], format="%Y%m%d").dt.strftime("%Y-%m-%d")
 
         if "ts_code" in raw_df.columns:
-            df["symbol"] = raw_df["ts_code"].str.split(".").str[0].str.zfill(6)
+            df["symbol"] = raw_df["ts_code"].str.split(".").str[0].str.zfill(SYMBOL_ZFILL_WIDTH)
 
         df["name"] = ""
 

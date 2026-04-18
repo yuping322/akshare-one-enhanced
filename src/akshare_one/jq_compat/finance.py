@@ -13,6 +13,7 @@ from ..modules.financial import get_income_statement as _get_is_ak
 from ..modules.financial import get_cash_flow as _get_cf_ak
 from ..modules.financial import get_financial_metrics as _get_fm_ak
 from .valuation import get_valuation as _get_valuation_jq
+from ..constants import SYMBOL_ZFILL_WIDTH
 
 logger = logging.getLogger(__name__)
 
@@ -41,14 +42,16 @@ def get_locked_shares(
             return pd.DataFrame(columns=["code", "unlock_date", "unlock_shares", "unlock_ratio", "unlock_value"])
 
         column_mapping = {
-            "股票代码": "code", "解禁日期": "unlock_date",
-            "解禁股数": "unlock_shares", "解禁市值": "unlock_value",
+            "股票代码": "code",
+            "解禁日期": "unlock_date",
+            "解禁股数": "unlock_shares",
+            "解禁市值": "unlock_value",
             "占流通股比例": "unlock_ratio",
         }
         df = df.rename(columns=column_mapping)
 
         if "code" in df.columns:
-            df["code"] = df["code"].apply(lambda x: str(x).zfill(6))
+            df["code"] = df["code"].apply(lambda x: str(x).zfill(SYMBOL_ZFILL_WIDTH))
             df["code"] = df["code"].apply(lambda x: f"{x}.XSHG" if x.startswith("6") else f"{x}.XSHE")
 
         if "unlock_date" in df.columns:
@@ -75,7 +78,7 @@ def get_fund_info(fund_code: str, fields: Optional[List[str]] = None) -> Dict:
         df = ak.fund_name_em()
         if df.empty:
             return {}
-        fund_row = df[df["基金代码"] == fund_code.zfill(6)]
+        fund_row = df[df["基金代码"] == fund_code.zfill(SYMBOL_ZFILL_WIDTH)]
         if fund_row.empty:
             return {}
         row = fund_row.iloc[0]
@@ -111,17 +114,18 @@ def get_fundamentals(
     fields = getattr(query, "fields", None)
 
     date = _normalize_date(date)
-    
+
     # If no security provided in query, get all active securities
     if not security:
         from .securities import get_all_securities
+
         security = get_all_securities().index.tolist()
-    
+
     if isinstance(security, str):
         security = [security]
 
     results = []
-    
+
     for sym in security:
         try:
             if table_name in ("valuation", "valuation_jq"):
@@ -142,7 +146,7 @@ def get_fundamentals(
                 # Basic report filtering by statDate if provided
                 if statDate and "report_date" in df.columns:
                     df = df[df["report_date"].str.contains(statDate)]
-                
+
                 # JQ fundamentals usually return a single row per stock for latest data
                 row = df.tail(1).copy()
                 row["code"] = sym
@@ -152,13 +156,13 @@ def get_fundamentals(
 
     if not results:
         return pd.DataFrame()
-        
+
     res = pd.concat(results, ignore_index=True)
-    
+
     # Filter fields if specified in query
     if fields:
         res = res[[f for f in fields if f in res.columns]]
-        
+
     return res
 
 
@@ -177,7 +181,7 @@ def get_fundamentals_continuously(
 
     start_date = _normalize_date(start_date)
     end_date = _normalize_date(end_date)
-    
+
     if end_date:
         dates = pd.date_range(start=start_date, end=end_date, freq=f"{frequency}D")
     elif count:
@@ -192,18 +196,19 @@ def get_fundamentals_continuously(
         if not df.empty:
             df["day"] = date_str
             all_frames.append(df)
-            
+
     if not all_frames:
         return pd.DataFrame()
-        
+
     res = pd.concat(all_frames, ignore_index=True)
     if fields:
         res = res[[f for f in fields if f in res.columns]]
     return res
 
 
-def bank_indicator(security_list: Union[str, List[str]], date: Optional[str] = None,
-                   fields: Optional[List[str]] = None) -> pd.DataFrame:
+def bank_indicator(
+    security_list: Union[str, List[str]], date: Optional[str] = None, fields: Optional[List[str]] = None
+) -> pd.DataFrame:
     """Get bank industry specific indicators. JQ-compatible."""
     if isinstance(security_list, str):
         security_list = [security_list]
@@ -225,14 +230,16 @@ def bank_indicator(security_list: Union[str, List[str]], date: Optional[str] = N
     return res[[c for c in fields if c in res.columns]] if fields else res
 
 
-def security_indicator(security_list: Union[str, List[str]], date: Optional[str] = None,
-                       fields: Optional[List[str]] = None) -> pd.DataFrame:
+def security_indicator(
+    security_list: Union[str, List[str]], date: Optional[str] = None, fields: Optional[List[str]] = None
+) -> pd.DataFrame:
     """Get securities industry specific indicators. JQ-compatible."""
     return bank_indicator(security_list, date, fields)
 
 
-def insurance_indicator(security_list: Union[str, List[str]], date: Optional[str] = None,
-                        fields: Optional[List[str]] = None) -> pd.DataFrame:
+def insurance_indicator(
+    security_list: Union[str, List[str]], date: Optional[str] = None, fields: Optional[List[str]] = None
+) -> pd.DataFrame:
     """Get insurance industry specific indicators. JQ-compatible."""
     return bank_indicator(security_list, date, fields)
 
@@ -243,8 +250,14 @@ security_indicator_jq = security_indicator
 insurance_indicator_jq = insurance_indicator
 
 __all__ = [
-    "get_locked_shares", "get_fund_info", "get_fundamentals",
+    "get_locked_shares",
+    "get_fund_info",
+    "get_fundamentals",
     "get_fundamentals_continuously",
-    "bank_indicator", "security_indicator", "insurance_indicator",
-    "bank_indicator_jq", "security_indicator_jq", "insurance_indicator_jq",
+    "bank_indicator",
+    "security_indicator",
+    "insurance_indicator",
+    "bank_indicator_jq",
+    "security_indicator_jq",
+    "insurance_indicator_jq",
 ]

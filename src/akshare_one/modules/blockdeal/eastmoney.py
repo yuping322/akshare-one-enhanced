@@ -7,6 +7,7 @@ This module implements the block deal data provider using Eastmoney as the data 
 import pandas as pd
 
 from ...akshare_compat import call_akshare
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import BlockDealFactory, BlockDealProvider
 
 
@@ -83,7 +84,7 @@ class EastmoneyBlockDealProvider(BlockDealProvider):
             # Standardize the data
             standardized = pd.DataFrame()
             standardized["date"] = pd.to_datetime(raw_df["交易日期"]).dt.strftime("%Y-%m-%d")
-            standardized["symbol"] = raw_df["证券代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["证券代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["证券简称"].astype(str)
             standardized["price"] = pd.to_numeric(raw_df["成交价"], errors="coerce")
             # Fix: API returns '成交总量' not '成交量'

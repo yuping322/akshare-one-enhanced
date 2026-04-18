@@ -10,6 +10,8 @@ from datetime import datetime
 from functools import lru_cache
 from typing import Dict, List, Optional, Any
 
+from ..constants import SYMBOL_ZFILL_WIDTH
+
 logger = logging.getLogger(__name__)
 
 
@@ -33,6 +35,7 @@ class CurrentDataCache:
         if ts and (now - ts).total_seconds() < self._ttl_seconds:
             return self._cache[code]
         from .market import get_detailed_quote
+
         data = get_detailed_quote(code)
         self._cache[code] = data
         self._timestamps[code] = now
@@ -49,6 +52,7 @@ def get_current_data_batch(codes: List[str], bt_strategy=None, use_cache: bool =
     if use_cache:
         return {s: get_current_data_cached(s, bt_strategy) for s in codes}
     from .market import get_detailed_quote
+
     return {s: get_detailed_quote(s) for s in codes}
 
 
@@ -56,8 +60,8 @@ class BatchDataLoader:
     def load_stocks(self, symbols, start_date, end_date, fields=None, adjust="qfq"):
         """Load historical data for multiple stocks."""
         from .market import get_price
-        return {s: get_price(s, start_date=start_date, end_date=end_date,
-                             fields=fields, fq=adjust) for s in symbols}
+
+        return {s: get_price(s, start_date=start_date, end_date=end_date, fields=fields, fq=adjust) for s in symbols}
 
 
 def preload_data_for_strategy(stock_pool, start_date, end_date):
@@ -69,6 +73,7 @@ def preload_data_for_strategy(stock_pool, start_date, end_date):
 def cached_get_security_info(code: str):
     """Get security info with LRU cache. JQ-compatible."""
     from .securities import get_security_info
+
     return get_security_info(code)
 
 
@@ -77,6 +82,7 @@ def cached_get_index_stocks(index_code: str, date: Optional[str] = None):
     """Get index constituent stocks with cache. JQ-compatible."""
     try:
         import akshare as ak
+
         code = index_code.split(".")[0]
         df = ak.index_stock_cons(symbol=code)
         if df is None or df.empty:
@@ -84,7 +90,7 @@ def cached_get_index_stocks(index_code: str, date: Optional[str] = None):
         col = next((c for c in ["品种代码", "成分券代码", "code"] if c in df.columns), None)
         if not col:
             return []
-        stocks = df[col].astype(str).str.zfill(6).tolist()
+        stocks = df[col].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH).tolist()
         return [f"{s}.XSHG" if s.startswith("6") else f"{s}.XSHE" for s in stocks]
     except Exception as e:
         logger.warning(f"cached_get_index_stocks failed for '{index_code}': {e}")
@@ -96,6 +102,7 @@ def get_memory_usage() -> Dict[str, float]:
     try:
         import psutil
         import os
+
         process = psutil.Process(os.getpid())
         return {
             "rss": process.memory_info().rss / 1024 / 1024,
@@ -111,6 +118,7 @@ def cleanup_memory():
     cached_get_security_info.cache_clear()
     cached_get_index_stocks.cache_clear()
     import gc
+
     gc.collect()
 
 
@@ -132,6 +140,7 @@ class DataPreloader:
 
     def preload_fundamentals(self, symbols, date=None):
         from .market import get_valuation
+
         self.fundamentals = get_valuation(symbols, date=date)
 
     def preload_index_stocks(self, index_codes):
@@ -151,12 +160,22 @@ def warm_up_cache(symbols: List[str], date: Optional[str] = None):
 def batch_get_fundamentals(query_obj, symbols: List[str], date: Optional[str] = None) -> pd.DataFrame:
     """Batch get fundamentals. JQ-compatible."""
     from .market import get_valuation
+
     return get_valuation(symbols, date=date)
 
 
 __all__ = [
-    "CurrentDataCache", "get_current_data_cached", "get_current_data_batch",
-    "BatchDataLoader", "preload_data_for_strategy", "optimize_dataframe_memory",
-    "DataPreloader", "warm_up_cache", "get_memory_usage", "cleanup_memory",
-    "cached_get_security_info", "cached_get_index_stocks", "batch_get_fundamentals",
+    "CurrentDataCache",
+    "get_current_data_cached",
+    "get_current_data_batch",
+    "BatchDataLoader",
+    "preload_data_for_strategy",
+    "optimize_dataframe_memory",
+    "DataPreloader",
+    "warm_up_cache",
+    "get_memory_usage",
+    "cleanup_memory",
+    "cached_get_security_info",
+    "cached_get_index_stocks",
+    "batch_get_fundamentals",
 ]

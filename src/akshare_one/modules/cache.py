@@ -1,122 +1,77 @@
+"""Cache decorators - memory + parquet + DuckDB persistent cache.
+
+Replaces the old TTLCache-only implementation with a multi-layer cache:
+1. Memory (TTLCache) - hot data, fast
+2. Parquet + DuckDB - persistent, cross-process, long-term
+
+Usage:
+    @cache("stock_daily")
+    def get_hist_data(self, symbol, start_date, end_date):
+        ...
+"""
+
 import os
 from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar
 
 import pandas as pd
-from cachetools import TTLCache, cached
-
-from ..metrics import get_stats_collector
 
 F = TypeVar("F", bound=Callable[..., Any])
 
-# 缓存配置
-CACHE_CONFIG: dict[str, TTLCache[Any, Any]] = {
-    # 实时数据 - 短缓存
-    "realtime_cache": TTLCache(maxsize=500, ttl=60),  # 实时数据缓存1分钟
-    "futures_realtime_cache": TTLCache(maxsize=500, ttl=60),  # 期货实时数据缓存1分钟
-    "options_realtime_cache": TTLCache(maxsize=500, ttl=60),  # 期权实时数据缓存1分钟
-    # 小时级缓存 - 频繁变化的数据
-    "hist_data_cache": TTLCache(maxsize=1000, ttl=3600),  # 历史数据缓存1小时
-    "news_cache": TTLCache(maxsize=500, ttl=3600),  # 新闻数据缓存1小时
-    "futures_hist_cache": TTLCache(maxsize=1000, ttl=3600),  # 期货历史数据缓存1小时
-    "options_chain_cache": TTLCache(maxsize=1000, ttl=3600),  # 期权链数据缓存1小时
-    # 天级缓存 - 日终数据（收盘后不再变化）
-    "hist_daily_cache": TTLCache(maxsize=2000, ttl=86400),  # 日线历史数据缓存24小时
-    "financial_cache": TTLCache(maxsize=500, ttl=86400),  # 财务数据缓存24小时
-    "info_cache": TTLCache(maxsize=500, ttl=86400),  # 信息数据缓存24小时
-    "insider_cache": TTLCache(maxsize=500, ttl=86400),  # 内部交易数据缓存24小时
-    "macro_cache": TTLCache(maxsize=500, ttl=86400),  # 宏观经济数据缓存24小时
-    "blockdeal_cache": TTLCache(maxsize=500, ttl=86400),  # 大宗交易数据缓存24小时
-    "shareholder_cache": TTLCache(maxsize=500, ttl=86400),  # 股东数据缓存24小时
-    "dividend_data_cache": TTLCache(maxsize=1000, ttl=86400),  # 分红送转数据缓存24小时
-    "adjust_factor_cache": TTLCache(maxsize=1000, ttl=86400),  # 复权因子数据缓存24小时
-    "northbound_cache": TTLCache(maxsize=500, ttl=86400),  # 北向资金数据缓存24小时
-    "margin_cache": TTLCache(maxsize=500, ttl=86400),  # 融资融券数据缓存24小时
-    "index_cache": TTLCache(maxsize=500, ttl=86400),  # 指数数据缓存24小时
-    "lhbg_cache": TTLCache(maxsize=500, ttl=86400),  # 龙虎榜数据缓存24小时
-    "pledge_cache": TTLCache(maxsize=500, ttl=86400),  # 股权质押数据缓存24小时
-    "restricted_cache": TTLCache(maxsize=500, ttl=86400),  # 限售解禁数据缓存24小时
-    # 长期缓存 - 不常变化的数据
-    "stock_list_cache": TTLCache(maxsize=100, ttl=604800),  # 股票列表缓存7天
-    "trade_dates_cache": TTLCache(maxsize=100, ttl=604800),  # 交易日历缓存7天
+_TABLE_MAP = {
+    "realtime_cache": "realtime",
+    "futures_realtime_cache": "futures_realtime",
+    "options_realtime_cache": "options_realtime",
+    "hist_data_cache": "stock_daily",
+    "hist_daily_cache": "stock_daily",
+    "news_cache": "news",
+    "futures_hist_cache": "futures_daily",
+    "options_chain_cache": "options_chain",
+    "financial_cache": "financial_metrics",
+    "info_cache": "securities",
+    "insider_cache": "insider_trade",
+    "macro_cache": "macro_data",
+    "blockdeal_cache": "block_deal",
+    "shareholder_cache": "shareholder_top10",
+    "dividend_data_cache": "dividend",
+    "adjust_factor_cache": "adjust_factor",
+    "northbound_cache": "northbound_flow",
+    "margin_cache": "margin_data",
+    "index_cache": "index_daily",
+    "lhbg_cache": "dragon_tiger",
+    "pledge_cache": "equity_pledge",
+    "restricted_cache": "restricted_release",
+    "stock_list_cache": "securities",
+    "trade_dates_cache": "trade_days",
+    "etf_cache": "etf_daily",
 }
 
 
-def clear_cache(cache_key: str | None = None) -> None:
-    """Clear cache(s).
+def _get_cache_manager():
+    from ..cache import get_cache_manager
 
-    Args:
-        cache_key: If provided, clear only this cache. If None, clear all caches.
+    return get_cache_manager()
+
+
+def _get_symbol_normalizer():
+    from ..cache import SymbolNormalizer
+
+    return SymbolNormalizer
+
+
+def _get_stats_collector():
+    from ..metrics import get_stats_collector
+
+    return get_stats_collector()
+
+
+def cache(cache_key: str, key: Callable | None = None) -> Callable[[F], F]:
+    """缓存装饰器
+
+    查询路径: Memory → DuckDB(Parquet) → 调用原函数 → 写回 Parquet + Memory
     """
-    if cache_key is not None:
-        if cache_key in CACHE_CONFIG:
-            CACHE_CONFIG[cache_key].clear()
-    else:
-        for cache in CACHE_CONFIG.values():
-            cache.clear()
-
-
-def cache(cache_key: str, key: Callable[..., Any] | None = None) -> Callable[[F], F]:
-    def decorator(func: F) -> F:
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            cache_enabled = os.getenv("AKSHARE_ONE_CACHE_ENABLED", "true").lower() in (
-                "1",
-                "true",
-                "yes",
-                "on",
-            )
-
-            if cache_enabled:
-                if cache_key not in CACHE_CONFIG:
-                    raise KeyError(
-                        f"Cache configuration '{cache_key}' not found. Available keys: {list(CACHE_CONFIG.keys())}"
-                    )
-
-                # 获取统计收集器
-                stats_collector = get_stats_collector()
-
-                try:
-                    if key is not None:
-                        result = cached(CACHE_CONFIG[cache_key], key=key)(func)(*args, **kwargs)
-                        stats_collector.record_cache_hit(cache_key)
-                    else:
-                        result = cached(CACHE_CONFIG[cache_key])(func)(*args, **kwargs)
-                        stats_collector.record_cache_hit(cache_key)
-                    if isinstance(result, pd.DataFrame):
-                        return result.copy()
-                    return result
-                except KeyError:
-                    # 缓存未命中
-                    stats_collector.record_cache_miss(cache_key)
-                    result = func(*args, **kwargs)
-                    if isinstance(result, pd.DataFrame):
-                        return result.copy()
-                    return result
-            return func(*args, **kwargs)
-
-        return wrapper  # type: ignore
-
-    return decorator
-
-
-def smart_cache(
-    realtime_key: str,
-    daily_key: str,
-    interval_attr: str = "interval",
-    key: Callable[..., Any] | None = None,
-) -> Callable[[F], F]:
-    """Smart cache decorator that chooses cache based on data interval.
-
-    For day/week/month/year intervals, uses daily cache (24h TTL).
-    For minute/hour intervals, uses realtime cache (1h TTL).
-
-    Args:
-        realtime_key: Cache key for high-frequency data (minute/hour)
-        daily_key: Cache key for daily+ data (day/week/month/year)
-        interval_attr: Attribute name to check for interval type
-        key: Optional custom cache key function
-    """
+    table_name = _TABLE_MAP.get(cache_key, cache_key.replace("_cache", ""))
 
     def decorator(func: F) -> F:
         @wraps(func)
@@ -127,30 +82,146 @@ def smart_cache(
                 "yes",
                 "on",
             )
-
             if not cache_enabled:
                 return func(*args, **kwargs)
 
-            # Determine which cache to use based on interval
-            # Check args[0] (self) for interval attribute
-            use_daily_cache = True
-            if args and hasattr(args[0], interval_attr):
-                interval = getattr(args[0], interval_attr, "day").lower()
-                if interval in ("minute", "hour"):
-                    use_daily_cache = False
+            stats = _get_stats_collector()
+            mgr = _get_cache_manager()
+            Normalizer = _get_symbol_normalizer()
 
-            cache_key = daily_key if use_daily_cache else realtime_key
+            symbol = _extract_symbol(args, kwargs)
+            start = _extract_start_date(args, kwargs)
+            end = _extract_end_date(args, kwargs)
 
-            if cache_key not in CACHE_CONFIG:
-                raise KeyError(
-                    f"Cache configuration '{cache_key}' not found. Available keys: {list(CACHE_CONFIG.keys())}"
-                )
+            if symbol:
+                symbol = Normalizer.normalize(symbol)
 
-            if key is not None:
-                return cached(CACHE_CONFIG[cache_key], key=key)(func)(*args, **kwargs)
-            else:
-                return cached(CACHE_CONFIG[cache_key])(func)(*args, **kwargs)
+            mem_key = _make_mem_key(table_name, symbol, start, end)
+            with mgr.memory_lock:
+                try:
+                    result = mgr.memory[mem_key]
+                    stats.record_cache_hit(f"{cache_key}_memory")
+                    return result.copy()
+                except KeyError:
+                    stats.record_cache_miss(cache_key)
+
+            df = mgr.engine.query(table_name, symbol, start, end)
+            if not df.empty:
+                with mgr.memory_lock:
+                    mgr.memory[mem_key] = df
+                stats.record_cache_hit(f"{cache_key}_persistence")
+                return df.copy()
+
+            result = func(*args, **kwargs)
+
+            if isinstance(result, pd.DataFrame) and not result.empty:
+                partition = _extract_partition_value(result, table_name, symbol)
+                try:
+                    mgr.store.write(table_name, result, partition)
+                    with mgr.memory_lock:
+                        mgr.memory[mem_key] = result
+                except Exception as e:
+                    import logging
+
+                    logging.getLogger(__name__).warning(f"Cache write failed: {e}")
+
+            return result.copy() if isinstance(result, pd.DataFrame) else result
 
         return wrapper  # type: ignore
 
     return decorator
+
+
+def smart_cache(
+    realtime_key: str,
+    daily_key: str,
+    interval_attr: str = "interval",
+    key: Callable | None = None,
+) -> Callable[[F], F]:
+    """智能缓存：根据 interval 选择不同 TTL"""
+
+    def decorator(func: F) -> F:
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            use_daily = True
+            if args and hasattr(args[0], interval_attr):
+                interval = getattr(args[0], interval_attr, "day").lower()
+                if interval in ("minute", "hour"):
+                    use_daily = False
+
+            cache_key = daily_key if use_daily else realtime_key
+            return cache(cache_key, key=key)(func)(*args, **kwargs)
+
+        return wrapper  # type: ignore
+
+    return decorator
+
+
+def clear_cache(cache_key: str | None = None) -> None:
+    """清除缓存"""
+    mgr = _get_cache_manager()
+    if cache_key:
+        table = _TABLE_MAP.get(cache_key, cache_key.replace("_cache", ""))
+        mgr.invalidate(table)
+    else:
+        mgr.invalidate()
+
+
+def _extract_symbol(args: tuple, kwargs: dict) -> str | None:
+    for k in ("symbol", "code", "underlying_symbol"):
+        if k in kwargs:
+            return str(kwargs[k])
+    return None
+
+
+def _extract_start_date(args: tuple, kwargs: dict) -> str | None:
+    for k in ("start_date", "start"):
+        if k in kwargs:
+            return str(kwargs[k])
+    return None
+
+
+def _extract_end_date(args: tuple, kwargs: dict) -> str | None:
+    for k in ("end_date", "end"):
+        if k in kwargs:
+            return str(kwargs[k])
+    return None
+
+
+def _extract_partition_value(
+    df: pd.DataFrame,
+    table: str,
+    symbol: str | None,
+) -> str | None:
+    from ..cache.schema import SCHEMA_REGISTRY
+
+    schema = SCHEMA_REGISTRY.get_or_none(table)
+    if not schema or not schema.partition_by:
+        return None
+
+    col = schema.partition_by
+    if col == "date" and "date" in df.columns:
+        return str(df["date"].iloc[0])
+    if col == "week" and "date" in df.columns:
+        date = pd.to_datetime(df["date"].iloc[0])
+        return date.strftime("%Y-W%W")
+    if col == "symbol" and symbol:
+        return symbol
+
+    return None
+
+
+def _make_mem_key(
+    table: str,
+    symbol: str | None,
+    start: str | None,
+    end: str | None,
+) -> str:
+    parts = [table]
+    if symbol:
+        parts.append(symbol)
+    if start:
+        parts.append(start)
+    if end:
+        parts.append(end)
+    return ":".join(parts)

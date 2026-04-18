@@ -10,6 +10,7 @@ import warnings
 import pandas as pd
 
 from ...logging_config import get_logger, log_api_request
+from ...metrics import get_stats_collector
 from ..cache import cache
 from .base import FinancialDataFactory, FinancialDataProvider
 
@@ -70,6 +71,94 @@ class BaostockFinancialProvider(FinancialDataProvider):
         else:
             raise ValueError(f"Invalid symbol format: {symbol}")
 
+    def _fetch_baostock_data(
+        self,
+        query_method,
+        data_name: str,
+        columns: list | None = None,
+        row_filter: dict | None = None,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """Generic method to fetch financial data from Baostock.
+
+        Args:
+            query_method: Baostock query method to call
+            data_name: Name of the data for logging
+            columns: List of columns to keep
+            row_filter: Dictionary of row filter rules
+            **kwargs: Additional parameters (year, quarter)
+
+        Returns:
+            DataFrame with financial data
+        """
+        start_time = time.time()
+
+        try:
+            year = kwargs.get("year")
+            quarter = kwargs.get("quarter")
+
+            self.logger.debug(
+                f"Fetching {data_name}",
+                extra={
+                    "context": {
+                        "source": "baostock",
+                        "symbol": self.symbol,
+                        "year": year,
+                        "quarter": quarter,
+                        "action": "fetch_start",
+                    }
+                },
+            )
+
+            rs = query_method(code=self.bs_code, year=year, quarter=quarter)
+
+            if rs.error_code != "0":
+                raise ValueError(f"Baostock query failed: {rs.error_msg}")
+
+            data_list = []
+            while rs.next():
+                data_list.append(rs.get_row_data())
+
+            if not data_list:
+                return pd.DataFrame()
+
+            raw_df = pd.DataFrame(data_list, columns=rs.fields)
+            df = self._process_financial_data(raw_df)
+            df = self.apply_data_filter(df, columns=columns, row_filter=row_filter)
+
+            duration_ms = (time.time() - start_time) * 1000
+
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, True)
+
+            log_api_request(
+                logger=self.logger,
+                source="baostock",
+                endpoint=data_name,
+                params={"symbol": self.symbol, "year": year, "quarter": quarter},
+                duration_ms=duration_ms,
+                status="success",
+                rows=len(df),
+            )
+
+            return df
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("baostock", duration_ms, False)
+
+            log_api_request(
+                logger=self.logger,
+                source="baostock",
+                endpoint=data_name,
+                params={"symbol": self.symbol},
+                duration_ms=duration_ms,
+                status="error",
+                error=str(e),
+            )
+            raise ValueError(f"Failed to fetch {data_name}: {str(e)}") from e
+
     @cache(
         "financial_cache",
         key=lambda self,
@@ -88,65 +177,13 @@ class BaostockFinancialProvider(FinancialDataProvider):
         Returns:
             DataFrame with profit data
         """
-        start_time = time.time()
-
-        try:
-            year = kwargs.get("year")
-            quarter = kwargs.get("quarter")
-
-            self.logger.debug(
-                "Fetching profit data",
-                extra={
-                    "context": {
-                        "source": "baostock",
-                        "symbol": self.symbol,
-                        "year": year,
-                        "quarter": quarter,
-                        "action": "fetch_start",
-                    }
-                },
-            )
-
-            rs = self._bs_instance.query_profit_data(code=self.bs_code, year=year, quarter=quarter)
-
-            if rs.error_code != "0":
-                raise ValueError(f"Baostock query failed: {rs.error_msg}")
-
-            data_list = []
-            while rs.next():
-                data_list.append(rs.get_row_data())
-
-            if not data_list:
-                return pd.DataFrame()
-
-            raw_df = pd.DataFrame(data_list, columns=rs.fields)
-            df = self._process_profit_data(raw_df)
-            df = self.apply_data_filter(df, columns=columns, row_filter=row_filter)
-
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="profit_data",
-                params={"symbol": self.symbol, "year": year, "quarter": quarter},
-                duration_ms=duration_ms,
-                status="success",
-                rows=len(df),
-            )
-
-            return df
-        except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="profit_data",
-                params={"symbol": self.symbol},
-                duration_ms=duration_ms,
-                status="error",
-                error=str(e),
-            )
-            raise ValueError(f"Failed to fetch profit data: {str(e)}") from e
+        return self._fetch_baostock_data(
+            query_method=self._bs_instance.query_profit_data,
+            data_name="profit_data",
+            columns=columns,
+            row_filter=row_filter,
+            **kwargs,
+        )
 
     @cache(
         "financial_cache",
@@ -166,65 +203,13 @@ class BaostockFinancialProvider(FinancialDataProvider):
         Returns:
             DataFrame with operation data
         """
-        start_time = time.time()
-
-        try:
-            year = kwargs.get("year")
-            quarter = kwargs.get("quarter")
-
-            self.logger.debug(
-                "Fetching operation data",
-                extra={
-                    "context": {
-                        "source": "baostock",
-                        "symbol": self.symbol,
-                        "year": year,
-                        "quarter": quarter,
-                        "action": "fetch_start",
-                    }
-                },
-            )
-
-            rs = self._bs_instance.query_operation_data(code=self.bs_code, year=year, quarter=quarter)
-
-            if rs.error_code != "0":
-                raise ValueError(f"Baostock query failed: {rs.error_msg}")
-
-            data_list = []
-            while rs.next():
-                data_list.append(rs.get_row_data())
-
-            if not data_list:
-                return pd.DataFrame()
-
-            raw_df = pd.DataFrame(data_list, columns=rs.fields)
-            df = self._process_operation_data(raw_df)
-            df = self.apply_data_filter(df, columns=columns, row_filter=row_filter)
-
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="operation_data",
-                params={"symbol": self.symbol, "year": year, "quarter": quarter},
-                duration_ms=duration_ms,
-                status="success",
-                rows=len(df),
-            )
-
-            return df
-        except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="operation_data",
-                params={"symbol": self.symbol},
-                duration_ms=duration_ms,
-                status="error",
-                error=str(e),
-            )
-            raise ValueError(f"Failed to fetch operation data: {str(e)}") from e
+        return self._fetch_baostock_data(
+            query_method=self._bs_instance.query_operation_data,
+            data_name="operation_data",
+            columns=columns,
+            row_filter=row_filter,
+            **kwargs,
+        )
 
     @cache(
         "financial_cache",
@@ -244,65 +229,13 @@ class BaostockFinancialProvider(FinancialDataProvider):
         Returns:
             DataFrame with growth data
         """
-        start_time = time.time()
-
-        try:
-            year = kwargs.get("year")
-            quarter = kwargs.get("quarter")
-
-            self.logger.debug(
-                "Fetching growth data",
-                extra={
-                    "context": {
-                        "source": "baostock",
-                        "symbol": self.symbol,
-                        "year": year,
-                        "quarter": quarter,
-                        "action": "fetch_start",
-                    }
-                },
-            )
-
-            rs = self._bs_instance.query_growth_data(code=self.bs_code, year=year, quarter=quarter)
-
-            if rs.error_code != "0":
-                raise ValueError(f"Baostock query failed: {rs.error_msg}")
-
-            data_list = []
-            while rs.next():
-                data_list.append(rs.get_row_data())
-
-            if not data_list:
-                return pd.DataFrame()
-
-            raw_df = pd.DataFrame(data_list, columns=rs.fields)
-            df = self._process_growth_data(raw_df)
-            df = self.apply_data_filter(df, columns=columns, row_filter=row_filter)
-
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="growth_data",
-                params={"symbol": self.symbol, "year": year, "quarter": quarter},
-                duration_ms=duration_ms,
-                status="success",
-                rows=len(df),
-            )
-
-            return df
-        except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="growth_data",
-                params={"symbol": self.symbol},
-                duration_ms=duration_ms,
-                status="error",
-                error=str(e),
-            )
-            raise ValueError(f"Failed to fetch growth data: {str(e)}") from e
+        return self._fetch_baostock_data(
+            query_method=self._bs_instance.query_growth_data,
+            data_name="growth_data",
+            columns=columns,
+            row_filter=row_filter,
+            **kwargs,
+        )
 
     @cache(
         "financial_cache",
@@ -322,65 +255,13 @@ class BaostockFinancialProvider(FinancialDataProvider):
         Returns:
             DataFrame with balance data
         """
-        start_time = time.time()
-
-        try:
-            year = kwargs.get("year")
-            quarter = kwargs.get("quarter")
-
-            self.logger.debug(
-                "Fetching balance data",
-                extra={
-                    "context": {
-                        "source": "baostock",
-                        "symbol": self.symbol,
-                        "year": year,
-                        "quarter": quarter,
-                        "action": "fetch_start",
-                    }
-                },
-            )
-
-            rs = self._bs_instance.query_balance_data(code=self.bs_code, year=year, quarter=quarter)
-
-            if rs.error_code != "0":
-                raise ValueError(f"Baostock query failed: {rs.error_msg}")
-
-            data_list = []
-            while rs.next():
-                data_list.append(rs.get_row_data())
-
-            if not data_list:
-                return pd.DataFrame()
-
-            raw_df = pd.DataFrame(data_list, columns=rs.fields)
-            df = self._process_balance_data(raw_df)
-            df = self.apply_data_filter(df, columns=columns, row_filter=row_filter)
-
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="balance_data",
-                params={"symbol": self.symbol, "year": year, "quarter": quarter},
-                duration_ms=duration_ms,
-                status="success",
-                rows=len(df),
-            )
-
-            return df
-        except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="balance_data",
-                params={"symbol": self.symbol},
-                duration_ms=duration_ms,
-                status="error",
-                error=str(e),
-            )
-            raise ValueError(f"Failed to fetch balance data: {str(e)}") from e
+        return self._fetch_baostock_data(
+            query_method=self._bs_instance.query_balance_data,
+            data_name="balance_data",
+            columns=columns,
+            row_filter=row_filter,
+            **kwargs,
+        )
 
     @cache(
         "financial_cache",
@@ -400,65 +281,13 @@ class BaostockFinancialProvider(FinancialDataProvider):
         Returns:
             DataFrame with cash flow data
         """
-        start_time = time.time()
-
-        try:
-            year = kwargs.get("year")
-            quarter = kwargs.get("quarter")
-
-            self.logger.debug(
-                "Fetching cash flow data",
-                extra={
-                    "context": {
-                        "source": "baostock",
-                        "symbol": self.symbol,
-                        "year": year,
-                        "quarter": quarter,
-                        "action": "fetch_start",
-                    }
-                },
-            )
-
-            rs = self._bs_instance.query_cash_flow_data(code=self.bs_code, year=year, quarter=quarter)
-
-            if rs.error_code != "0":
-                raise ValueError(f"Baostock query failed: {rs.error_msg}")
-
-            data_list = []
-            while rs.next():
-                data_list.append(rs.get_row_data())
-
-            if not data_list:
-                return pd.DataFrame()
-
-            raw_df = pd.DataFrame(data_list, columns=rs.fields)
-            df = self._process_cash_flow_data(raw_df)
-            df = self.apply_data_filter(df, columns=columns, row_filter=row_filter)
-
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="cash_flow_data",
-                params={"symbol": self.symbol, "year": year, "quarter": quarter},
-                duration_ms=duration_ms,
-                status="success",
-                rows=len(df),
-            )
-
-            return df
-        except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="cash_flow_data",
-                params={"symbol": self.symbol},
-                duration_ms=duration_ms,
-                status="error",
-                error=str(e),
-            )
-            raise ValueError(f"Failed to fetch cash flow data: {str(e)}") from e
+        return self._fetch_baostock_data(
+            query_method=self._bs_instance.query_cash_flow_data,
+            data_name="cash_flow_data",
+            columns=columns,
+            row_filter=row_filter,
+            **kwargs,
+        )
 
     @cache(
         "financial_cache",
@@ -478,128 +307,16 @@ class BaostockFinancialProvider(FinancialDataProvider):
         Returns:
             DataFrame with dupont data
         """
-        start_time = time.time()
+        return self._fetch_baostock_data(
+            query_method=self._bs_instance.query_dupont_data,
+            data_name="dupont_data",
+            columns=columns,
+            row_filter=row_filter,
+            **kwargs,
+        )
 
-        try:
-            year = kwargs.get("year")
-            quarter = kwargs.get("quarter")
-
-            self.logger.debug(
-                "Fetching dupont data",
-                extra={
-                    "context": {
-                        "source": "baostock",
-                        "symbol": self.symbol,
-                        "year": year,
-                        "quarter": quarter,
-                        "action": "fetch_start",
-                    }
-                },
-            )
-
-            rs = self._bs_instance.query_dupont_data(code=self.bs_code, year=year, quarter=quarter)
-
-            if rs.error_code != "0":
-                raise ValueError(f"Baostock query failed: {rs.error_msg}")
-
-            data_list = []
-            while rs.next():
-                data_list.append(rs.get_row_data())
-
-            if not data_list:
-                return pd.DataFrame()
-
-            raw_df = pd.DataFrame(data_list, columns=rs.fields)
-            df = self._process_dupont_data(raw_df)
-            df = self.apply_data_filter(df, columns=columns, row_filter=row_filter)
-
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="dupont_data",
-                params={"symbol": self.symbol, "year": year, "quarter": quarter},
-                duration_ms=duration_ms,
-                status="success",
-                rows=len(df),
-            )
-
-            return df
-        except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
-            log_api_request(
-                logger=self.logger,
-                source="baostock",
-                endpoint="dupont_data",
-                params={"symbol": self.symbol},
-                duration_ms=duration_ms,
-                status="error",
-                error=str(e),
-            )
-            raise ValueError(f"Failed to fetch dupont data: {str(e)}") from e
-
-    def _process_profit_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
-        """Process and standardize profit data."""
-        df = self.map_source_fields(raw_df, "baostock")
-
-        if "pubDate" in df.columns:
-            df["pub_date"] = pd.to_datetime(df["pubDate"], errors="coerce")
-        if "statDate" in df.columns:
-            df["stat_date"] = pd.to_datetime(df["statDate"], errors="coerce")
-            df["date"] = df["stat_date"]
-
-        return df
-
-    def _process_operation_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
-        """Process and standardize operation data."""
-        df = self.map_source_fields(raw_df, "baostock")
-
-        if "pubDate" in df.columns:
-            df["pub_date"] = pd.to_datetime(df["pubDate"], errors="coerce")
-        if "statDate" in df.columns:
-            df["stat_date"] = pd.to_datetime(df["statDate"], errors="coerce")
-            df["date"] = df["stat_date"]
-
-        return df
-
-    def _process_growth_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
-        """Process and standardize growth data."""
-        df = self.map_source_fields(raw_df, "baostock")
-
-        if "pubDate" in df.columns:
-            df["pub_date"] = pd.to_datetime(df["pubDate"], errors="coerce")
-        if "statDate" in df.columns:
-            df["stat_date"] = pd.to_datetime(df["statDate"], errors="coerce")
-            df["date"] = df["stat_date"]
-
-        return df
-
-    def _process_balance_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
-        """Process and standardize balance data."""
-        df = self.map_source_fields(raw_df, "baostock")
-
-        if "pubDate" in df.columns:
-            df["pub_date"] = pd.to_datetime(df["pubDate"], errors="coerce")
-        if "statDate" in df.columns:
-            df["stat_date"] = pd.to_datetime(df["statDate"], errors="coerce")
-            df["date"] = df["stat_date"]
-
-        return df
-
-    def _process_cash_flow_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
-        """Process and standardize cash flow data."""
-        df = self.map_source_fields(raw_df, "baostock")
-
-        if "pubDate" in df.columns:
-            df["pub_date"] = pd.to_datetime(df["pubDate"], errors="coerce")
-        if "statDate" in df.columns:
-            df["stat_date"] = pd.to_datetime(df["statDate"], errors="coerce")
-            df["date"] = df["stat_date"]
-
-        return df
-
-    def _process_dupont_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
-        """Process and standardize dupont data."""
+    def _process_financial_data(self, raw_df: pd.DataFrame) -> pd.DataFrame:
+        """Process and standardize financial data."""
         df = self.map_source_fields(raw_df, "baostock")
 
         if "pubDate" in df.columns:

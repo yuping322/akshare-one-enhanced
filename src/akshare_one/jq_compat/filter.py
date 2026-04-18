@@ -9,14 +9,16 @@ import akshare as ak
 from datetime import datetime, timedelta
 from typing import Union, List, Optional
 
+from ..constants import SYMBOL_ZFILL_WIDTH
+
 logger = logging.getLogger(__name__)
 
 
 def _get_code_num(stock: str) -> str:
     """Normalize stock code to 6 digits."""
     if "." in stock:
-        return stock.split(".")[0].zfill(6)
-    return stock.zfill(6)
+        return stock.split(".")[0].zfill(SYMBOL_ZFILL_WIDTH)
+    return stock.zfill(SYMBOL_ZFILL_WIDTH)
 
 
 def _normalize_date(date_val) -> Optional[str]:
@@ -36,7 +38,7 @@ def filter_st_stock(stock_list: List[str], date: Optional[str] = None) -> List[s
         st_df = ak.stock_zh_a_st_em()
         if st_df is None or st_df.empty:
             return stock_list
-        st_codes = set(st_df["代码"].astype(str).str.zfill(6).values)
+        st_codes = set(st_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH).values)
         return [stock for stock in stock_list if _get_code_num(stock) not in st_codes]
     except Exception as e:
         logger.warning(f"filter_st_stock failed: {e}")
@@ -52,7 +54,7 @@ def filter_paused_stock(stock_list: List[str], date: Optional[str] = None) -> Li
         stop_df = ak.stock_zh_a_stop_em()
         if stop_df is None or stop_df.empty:
             return stock_list
-        paused_codes = set(stop_df["代码"].astype(str).str.zfill(6).values)
+        paused_codes = set(stop_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH).values)
         return [stock for stock in stock_list if _get_code_num(stock) not in paused_codes]
     except Exception as e:
         logger.warning(f"filter_paused_stock failed: {e}")
@@ -65,6 +67,7 @@ filter_paused = filter_paused_stock
 def filter_limitup_stock(stock_list: List[str], date: Optional[str] = None) -> List[str]:
     """Filter out stocks that have hit limit up. JQ-compatible."""
     from .market import get_detailed_quote as _get_quote
+
     clean_stocks = []
     for stock in stock_list:
         try:
@@ -82,6 +85,7 @@ filter_limit_up = filter_limitup_stock
 def filter_limitdown_stock(stock_list: List[str], date: Optional[str] = None) -> List[str]:
     """Filter out stocks that have hit limit down. JQ-compatible."""
     from .market import get_detailed_quote as _get_quote
+
     clean_stocks = []
     for stock in stock_list:
         try:
@@ -99,6 +103,7 @@ filter_limit_down = filter_limitdown_stock
 def filter_new_stock(stock_list: List[str], days: int = 250, date: Optional[str] = None) -> List[str]:
     """Filter out new stocks (listed less than 'days' ago). JQ-compatible."""
     from .securities import get_all_securities as _get_all_securities_jq
+
     try:
         securities = _get_all_securities_jq()
         if securities.empty:
@@ -157,7 +162,7 @@ def get_dividend_ratio_filter_list(threshold: float = 0.03, date: Optional[str] 
             return []
         df[yield_col] = pd.to_numeric(df[yield_col].astype(str).str.replace("%", ""), errors="coerce") / 100
         filtered = df[df[yield_col] >= threshold]
-        codes = filtered[code_col].astype(str).str.zfill(6).tolist()
+        codes = filtered[code_col].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH).tolist()
         return [f"{c}.XSHG" if c.startswith("6") else f"{c}.XSHE" for c in codes]
     except Exception as e:
         logger.warning(f"get_dividend_ratio_filter_list failed: {e}")
@@ -167,6 +172,7 @@ def get_dividend_ratio_filter_list(threshold: float = 0.03, date: Optional[str] 
 def get_margine_stocks(date: Optional[str] = None) -> List[str]:
     """Get list of margin trading eligible stocks. JQ-compatible alias."""
     from .limit_margin import get_margincash_stocks
+
     return get_margincash_stocks(date)
 
 
@@ -177,17 +183,29 @@ def filter_kcb_stock(stock_list: List[str], date: Optional[str] = None) -> List[
 
 def filter_kcbj_stock(stock_list: List[str], date: Optional[str] = None) -> List[str]:
     """Filter out STAR and BJ market stocks. JQ-compatible."""
-    return [s for s in stock_list if not (
-        _get_code_num(s).startswith("688") or
-        _get_code_num(s).startswith("8") or
-        _get_code_num(s).startswith("4")
-    )]
+    return [
+        s
+        for s in stock_list
+        if not (
+            _get_code_num(s).startswith("688") or _get_code_num(s).startswith("8") or _get_code_num(s).startswith("4")
+        )
+    ]
 
 
 __all__ = [
-    "filter_st", "filter_st_stock", "filter_paused", "filter_paused_stock",
-    "filter_limit_up", "filter_limitup_stock", "filter_limit_down", "filter_limitdown_stock",
-    "filter_new_stock", "filter_new_stocks", "apply_common_filters",
-    "get_dividend_ratio_filter_list", "get_margine_stocks",
-    "filter_kcb_stock", "filter_kcbj_stock",
+    "filter_st",
+    "filter_st_stock",
+    "filter_paused",
+    "filter_paused_stock",
+    "filter_limit_up",
+    "filter_limitup_stock",
+    "filter_limit_down",
+    "filter_limitdown_stock",
+    "filter_new_stock",
+    "filter_new_stocks",
+    "apply_common_filters",
+    "get_dividend_ratio_filter_list",
+    "get_margine_stocks",
+    "filter_kcb_stock",
+    "filter_kcbj_stock",
 ]

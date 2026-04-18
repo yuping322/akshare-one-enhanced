@@ -9,25 +9,35 @@ import akshare as ak
 from datetime import datetime
 from typing import Union, List, Optional
 
+from ..constants import SYMBOL_ZFILL_WIDTH
+
 logger = logging.getLogger(__name__)
 
 
 def _normalize_code(stock: str) -> str:
     if "." in stock:
-        return stock.split(".")[0].zfill(6)
+        return stock.split(".")[0].zfill(SYMBOL_ZFILL_WIDTH)
     if stock.startswith("sh") or stock.startswith("sz"):
-        return stock[2:].zfill(6)
-    return stock.zfill(6)
+        return stock[2:].zfill(SYMBOL_ZFILL_WIDTH)
+    return stock.zfill(SYMBOL_ZFILL_WIDTH)
 
 
 def _standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
     mapping = {
-        "代码": "code", "名称": "name", "日期": "date", "最新价": "close",
-        "涨跌幅": "pct_change", "主力净流入-净额": "main_net_inflow",
-        "主力净流入-净占比": "main_net_inflow_pct", "超大单净流入-净额": "xlarge_net_inflow",
-        "大单净流入-净额": "large_net_inflow", "中单净流入-净额": "medium_net_inflow",
-        "小单净流入-净额": "small_net_inflow", "主力净流入": "main_net_inflow",
-        "超大单净流入": "xlarge_net_inflow", "大单净流入": "large_net_inflow",
+        "代码": "code",
+        "名称": "name",
+        "日期": "date",
+        "最新价": "close",
+        "涨跌幅": "pct_change",
+        "主力净流入-净额": "main_net_inflow",
+        "主力净流入-净占比": "main_net_inflow_pct",
+        "超大单净流入-净额": "xlarge_net_inflow",
+        "大单净流入-净额": "large_net_inflow",
+        "中单净流入-净额": "medium_net_inflow",
+        "小单净流入-净额": "small_net_inflow",
+        "主力净流入": "main_net_inflow",
+        "超大单净流入": "xlarge_net_inflow",
+        "大单净流入": "large_net_inflow",
     }
     return df.rename(columns={k: v for k, v in mapping.items() if k in df.columns})
 

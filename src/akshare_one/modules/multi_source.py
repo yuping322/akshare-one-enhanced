@@ -506,6 +506,74 @@ class MultiSourceRouter:
         )
 
 
+_FACTORY_DEFAULTS: dict[Any, tuple[list[str], list[str] | None]] = {}
+
+
+def _register_factory_defaults(factory_class: Any, sources: list[str], columns: list[str] | None) -> None:
+    """Register default sources and columns for a factory class."""
+    _FACTORY_DEFAULTS[factory_class] = (sources, columns)
+
+
+def _get_default_sources(factory_class: Any) -> list[str]:
+    """Get default sources for a factory class."""
+    if factory_class in _FACTORY_DEFAULTS:
+        return _FACTORY_DEFAULTS[factory_class][0]
+    return ["sina", "eastmoney"]
+
+
+def _get_default_columns(factory_class: Any) -> list[str] | None:
+    """Get default required columns for a factory class."""
+    if factory_class in _FACTORY_DEFAULTS:
+        return _FACTORY_DEFAULTS[factory_class][1]
+    return None
+
+
+def _create_provider_instance(factory_class: Any, source: str, **kwargs: Any) -> Any:
+    """Create a provider instance from a factory class."""
+    return factory_class.get_provider(source, **kwargs)
+
+
+def create_router(
+    factory_class: Any,
+    method_name: str,
+    sources: list[str] | None = None,
+    required_columns: list[str] | None = None,
+    min_rows: int = 1,
+    **kwargs: Any,
+) -> MultiSourceRouter:
+    """Generic router creation with consistent pattern.
+
+    Args:
+        factory_class: The factory class to use for creating providers
+        method_name: The method name to call on providers
+        sources: List of source names to try
+        required_columns: Required columns in result
+        min_rows: Minimum rows required for valid result
+        **kwargs: Additional parameters passed to provider constructors
+
+    Returns:
+        MultiSourceRouter: Configured router
+    """
+    if sources is None:
+        sources = _get_default_sources(factory_class)
+    if required_columns is None:
+        required_columns = _get_default_columns(factory_class)
+
+    providers = []
+    for source in sources:
+        try:
+            provider = _create_provider_instance(factory_class, source, **kwargs)
+            providers.append((source, provider))
+        except Exception as e:
+            logger.warning(f"Failed to initialize provider '{source}': {e}")
+
+    return MultiSourceRouter(
+        providers,
+        required_columns=required_columns,
+        min_rows=min_rows,
+    )
+
+
 def create_historical_router(
     symbol: str,
     interval: str = "day",
@@ -517,51 +585,27 @@ def create_historical_router(
     required_columns: list[str] | None = None,
     min_rows: int = 1,
 ) -> MultiSourceRouter:
-    """Create a router for historical data with multiple sources.
-
-    Args:
-        symbol: Stock symbol
-        interval: Time interval
-        interval_multiplier: Interval multiplier
-        start_date: Start date
-        end_date: End date
-        adjust: Adjustment type
-        sources: List of source names to try (default: ["eastmoney_direct", "eastmoney", "sina"])
-        required_columns: Required columns in result
-        min_rows: Minimum rows required for valid result
-
-    Returns:
-        MultiSourceRouter: Configured router
-    """
+    """Create a router for historical data with multiple sources."""
     from .historical import HistoricalDataFactory
 
-    if sources is None:
-        sources = ["sina", "lixinger", "eastmoney_direct", "eastmoney", "tencent", "netease"]
+    _register_factory_defaults(
+        HistoricalDataFactory,
+        ["sina", "lixinger", "eastmoney_direct", "eastmoney", "tencent", "netease"],
+        ["timestamp", "open", "high", "low", "close", "volume"],
+    )
 
-    if required_columns is None:
-        required_columns = ["timestamp", "open", "high", "low", "close", "volume"]
-
-    providers = []
-    kwargs = {
-        "symbol": symbol,
-        "interval": interval,
-        "interval_multiplier": interval_multiplier,
-        "start_date": start_date,
-        "end_date": end_date,
-        "adjust": adjust,
-    }
-
-    for source in sources:
-        try:
-            provider = HistoricalDataFactory.get_provider(source, **kwargs)
-            providers.append((source, provider))
-        except Exception as e:
-            logger.warning(f"Failed to initialize provider '{source}': {e}")
-
-    return MultiSourceRouter(
-        providers,
+    return create_router(
+        HistoricalDataFactory,
+        "get_hist_data",
+        sources=sources,
         required_columns=required_columns,
         min_rows=min_rows,
+        symbol=symbol,
+        interval=interval,
+        interval_multiplier=interval_multiplier,
+        start_date=start_date,
+        end_date=end_date,
+        adjust=adjust,
     )
 
 
@@ -571,38 +615,22 @@ def create_realtime_router(
     required_columns: list[str] | None = None,
     min_rows: int = 1,
 ) -> MultiSourceRouter:
-    """Create a router for real-time data with multiple sources.
-
-    Args:
-        symbol: Stock symbol
-        sources: List of source names to try (default: ["eastmoney_direct", "eastmoney", "xueqiu"])
-        required_columns: Required columns in result
-        min_rows: Minimum rows required for valid result
-
-    Returns:
-        MultiSourceRouter: Configured router
-    """
+    """Create a router for real-time data with multiple sources."""
     from .realtime import RealtimeDataFactory
 
-    if sources is None:
-        sources = ["sina", "eastmoney_direct", "eastmoney", "xueqiu"]
+    _register_factory_defaults(
+        RealtimeDataFactory,
+        ["sina", "eastmoney_direct", "eastmoney", "xueqiu"],
+        ["symbol", "price", "timestamp"],
+    )
 
-    if required_columns is None:
-        required_columns = ["symbol", "price", "timestamp"]
-
-    providers = []
-
-    for source in sources:
-        try:
-            provider = RealtimeDataFactory.get_provider(source, symbol=symbol)
-            providers.append((source, provider))
-        except Exception as e:
-            logger.warning(f"Failed to initialize provider '{source}': {e}")
-
-    return MultiSourceRouter(
-        providers,
+    return create_router(
+        RealtimeDataFactory,
+        "get_realtime_data",
+        sources=sources,
         required_columns=required_columns,
         min_rows=min_rows,
+        symbol=symbol,
     )
 
 
@@ -612,35 +640,22 @@ def create_financial_router(
     required_columns: list[str] | None = None,
     min_rows: int = 1,
 ) -> MultiSourceRouter:
-    """Create a router for financial data with multiple sources.
-
-    Args:
-        symbol: Stock symbol
-        sources: List of source names to try (default: ["sina", "eastmoney_direct", "lixinger"])
-        required_columns: Required columns in result
-        min_rows: Minimum rows required for valid result
-
-    Returns:
-        MultiSourceRouter: Configured router
-    """
+    """Create a router for financial data with multiple sources."""
     from .financial import FinancialDataFactory
 
-    if sources is None:
-        sources = ["sina", "eastmoney_direct", "lixinger"]
+    _register_factory_defaults(
+        FinancialDataFactory,
+        ["sina", "eastmoney_direct", "lixinger"],
+        None,
+    )
 
-    providers = []
-
-    for source in sources:
-        try:
-            provider = FinancialDataFactory.get_provider(source, symbol=symbol)
-            providers.append((source, provider))
-        except Exception as e:
-            logger.warning(f"Failed to initialize provider '{source}': {e}")
-
-    return MultiSourceRouter(
-        providers,
+    return create_router(
+        FinancialDataFactory,
+        "get_financial_data",
+        sources=sources,
         required_columns=required_columns,
         min_rows=min_rows,
+        symbol=symbol,
     )
 
 
@@ -649,32 +664,19 @@ def create_northbound_router(
     required_columns: list[str] | None = None,
     min_rows: int = 1,
 ) -> MultiSourceRouter:
-    """Create a router for northbound capital data with multiple sources.
-
-    Args:
-        sources: List of source names to try (default: ["eastmoney", "sina"])
-        required_columns: Required columns in result
-        min_rows: Minimum rows required for valid result
-
-    Returns:
-        MultiSourceRouter: Configured router
-    """
+    """Create a router for northbound capital data with multiple sources."""
     from .northbound import NorthboundFactory
 
-    if sources is None:
-        sources = ["sina", "eastmoney"]
+    _register_factory_defaults(
+        NorthboundFactory,
+        ["sina", "eastmoney"],
+        None,
+    )
 
-    providers = []
-
-    for source in sources:
-        try:
-            provider = NorthboundFactory.get_provider(source)
-            providers.append((source, provider))
-        except Exception as e:
-            logger.warning(f"Failed to initialize provider '{source}': {e}")
-
-    return MultiSourceRouter(
-        providers,
+    return create_router(
+        NorthboundFactory,
+        "get_northbound_data",
+        sources=sources,
         required_columns=required_columns,
         min_rows=min_rows,
     )
@@ -686,35 +688,22 @@ def create_fundflow_router(
     required_columns: list[str] | None = None,
     min_rows: int = 1,
 ) -> MultiSourceRouter:
-    """Create a router for fund flow data with multiple sources.
-
-    Args:
-        symbol: Stock symbol (optional for sector/rank queries)
-        sources: List of source names to try (default: ["sina", "eastmoney"])
-        required_columns: Required columns in result
-        min_rows: Minimum rows required for valid result
-
-    Returns:
-        MultiSourceRouter: Configured router
-    """
+    """Create a router for fund flow data with multiple sources."""
     from .fundflow import FundFlowFactory
 
-    if sources is None:
-        sources = ["sina", "eastmoney"]
+    _register_factory_defaults(
+        FundFlowFactory,
+        ["sina", "eastmoney"],
+        None,
+    )
 
-    providers = []
-
-    for source in sources:
-        try:
-            provider = FundFlowFactory.get_provider(source, symbol=symbol)
-            providers.append((source, provider))
-        except Exception as e:
-            logger.warning(f"Failed to initialize provider '{source}': {e}")
-
-    return MultiSourceRouter(
-        providers,
+    return create_router(
+        FundFlowFactory,
+        "get_fundflow_data",
+        sources=sources,
         required_columns=required_columns,
         min_rows=min_rows,
+        symbol=symbol,
     )
 
 
@@ -723,32 +712,19 @@ def create_dragon_tiger_router(
     required_columns: list[str] | None = None,
     min_rows: int = 1,
 ) -> MultiSourceRouter:
-    """Create a router for dragon tiger list data with multiple sources.
-
-    Args:
-        sources: List of source names to try (default: ["sina", "eastmoney"])
-        required_columns: Required columns in result
-        min_rows: Minimum rows required for valid result
-
-    Returns:
-        MultiSourceRouter: Configured router
-    """
+    """Create a router for dragon tiger list data with multiple sources."""
     from .lhb import DragonTigerFactory
 
-    if sources is None:
-        sources = ["sina", "eastmoney"]
+    _register_factory_defaults(
+        DragonTigerFactory,
+        ["sina", "eastmoney"],
+        None,
+    )
 
-    providers = []
-
-    for source in sources:
-        try:
-            provider = DragonTigerFactory.get_provider(source)
-            providers.append((source, provider))
-        except Exception as e:
-            logger.warning(f"Failed to initialize provider '{source}': {e}")
-
-    return MultiSourceRouter(
-        providers,
+    return create_router(
+        DragonTigerFactory,
+        "get_dragon_tiger_data",
+        sources=sources,
         required_columns=required_columns,
         min_rows=min_rows,
     )
@@ -759,32 +735,19 @@ def create_limit_up_down_router(
     required_columns: list[str] | None = None,
     min_rows: int = 1,
 ) -> MultiSourceRouter:
-    """Create a router for limit up/down data with multiple sources.
-
-    Args:
-        sources: List of source names to try (default: ["sina", "eastmoney"])
-        required_columns: Required columns in result
-        min_rows: Minimum rows required for valid result
-
-    Returns:
-        MultiSourceRouter: Configured router
-    """
+    """Create a router for limit up/down data with multiple sources."""
     from .limitup import LimitUpDownFactory
 
-    if sources is None:
-        sources = ["sina", "eastmoney"]
+    _register_factory_defaults(
+        LimitUpDownFactory,
+        ["sina", "eastmoney"],
+        None,
+    )
 
-    providers = []
-
-    for source in sources:
-        try:
-            provider = LimitUpDownFactory.get_provider(source)
-            providers.append((source, provider))
-        except Exception as e:
-            logger.warning(f"Failed to initialize provider '{source}': {e}")
-
-    return MultiSourceRouter(
-        providers,
+    return create_router(
+        LimitUpDownFactory,
+        "get_limit_up_down_data",
+        sources=sources,
         required_columns=required_columns,
         min_rows=min_rows,
     )
@@ -796,33 +759,20 @@ def create_block_deal_router(
     required_columns: list[str] | None = None,
     min_rows: int = 1,
 ) -> MultiSourceRouter:
-    """Create a router for block deal data with multiple sources.
-
-    Args:
-        symbol: Stock symbol (optional)
-        sources: List of source names to try (default: ["sina", "eastmoney"])
-        required_columns: Required columns in result
-        min_rows: Minimum rows required for valid result
-
-    Returns:
-        MultiSourceRouter: Configured router
-    """
+    """Create a router for block deal data with multiple sources."""
     from .blockdeal import BlockDealFactory
 
-    if sources is None:
-        sources = ["sina", "eastmoney"]
+    _register_factory_defaults(
+        BlockDealFactory,
+        ["sina", "eastmoney"],
+        None,
+    )
 
-    providers = []
-
-    for source in sources:
-        try:
-            provider = BlockDealFactory.get_provider(source, symbol=symbol)
-            providers.append((source, provider))
-        except Exception as e:
-            logger.warning(f"Failed to initialize provider '{source}': {e}")
-
-    return MultiSourceRouter(
-        providers,
+    return create_router(
+        BlockDealFactory,
+        "get_block_deal_data",
+        sources=sources,
         required_columns=required_columns,
         min_rows=min_rows,
+        symbol=symbol,
     )

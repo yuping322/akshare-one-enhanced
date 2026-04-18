@@ -22,71 +22,7 @@ from .modules.multi_source import (
 from .modules.news import NewsDataFactory
 from .modules.options import OptionsDataFactory
 from .modules.realtime import RealtimeDataFactory
-
-
-def apply_data_filter(
-    df: pd.DataFrame,
-    columns: list[str] | None = None,
-    row_filter: dict[str, Any] | None = None,
-) -> pd.DataFrame:
-    """通用数据过滤方法（行列过滤），用于 LLM Skills 数据筛选。
-
-    Args:
-        df: 原始 DataFrame
-        columns: 需要保留的列名列表
-        row_filter: 行过滤配置字典，支持：
-            - top_n: 返回前 N 行
-            - sample: 随机采样比例 (0-1)
-            - query: pandas query 表达式
-            - sort_by: 排序字段
-            - ascending: 是否升序排序（默认 False 降序）
-
-    Returns:
-        过滤后的 DataFrame
-
-    Example:
-        >>> df = pd.DataFrame({"close": [10, 20, 30], "volume": [100, 200, 300]})
-        >>> # 排序后取前2条
-        >>> df = apply_data_filter(df, row_filter={"sort_by": "close", "top_n": 2})
-    """
-    import contextlib
-
-    if df.empty:
-        return df
-
-    df = df.copy()
-
-    # 行过滤（先执行排序，再执行其他过滤）
-    if row_filter:
-        # 排序（优先执行）
-        if "sort_by" in row_filter:
-            sort_col = row_filter["sort_by"]
-            if sort_col in df.columns:
-                ascending = row_filter.get("ascending", False)
-                df = df.sort_values(by=sort_col, ascending=ascending).reset_index(drop=True)
-
-        # 条件过滤
-        if "query" in row_filter:
-            with contextlib.suppress(Exception):
-                df = df.query(row_filter["query"]).reset_index(drop=True)
-
-        # 采样
-        if "sample" in row_filter:
-            frac = row_filter["sample"]
-            if 0 < frac <= 1:
-                df = df.sample(frac=frac, random_state=42).reset_index(drop=True)
-
-        # 截取前N条（最后执行）
-        if "top_n" in row_filter:
-            df = df.head(row_filter["top_n"])
-
-    # 列过滤（最后执行，减少数据量）
-    if columns:
-        available_cols = [col for col in columns if col in df.columns]
-        if available_cols:
-            df = df[available_cols]
-
-    return df
+from .modules.base import apply_data_filter
 
 
 def get_basic_info(symbol: str, source: Literal["eastmoney"] = "eastmoney") -> pd.DataFrame:

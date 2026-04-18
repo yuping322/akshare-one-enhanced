@@ -4,9 +4,12 @@ Lixinger provider for valuation data.
 This module implements valuation data provider using Lixinger OpenAPI.
 """
 
+import time
+
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...metrics import get_stats_collector
 from .base import ValuationFactory, ValuationProvider
 
 
@@ -61,20 +64,38 @@ class LixingerValuationProvider(ValuationProvider):
 
         params = {"stockCodes": [symbol], "metricsList": metrics, "startDate": start_date, "endDate": end_date}
 
-        response = client.query_api("cn/company/fundamental/non_financial", params)
+        start_time = time.time()
+        try:
+            response = client.query_api("cn/company/fundamental/non_financial", params)
+            duration_ms = (time.time() - start_time) * 1000
 
-        if response.get("code") != 1:
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("lixinger", duration_ms, True)
+            except (ImportError, AttributeError):
+                pass
+
+            if response.get("code") != 1:
+                return pd.DataFrame()
+
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
+
+            df = pd.json_normalize(data)
+
+            return self.standardize_and_filter(
+                df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
+            )
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("lixinger", duration_ms, False)
+            except (ImportError, AttributeError):
+                pass
+            self.logger.error(f"Failed to fetch valuation data from Lixinger: {e}")
             return pd.DataFrame()
-
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
-
-        df = pd.json_normalize(data)
-
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=kwargs.get("columns"), row_filter=kwargs.get("row_filter")
-        )
 
     def get_market_valuation(self, **kwargs) -> pd.DataFrame:
         """

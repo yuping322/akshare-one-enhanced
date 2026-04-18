@@ -4,6 +4,7 @@ import akshare as ak
 import pandas as pd
 
 from ...logging_config import get_logger, log_api_request
+from ...metrics import get_stats_collector
 from ..cache import cache
 from .base import HistoricalDataFactory, HistoricalDataProvider
 
@@ -71,6 +72,9 @@ class SinaHistorical(HistoricalDataProvider):
 
             duration_ms = (time.time() - start_time) * 1000
 
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("sina", duration_ms, True)
+
             log_api_request(
                 logger=self.logger,
                 source="sina",
@@ -84,6 +88,9 @@ class SinaHistorical(HistoricalDataProvider):
             return df
         except Exception as e:
             duration_ms = (time.time() - start_time) * 1000
+
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("sina", duration_ms, False)
 
             log_api_request(
                 logger=self.logger,

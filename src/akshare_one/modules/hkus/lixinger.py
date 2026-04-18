@@ -4,9 +4,12 @@ Lixinger provider for HK stock data.
 This module implements HK stock data provider using Lixinger OpenAPI.
 """
 
+import time
+
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...metrics import get_stats_collector
 from .base import HKUSFactory, HKUSProvider
 
 
@@ -57,34 +60,49 @@ class LixingerHkusProvider(HKUSProvider):
         Returns:
             pd.DataFrame: HK company information
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"pageIndex": page_index}
+            params = {"pageIndex": page_index}
 
-        if stock_codes:
-            params["stockCodes"] = stock_codes
+            if stock_codes:
+                params["stockCodes"] = stock_codes
 
-        if fs_table_type:
-            params["fsTableType"] = fs_table_type
+            if fs_table_type:
+                params["fsTableType"] = fs_table_type
 
-        if mutual_markets:
-            params["mutualMarkets"] = mutual_markets
+            if mutual_markets:
+                params["mutualMarkets"] = mutual_markets
 
-        if include_delisted:
-            params["includeDelisted"] = True
+            if include_delisted:
+                params["includeDelisted"] = True
 
-        response = client.query_api("hk/company", params)
+            response = client.query_api("hk/company", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            result = self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_hk_index_info(
         self,
@@ -103,25 +121,40 @@ class LixingerHkusProvider(HKUSProvider):
         Returns:
             pd.DataFrame: HK index information
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {}
+            params = {}
 
-        if stock_codes:
-            params["stockCodes"] = stock_codes
+            if stock_codes:
+                params["stockCodes"] = stock_codes
 
-        response = client.query_api("hk/index", params)
+            response = client.query_api("hk/index", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            result = self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_hk_company_fundamental_non_financial(
         self,
@@ -154,35 +187,50 @@ class LixingerHkusProvider(HKUSProvider):
         Returns:
             pd.DataFrame: Fundamental data
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCodes": stock_codes}
+            params = {"stockCodes": stock_codes}
 
-        if date:
-            params["date"] = date
-        elif start_date:
-            params["startDate"] = start_date
-            if end_date:
-                params["endDate"] = end_date
+            if date:
+                params["date"] = date
+            elif start_date:
+                params["startDate"] = start_date
+                if end_date:
+                    params["endDate"] = end_date
 
-        if limit:
-            params["limit"] = limit
+            if limit:
+                params["limit"] = limit
 
-        if metrics_list:
-            params["metricsList"] = metrics_list
+            if metrics_list:
+                params["metricsList"] = metrics_list
 
-        response = client.query_api("hk/company/fundamental/non_financial", params)
+            response = client.query_api("hk/company/fundamental/non_financial", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            result = self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_hk_company_candlestick(
         self,
@@ -220,38 +268,53 @@ class LixingerHkusProvider(HKUSProvider):
             pd.DataFrame: Candlestick data with columns:
                 date, stockCode, open, close, high, low, volume, amount, change, to_r
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": stock_code, "type": type}
+            params = {"stockCode": stock_code, "type": type}
 
-        if date:
-            params["date"] = date
-        elif start_date:
-            params["startDate"] = start_date
-            if end_date:
-                params["endDate"] = end_date
+            if date:
+                params["date"] = date
+            elif start_date:
+                params["startDate"] = start_date
+                if end_date:
+                    params["endDate"] = end_date
 
-        if adjust_forward_date:
-            params["adjustForwardDate"] = adjust_forward_date
+            if adjust_forward_date:
+                params["adjustForwardDate"] = adjust_forward_date
 
-        if adjust_backward_date:
-            params["adjustBackwardDate"] = adjust_backward_date
+            if adjust_backward_date:
+                params["adjustBackwardDate"] = adjust_backward_date
 
-        if limit:
-            params["limit"] = limit
+            if limit:
+                params["limit"] = limit
 
-        response = client.query_api("hk/company/candlestick", params)
+            response = client.query_api("hk/company/candlestick", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            result = self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_hk_company_dividend(
         self,
@@ -278,28 +341,43 @@ class LixingerHkusProvider(HKUSProvider):
                 bonusSharesFromCapitalReserve, dividend, currency, dividendAmount,
                 annualNetProfit, annualNetProfitDividendRatio, registerDate, exDate, paymentDate, fsEndDate
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": stock_code, "startDate": start_date}
+            params = {"stockCode": stock_code, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if limit:
-            params["limit"] = limit
+            if limit:
+                params["limit"] = limit
 
-        response = client.query_api("hk/company/dividend", params)
+            response = client.query_api("hk/company/dividend", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            result = self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_hk_company_repurchase(
         self,
@@ -326,28 +404,43 @@ class LixingerHkusProvider(HKUSProvider):
                 lowestPrice, avgPrice, num, totalPaid, numPurchasedInYearSinceResolution,
                 ratioPurchasedSinceResolution
         """
-        client = get_lixinger_client()
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
 
-        params = {"stockCode": stock_code, "startDate": start_date}
+            params = {"stockCode": stock_code, "startDate": start_date}
 
-        if end_date:
-            params["endDate"] = end_date
+            if end_date:
+                params["endDate"] = end_date
 
-        if limit:
-            params["limit"] = limit
+            if limit:
+                params["limit"] = limit
 
-        response = client.query_api("hk/company/repurchase", params)
+            response = client.query_api("hk/company/repurchase", params)
 
-        if response.get("code") != 1:
-            return pd.DataFrame()
+            if response.get("code") != 1:
+                return pd.DataFrame()
 
-        data = response.get("data", [])
-        if not data:
-            return pd.DataFrame()
+            data = response.get("data", [])
+            if not data:
+                return pd.DataFrame()
 
-        df = pd.json_normalize(data)
+            df = pd.json_normalize(data)
 
-        return self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            result = self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_hk_company_profile(
         self,

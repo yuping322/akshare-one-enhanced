@@ -7,6 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import DisclosureFactory, DisclosureProvider
 
 
@@ -105,7 +106,7 @@ class SinaDisclosureProvider(DisclosureProvider):
 
         standardized = pd.DataFrame()
         standardized["date"] = pd.to_datetime(raw_df["公告日期"]).dt.strftime("%Y-%m-%d")
-        standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+        standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
         standardized["title"] = raw_df["公告标题"].astype(str)
         standardized["category"] = raw_df["公告类型"].astype(str)
         standardized["content"] = ""
@@ -187,7 +188,7 @@ class SinaDisclosureProvider(DisclosureProvider):
                 standardized[en_col] = raw_df[cn_col]
 
         if "symbol" not in standardized.columns and "代码" in raw_df.columns:
-            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
 
         if "name" not in standardized.columns and "股票简称" in raw_df.columns:
             standardized["name"] = raw_df["股票简称"]
@@ -264,7 +265,7 @@ class SinaDisclosureProvider(DisclosureProvider):
                 standardized[en_col] = raw_df[cn_col]
 
         if "symbol" not in standardized.columns and "代码" in raw_df.columns:
-            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
 
         if symbol_filter:
             standardized = standardized[standardized["symbol"] == symbol_filter]
@@ -313,7 +314,7 @@ class SinaDisclosureProvider(DisclosureProvider):
                 standardized[en_col] = raw_df[cn_col]
 
         if "symbol" not in standardized.columns and "代码" in raw_df.columns:
-            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
 
         if symbol_filter:
             standardized = standardized[standardized["symbol"] == symbol_filter]

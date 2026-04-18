@@ -7,6 +7,7 @@ This module implements block deal data provider using Lixinger OpenAPI.
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import BlockDealFactory, BlockDealProvider
 
 
@@ -85,7 +86,7 @@ class LixingerBlockDealProvider(BlockDealProvider):
 
         standardized = pd.DataFrame()
         standardized["date"] = pd.to_datetime(df["date"]).dt.strftime("%Y-%m-%d")
-        standardized["symbol"] = df["stockCode"].astype(str).str.zfill(6)
+        standardized["symbol"] = df["stockCode"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
         standardized["name"] = None
         standardized["price"] = pd.to_numeric(df["tradingPrice"], errors="coerce")
         standardized["volume"] = pd.to_numeric(df["tradingVolume"], errors="coerce")

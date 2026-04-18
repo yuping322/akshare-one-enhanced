@@ -6,6 +6,7 @@ This module implements restricted release data provider using Sina as the data s
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import RestrictedReleaseFactory, RestrictedReleaseProvider
 
 
@@ -73,7 +74,7 @@ class SinaRestrictedReleaseProvider(RestrictedReleaseProvider):
 
             standardized = pd.DataFrame()
 
-            standardized["symbol"] = symbol.zfill(6)
+            standardized["symbol"] = symbol.zfill(SYMBOL_ZFILL_WIDTH)
 
             if "解禁时间" in raw_df.columns:
                 standardized["release_date"] = pd.to_datetime(raw_df["解禁时间"]).dt.strftime("%Y-%m-%d")

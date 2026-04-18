@@ -7,6 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import DragonTigerFactory, DragonTigerProvider
 
 
@@ -99,7 +100,7 @@ class EastmoneyDragonTigerProvider(DragonTigerProvider):
 
             # Filter by symbol if provided
             if symbol:
-                raw_df = raw_df[raw_df["代码"].astype(str).str.zfill(6) == symbol]
+                raw_df = raw_df[raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH) == symbol]
                 if raw_df.empty:
                     return self.create_empty_dataframe(
                         [
@@ -120,7 +121,7 @@ class EastmoneyDragonTigerProvider(DragonTigerProvider):
             # Standardize the data
             standardized = pd.DataFrame()
             standardized["date"] = pd.to_datetime(raw_df["上榜日"]).dt.strftime("%Y-%m-%d")
-            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["名称"].astype(str)
             standardized["close_price"] = raw_df["收盘价"].astype(float)
             standardized["pct_change"] = raw_df["涨跌幅"].astype(float)
@@ -173,7 +174,7 @@ class EastmoneyDragonTigerProvider(DragonTigerProvider):
 
                 # Standardize the data
                 result = pd.DataFrame()
-                result["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+                result["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
                 result["name"] = raw_df["名称"].astype(str)
                 result["list_count"] = raw_df["上榜次数"].astype(int)
                 result["net_buy_amount"] = raw_df["龙虎榜净买额"].astype(float)

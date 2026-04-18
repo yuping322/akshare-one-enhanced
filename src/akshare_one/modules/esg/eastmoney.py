@@ -7,6 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import ESGFactory, ESGProvider
 
 
@@ -110,9 +111,9 @@ class EastmoneyESGProvider(ESGProvider):
 
             # Extract symbol
             if "股票代码" in raw_df.columns:
-                standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+                standardized["symbol"] = raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             elif "代码" in raw_df.columns:
-                standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+                standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             else:
                 # If no symbol column, cannot proceed
                 return self.create_empty_dataframe(
@@ -180,7 +181,7 @@ class EastmoneyESGProvider(ESGProvider):
 
             # Filter by symbol if specified
             if symbol:
-                standardized = standardized[standardized["symbol"] == symbol.zfill(6)]
+                standardized = standardized[standardized["symbol"] == symbol.zfill(SYMBOL_ZFILL_WIDTH)]
 
             # Filter by date range
             mask = (standardized["rating_date"] >= start_date) & (standardized["rating_date"] <= end_date)
@@ -246,9 +247,9 @@ class EastmoneyESGProvider(ESGProvider):
 
             # Extract symbol
             if "股票代码" in raw_df.columns:
-                df["symbol"] = raw_df["股票代码"].astype(str).str.zfill(6)
+                df["symbol"] = raw_df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             elif "代码" in raw_df.columns:
-                df["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+                df["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             else:
                 return self.create_empty_dataframe(["rank", "symbol", "name", "esg_score", "industry", "industry_rank"])
 

@@ -4,12 +4,15 @@ Tushare block deal data provider.
 This module provides block deal data from Tushare Pro API.
 """
 
+import time
+
 import pandas as pd
 from typing import Optional
 
+from ...metrics import get_stats_collector
+from ...tushare_client import get_tushare_client
 from ..cache import cache
 from .base import BlockDealFactory, BlockDealProvider
-from ...tushare_client import get_tushare_client
 
 
 @BlockDealFactory.register("tushare")
@@ -68,8 +71,16 @@ class TushareBlockDealProvider(BlockDealProvider):
         if symbol:
             ts_code = self._convert_symbol_to_ts_code(symbol)
 
+        start_time = time.time()
         try:
             raw_df = client.get_block_trade(ts_code=ts_code, start_date=start_date_ts, end_date=end_date_ts)
+
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, True)
+            except (ImportError, AttributeError):
+                pass
 
             if raw_df.empty:
                 return self.create_empty_dataframe(["symbol", "date", "price", "volume", "amount", "buyer", "seller"])
@@ -77,6 +88,12 @@ class TushareBlockDealProvider(BlockDealProvider):
             df = self._process_block_deal_data(raw_df)
             return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, False)
+            except (ImportError, AttributeError):
+                pass
             self.logger.error(f"Failed to get block deal data from Tushare: {e}")
             return pd.DataFrame()
 
@@ -108,8 +125,16 @@ class TushareBlockDealProvider(BlockDealProvider):
         start_date_ts = self._convert_date_format(start_date)
         end_date_ts = self._convert_date_format(end_date)
 
+        start_time = time.time()
         try:
             raw_df = client.get_block_trade(start_date=start_date_ts, end_date=end_date_ts)
+
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, True)
+            except (ImportError, AttributeError):
+                pass
 
             if raw_df.empty:
                 return self.create_empty_dataframe(["group_key", "total_volume", "total_amount", "deal_count"])
@@ -117,6 +142,12 @@ class TushareBlockDealProvider(BlockDealProvider):
             df = self._process_summary_data(raw_df, group_by)
             return self.apply_data_filter(df, columns=columns, row_filter=row_filter)
         except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("tushare", duration_ms, False)
+            except (ImportError, AttributeError):
+                pass
             self.logger.error(f"Failed to get block deal summary from Tushare: {e}")
             return pd.DataFrame()
 

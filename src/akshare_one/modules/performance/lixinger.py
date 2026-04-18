@@ -8,9 +8,13 @@ Note: Lixinger does not provide a performance-forecast (业绩预告) endpoint,
 so get_performance_forecast returns an empty DataFrame.
 """
 
+import time
+
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...metrics import get_stats_collector
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import PerformanceFactory, PerformanceProvider
 
 
@@ -25,12 +29,12 @@ class LixingerPerformanceProvider(PerformanceProvider):
 
     # Key financial metrics for a performance express
     _EXPRESS_METRICS = [
-        "q.ps.toi.t",   # revenue (营业总收入)
-        "q.ps.ni.t",    # net income (净利润)
-        "q.ps.op.t",    # operating profit (营业利润)
-        "q.bs.te.t",    # shareholders equity (净资产)
-        "q.i.eps.t",    # EPS (每股收益)
-        "q.i.roe.t",    # ROE (净资产收益率)
+        "q.ps.toi.t",  # revenue (营业总收入)
+        "q.ps.ni.t",  # net income (净利润)
+        "q.ps.op.t",  # operating profit (营业利润)
+        "q.bs.te.t",  # shareholders equity (净资产)
+        "q.i.eps.t",  # EPS (每股收益)
+        "q.i.roe.t",  # ROE (净资产收益率)
     ]
 
     _COLUMN_MAP = {
@@ -63,54 +67,60 @@ class LixingerPerformanceProvider(PerformanceProvider):
                 symbol, name, report_date, revenue, net_profit,
                 operating_profit, net_assets, eps, roe
         """
-        # Normalise date format
-        norm_date = date.replace("-", "")
-        lx_date = f"{norm_date[:4]}-{norm_date[4:6]}-{norm_date[6:]}"
+        start_time = time.time()
+        try:
+            norm_date = date.replace("-", "")
+            lx_date = f"{norm_date[:4]}-{norm_date[4:6]}-{norm_date[6:]}"
 
-        client = get_lixinger_client()
-        params = {
-            "metricsList": self._EXPRESS_METRICS,
-            "date": lx_date,
-        }
+            client = get_lixinger_client()
+            params = {
+                "metricsList": self._EXPRESS_METRICS,
+                "date": lx_date,
+            }
 
-        response = client.query_api("cn/company/fs/non_financial", params)
+            response = client.query_api("cn/company/fs/non_financial", params)
 
-        if response.get("code") != 1:
-            self.logger.warning(
-                f"Lixinger fs/non_financial returned error: {response.get('msg')}"
-            )
-            return self.create_empty_dataframe(
-                ["symbol", "report_date", "revenue", "net_profit",
-                 "operating_profit", "net_assets", "eps", "roe"]
-            )
+            if response.get("code") != 1:
+                self.logger.warning(f"Lixinger fs/non_financial returned error: {response.get('msg')}")
+                return self.create_empty_dataframe(
+                    ["symbol", "report_date", "revenue", "net_profit", "operating_profit", "net_assets", "eps", "roe"]
+                )
 
-        data = response.get("data", [])
-        if not data:
-            return self.create_empty_dataframe(
-                ["symbol", "report_date", "revenue", "net_profit",
-                 "operating_profit", "net_assets", "eps", "roe"]
-            )
+            data = response.get("data", [])
+            if not data:
+                return self.create_empty_dataframe(
+                    ["symbol", "report_date", "revenue", "net_profit", "operating_profit", "net_assets", "eps", "roe"]
+                )
 
-        df = pd.json_normalize(data)
-        df = df.rename(columns=self._COLUMN_MAP)
+            df = pd.json_normalize(data)
+            df = df.rename(columns=self._COLUMN_MAP)
 
-        if "symbol" in df.columns:
-            df["symbol"] = df["symbol"].astype(str).str.zfill(6)
-        if "report_date" in df.columns:
-            df["report_date"] = pd.to_datetime(
-                df["report_date"], errors="coerce"
-            ).dt.strftime("%Y-%m-%d")
+            if "symbol" in df.columns:
+                df["symbol"] = df["symbol"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
+            if "report_date" in df.columns:
+                df["report_date"] = pd.to_datetime(df["report_date"], errors="coerce").dt.strftime("%Y-%m-%d")
 
-        numeric_cols = ["revenue", "net_profit", "operating_profit", "net_assets", "eps", "roe"]
-        for col in numeric_cols:
-            if col in df.columns:
-                df[col] = pd.to_numeric(df[col], errors="coerce")
+            numeric_cols = ["revenue", "net_profit", "operating_profit", "net_assets", "eps", "roe"]
+            for col in numeric_cols:
+                if col in df.columns:
+                    df[col] = pd.to_numeric(df[col], errors="coerce")
 
-        columns = kwargs.get("columns")
-        row_filter = kwargs.get("row_filter")
-        return self.standardize_and_filter(
-            df, source="lixinger", columns=columns, row_filter=row_filter
-        )
+            columns = kwargs.get("columns")
+            row_filter = kwargs.get("row_filter")
+            result = self.standardize_and_filter(df, source="lixinger", columns=columns, row_filter=row_filter)
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, True)
+            except Exception:
+                pass
+            return result
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                get_stats_collector().record_request("lixinger", duration_ms, False)
+            except Exception:
+                pass
+            raise
 
     def get_performance_forecast(self, date: str, **kwargs) -> pd.DataFrame:
         """
@@ -122,6 +132,5 @@ class LixingerPerformanceProvider(PerformanceProvider):
             "Use eastmoney source for this query."
         )
         return self.create_empty_dataframe(
-            ["symbol", "name", "indicator", "change", "forecast_value",
-             "change_pct", "forecast_type", "announce_date"]
+            ["symbol", "name", "indicator", "change", "forecast_value", "change_pct", "forecast_type", "announce_date"]
         )

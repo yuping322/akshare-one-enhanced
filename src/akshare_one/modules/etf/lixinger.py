@@ -4,9 +4,12 @@ Lixinger provider for ETF/fund data.
 This module implements ETF/fund data provider using Lixinger OpenAPI.
 """
 
+import time
+
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...metrics import get_stats_collector
 from .base import ETFFactory, ETFProvider
 
 
@@ -19,6 +22,30 @@ class LixingerETFProvider(ETFProvider):
     """
 
     _API_MAP = {}
+
+    def _query_api_with_metrics(self, endpoint: str, params: dict) -> dict:
+        start_time = time.time()
+        try:
+            client = get_lixinger_client()
+            response = client.query_api(endpoint, params)
+            duration_ms = (time.time() - start_time) * 1000
+
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("lixinger", duration_ms, True)
+            except (ImportError, AttributeError):
+                pass
+
+            return response
+        except Exception as e:
+            duration_ms = (time.time() - start_time) * 1000
+            try:
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("lixinger", duration_ms, False)
+            except (ImportError, AttributeError):
+                pass
+            self.logger.error(f"Failed to fetch data from Lixinger ({endpoint}): {e}")
+            return {"code": -1, "data": []}
 
     def get_source_name(self) -> str:
         """Return the data source name."""
@@ -58,7 +85,7 @@ class LixingerETFProvider(ETFProvider):
         if stock_codes:
             params["stockCodes"] = stock_codes
 
-        response = client.query_api("cn/fund", params)
+        response = self._query_api_with_metrics("cn/fund", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -111,7 +138,7 @@ class LixingerETFProvider(ETFProvider):
         if limit:
             params["limit"] = limit
 
-        response = client.query_api("cn/fund/shareholdings", params)
+        response = self._query_api_with_metrics("cn/fund/shareholdings", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -149,14 +176,12 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: NAV history with date, nav, accumulated_nav, pct_change
         """
-        client = get_lixinger_client()
-
         start_date = kwargs.get("start_date", "1970-01-01")
         end_date = kwargs.get("end_date", "2099-12-31")
 
         params = {"stockCode": symbol, "startDate": start_date, "endDate": end_date}
 
-        response = client.query_api("cn/fund/candlestick", params)
+        response = self._query_api_with_metrics("cn/fund/candlestick", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -202,15 +227,13 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Net value data with date, net_value
         """
-        client = get_lixinger_client()
-
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if limit:
             params["limit"] = limit
 
-        response = client.query_api("cn/fund/net-value", params)
+        response = self._query_api_with_metrics("cn/fund/net-value", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -255,15 +278,13 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Total net value data with date, total_net_value
         """
-        client = get_lixinger_client()
-
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if limit:
             params["limit"] = limit
 
-        response = client.query_api("cn/fund/total-net-value", params)
+        response = self._query_api_with_metrics("cn/fund/total-net-value", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -308,15 +329,13 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Dividend data with date, ex_date, dividend
         """
-        client = get_lixinger_client()
-
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if limit:
             params["limit"] = limit
 
-        response = client.query_api("cn/fund/dividend", params)
+        response = self._query_api_with_metrics("cn/fund/dividend", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -365,15 +384,13 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Asset combination data
         """
-        client = get_lixinger_client()
-
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if limit:
             params["limit"] = limit
 
-        response = client.query_api("cn/fund/asset-combination", params)
+        response = self._query_api_with_metrics("cn/fund/asset-combination", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -415,15 +432,13 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Industry combination data
         """
-        client = get_lixinger_client()
-
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if limit:
             params["limit"] = limit
 
-        response = client.query_api("cn/fund/asset-industry-combination", params)
+        response = self._query_api_with_metrics("cn/fund/asset-industry-combination", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -465,15 +480,13 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Shareholders structure data
         """
-        client = get_lixinger_client()
-
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if limit:
             params["limit"] = limit
 
-        response = client.query_api("cn/fund/shareholders-structure", params)
+        response = self._query_api_with_metrics("cn/fund/shareholders-structure", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -536,15 +549,13 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Shares data with date, shares, asset_scale, et_shares, et_asset_scale
         """
-        client = get_lixinger_client()
-
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if limit:
             params["limit"] = limit
 
-        response = client.query_api("cn/fund/shares", params)
+        response = self._query_api_with_metrics("cn/fund/shares", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -594,15 +605,13 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Split data with date, split_ratio
         """
-        client = get_lixinger_client()
-
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if limit:
             params["limit"] = limit
 
-        response = client.query_api("cn/fund/split", params)
+        response = self._query_api_with_metrics("cn/fund/split", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -649,11 +658,9 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Historical OHLCV data
         """
-        client = get_lixinger_client()
-
         params = {"stockCode": symbol, "startDate": start_date, "endDate": end_date}
 
-        response = client.query_api("cn/fund/candlestick", params)
+        response = self._query_api_with_metrics("cn/fund/candlestick", params)
 
         if response.get("code") != 1:
             return pd.DataFrame()
@@ -665,7 +672,6 @@ class LixingerETFProvider(ETFProvider):
         df = pd.json_normalize(data)
         df["symbol"] = symbol
 
-        # Actual field names from cn/fund/candlestick: open, close, high, low, volume, amount, change
         rename = {
             "change": "pct_change",
             "complexFactor": "complex_factor",
@@ -705,8 +711,7 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Profile with investment_o, investment_s, f_c_name, inception_date, etc.
         """
-        client = get_lixinger_client()
-        response = client.query_api("cn/fund/profile", {"stockCodes": stock_codes})
+        response = self._query_api_with_metrics("cn/fund/profile", {"stockCodes": stock_codes})
         if response.get("code") != 1:
             return pd.DataFrame()
         data = response.get("data", [])
@@ -728,8 +733,7 @@ class LixingerETFProvider(ETFProvider):
             pd.DataFrame: Manager history with stockCode, managers (name, managerCode,
                 appointmentDate, departureDate)
         """
-        client = get_lixinger_client()
-        response = client.query_api("cn/fund/manager", {"stockCodes": stock_codes})
+        response = self._query_api_with_metrics("cn/fund/manager", {"stockCodes": stock_codes})
         if response.get("code") != 1:
             return pd.DataFrame()
         data = response.get("data", [])
@@ -767,13 +771,12 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Columns: date, m_f_r (管理费率), m_f, c_f_r (托管费率), c_f
         """
-        client = get_lixinger_client()
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if "limit" in kwargs:
             params["limit"] = kwargs["limit"]
-        response = client.query_api("cn/fund/fees", params)
+        response = self._query_api_with_metrics("cn/fund/fees", params)
         if response.get("code") != 1:
             return pd.DataFrame()
         data = response.get("data", [])
@@ -799,11 +802,10 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Columns: date, value
         """
-        client = get_lixinger_client()
         params = {"stockCode": stock_code, "startDate": start_date, "granularity": granularity}
         if end_date:
             params["endDate"] = end_date
-        response = client.query_api("cn/fund/drawdown", params)
+        response = self._query_api_with_metrics("cn/fund/drawdown", params)
         if response.get("code") != 1:
             return pd.DataFrame()
         data = response.get("data", [])
@@ -826,13 +828,12 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Columns: date, lang, linkText, linkUrl, linkType, types
         """
-        client = get_lixinger_client()
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if "limit" in kwargs:
             params["limit"] = kwargs["limit"]
-        response = client.query_api("cn/fund/announcement", params)
+        response = self._query_api_with_metrics("cn/fund/announcement", params)
         if response.get("code") != 1:
             return pd.DataFrame()
         data = response.get("data", [])
@@ -861,13 +862,12 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Columns: date, value
         """
-        client = get_lixinger_client()
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if "limit" in kwargs:
             params["limit"] = kwargs["limit"]
-        response = client.query_api("cn/fund/turnover-rate", params)
+        response = self._query_api_with_metrics("cn/fund/turnover-rate", params)
         if response.get("code") != 1:
             return pd.DataFrame()
         data = response.get("data", [])
@@ -890,13 +890,12 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Columns: date, open, close, low, high
         """
-        client = get_lixinger_client()
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if "limit" in kwargs:
             params["limit"] = kwargs["limit"]
-        response = client.query_api("cn/fund/exchange-traded-close-price", params)
+        response = self._query_api_with_metrics("cn/fund/exchange-traded-close-price", params)
         if response.get("code") != 1:
             return pd.DataFrame()
         data = response.get("data", [])
@@ -923,13 +922,12 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Columns: date, net_value
         """
-        client = get_lixinger_client()
         params = {"stockCode": stock_code, "startDate": start_date}
         if end_date:
             params["endDate"] = end_date
         if "limit" in kwargs:
             params["limit"] = kwargs["limit"]
-        response = client.query_api("cn/fund/net-value-of-dividend-reinvestment", params)
+        response = self._query_api_with_metrics("cn/fund/net-value-of-dividend-reinvestment", params)
         if response.get("code") != 1:
             return pd.DataFrame()
         data = response.get("data", [])
@@ -956,8 +954,7 @@ class LixingerETFProvider(ETFProvider):
         Returns:
             pd.DataFrame: Premium/discount data with f_pnv_pr, f_pnv_pr_avg_d5/d10/d20, etc.
         """
-        client = get_lixinger_client()
-        response = client.query_api("cn/fund/hot/f_nlacan", {"stockCodes": stock_codes})
+        response = self._query_api_with_metrics("cn/fund/hot/f_nlacan", {"stockCodes": stock_codes})
         if response.get("code") != 1:
             return pd.DataFrame()
         data = response.get("data", [])

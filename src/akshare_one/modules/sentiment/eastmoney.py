@@ -2,8 +2,11 @@
 Eastmoney sentiment data provider.
 """
 
+import time
+
 import pandas as pd
 
+from ...metrics import get_stats_collector
 from .base import SentimentFactory, SentimentProvider
 
 
@@ -21,10 +24,16 @@ class EastmoneySentimentProvider(SentimentProvider):
     def get_hot_rank(self) -> pd.DataFrame:
         import akshare as ak
 
+        start_time = time.time()
+
         try:
             df = ak.stock_hot_rank_em()
             if df.empty:
-                return pd.DataFrame()
+                result = pd.DataFrame()
+                duration_ms = (time.time() - start_time) * 1000
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("eastmoney", duration_ms, True)
+                return result
             df = df.rename(
                 columns={
                     "当前排名": "rank",
@@ -35,17 +44,32 @@ class EastmoneySentimentProvider(SentimentProvider):
                 }
             )
             cols = ["rank", "symbol", "name", "price", "pct_change"]
-            return df[[c for c in cols if c in df.columns]]
+            result = df[[c for c in cols if c in df.columns]]
+
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, True)
+
+            return result
         except Exception:
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             return pd.DataFrame()
 
     def get_stock_comment(self) -> pd.DataFrame:
         import akshare as ak
 
+        start_time = time.time()
+
         try:
             df = ak.stock_comment_em()
             if df.empty:
-                return pd.DataFrame()
+                result = pd.DataFrame()
+                duration_ms = (time.time() - start_time) * 1000
+                stats_collector = get_stats_collector()
+                stats_collector.record_request("eastmoney", duration_ms, True)
+                return result
             df = df.rename(
                 columns={
                     "代码": "symbol",
@@ -68,6 +92,15 @@ class EastmoneySentimentProvider(SentimentProvider):
                 "attention_index",
                 "trade_date",
             ]
-            return df[[c for c in cols if c in df.columns]]
+            result = df[[c for c in cols if c in df.columns]]
+
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, True)
+
+            return result
         except Exception:
+            duration_ms = (time.time() - start_time) * 1000
+            stats_collector = get_stats_collector()
+            stats_collector.record_request("eastmoney", duration_ms, False)
             return pd.DataFrame()

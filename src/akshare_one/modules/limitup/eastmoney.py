@@ -7,6 +7,7 @@ It wraps akshare functions and standardizes the output format.
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import LimitUpDownFactory, LimitUpDownProvider
 
 
@@ -95,7 +96,7 @@ class EastmoneyLimitUpDownProvider(LimitUpDownProvider):
             # Standardize the data
             standardized = pd.DataFrame()
             standardized["date"] = pd.Series([date] * len(raw_df))
-            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["名称"].astype(str)
             standardized["close_price"] = raw_df["最新价"].astype(float)
 
@@ -193,7 +194,7 @@ class EastmoneyLimitUpDownProvider(LimitUpDownProvider):
             # Standardize the data
             standardized = pd.DataFrame()
             standardized["date"] = pd.Series([date] * len(raw_df))
-            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["名称"].astype(str)
             standardized["close_price"] = raw_df["最新价"].astype(float)
 

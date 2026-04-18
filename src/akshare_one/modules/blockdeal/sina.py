@@ -6,6 +6,7 @@ This module implements the block deal data provider using Sina as the data sourc
 
 import pandas as pd
 
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import BlockDealFactory, BlockDealProvider
 
 
@@ -74,7 +75,7 @@ class SinaBlockDealProvider(BlockDealProvider):
             # Standardize the data
             standardized = pd.DataFrame()
             standardized["date"] = pd.to_datetime(raw_df["交易日期"]).dt.strftime("%Y-%m-%d")
-            standardized["symbol"] = raw_df["证券代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = raw_df["证券代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
             standardized["name"] = raw_df["证券简称"].astype(str)
             standardized["price"] = raw_df["成交价"].astype(float)
             standardized["volume"] = raw_df["成交量"].astype(float)

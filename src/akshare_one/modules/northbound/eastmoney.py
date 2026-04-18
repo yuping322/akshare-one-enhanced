@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from ..field_naming import FieldType
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import NorthboundFactory, NorthboundProvider
 
 
@@ -201,9 +202,9 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
         if symbol:
             standardized["symbol"] = symbol
         elif "代码" in df.columns:
-            standardized["symbol"] = df["代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = df["代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
         elif "股票代码" in df.columns:
-            standardized["symbol"] = df["股票代码"].astype(str).str.zfill(6)
+            standardized["symbol"] = df["股票代码"].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
         else:
             standardized["symbol"] = None
 
@@ -343,7 +344,7 @@ class EastmoneyNorthboundProvider(NorthboundProvider):
 
         # Map fields - column names from stock_hsgt_hold_stock_em
         if code_col in df.columns:
-            standardized["symbol"] = df[code_col].astype(str).str.zfill(6)
+            standardized["symbol"] = df[code_col].astype(str).str.zfill(SYMBOL_ZFILL_WIDTH)
         else:
             standardized["symbol"] = None
 

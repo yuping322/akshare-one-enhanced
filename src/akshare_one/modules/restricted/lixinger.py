@@ -9,6 +9,7 @@ Use eastmoney provider as the primary source for restricted release data.
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import RestrictedReleaseFactory, RestrictedReleaseProvider
 
 
@@ -98,7 +99,7 @@ class LixingerRestrictedReleaseProvider(RestrictedReleaseProvider):
     def _standardize(self, df: pd.DataFrame, symbol: str) -> pd.DataFrame:
         """Map Lixinger fields to the standard schema."""
         out = pd.DataFrame()
-        out["symbol"] = symbol.zfill(6)
+        out["symbol"] = symbol.zfill(SYMBOL_ZFILL_WIDTH)
 
         # date field from Lixinger is ISO-8601
         if "date" in df.columns:
