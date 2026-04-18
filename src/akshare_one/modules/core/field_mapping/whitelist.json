@@ -1,0 +1,21 @@
+{
+  "whitelist": [
+    "date",
+    "timestamp",
+    "symbol",
+    "name",
+    "market",
+    "rank",
+    "volume",
+    "open",
+    "high",
+    "low",
+    "close",
+    "pct_change",
+    "turnover_rate"
+  ],
+  "count": 13,
+  "description": "Approved standard field names that are always valid",
+  "version": "1.0",
+  "last_updated": "2024-01-01"
+}

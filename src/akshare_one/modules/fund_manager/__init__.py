@@ -1,10 +1,10 @@
 """
-Fund manager data module.
-
-This module provides fund manager information and related data.
+Deprecated: This module has been moved.
 """
-
-from . import lixinger
-from .base import FundManagerFactory, FundManagerProvider
-
-__all__ = ["FundManagerProvider", "FundManagerFactory"]
+import warnings
+warnings.warn(
+    "Import from 'akshare_one.modules.fund_manager' is deprecated. Use 'akshare_one.modules.providers.funds.entities' instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
+from akshare_one.modules.providers.funds.entities import *

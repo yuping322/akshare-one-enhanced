@@ -1,0 +1,118 @@
+{
+  "source": "tushare",
+  "module": "index",
+  "mappings": [
+    {
+      "source_field": "ts_code",
+      "standard_field": "symbol"
+    },
+    {
+      "source_field": "name",
+      "standard_field": "name"
+    },
+    {
+      "source_field": "market",
+      "standard_field": "market"
+    },
+    {
+      "source_field": "publisher",
+      "standard_field": "publisher"
+    },
+    {
+      "source_field": "category",
+      "standard_field": "category"
+    },
+    {
+      "source_field": "base_date",
+      "standard_field": "base_date"
+    },
+    {
+      "source_field": "base_point",
+      "standard_field": "base_point"
+    },
+    {
+      "source_field": "list_date",
+      "standard_field": "list_date"
+    },
+    {
+      "source_field": "trade_date",
+      "standard_field": "date"
+    },
+    {
+      "source_field": "close",
+      "standard_field": "close"
+    },
+    {
+      "source_field": "open",
+      "standard_field": "open"
+    },
+    {
+      "source_field": "high",
+      "standard_field": "high"
+    },
+    {
+      "source_field": "low",
+      "standard_field": "low"
+    },
+    {
+      "source_field": "pre_close",
+      "standard_field": "pre_close"
+    },
+    {
+      "source_field": "change",
+      "standard_field": "change"
+    },
+    {
+      "source_field": "pct_chg",
+      "standard_field": "pct_change"
+    },
+    {
+      "source_field": "vol",
+      "standard_field": "volume"
+    },
+    {
+      "source_field": "amount",
+      "standard_field": "amount"
+    },
+    {
+      "source_field": "index_code",
+      "standard_field": "symbol"
+    },
+    {
+      "source_field": "con_code",
+      "standard_field": "constituent_code"
+    },
+    {
+      "source_field": "weight",
+      "standard_field": "weight"
+    },
+    {
+      "source_field": "total_mv",
+      "standard_field": "total_mv"
+    },
+    {
+      "source_field": "circ_mv",
+      "standard_field": "circ_mv"
+    },
+    {
+      "source_field": "turnover_rate",
+      "standard_field": "turnover_rate"
+    },
+    {
+      "source_field": "turnover_rate_f",
+      "standard_field": "turnover_rate_f"
+    },
+    {
+      "source_field": "pe",
+      "standard_field": "pe"
+    },
+    {
+      "source_field": "pe_ttm",
+      "standard_field": "pe_ttm"
+    },
+    {
+      "source_field": "pb",
+      "standard_field": "pb"
+    }
+  ]
+}

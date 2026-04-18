@@ -3,7 +3,7 @@ import time
 import akshare as ak
 import pandas as pd
 
-from ...metrics import get_stats_collector
+from ....metrics.stats import get_stats_collector
 from ..cache import cache
 from .base import NewsDataFactory, NewsDataProvider
 

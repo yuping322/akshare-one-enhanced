@@ -10,7 +10,7 @@ try:
 except ImportError:
     raise ImportError("Please install duckdb: pip install duckdb")
 
-from ..constants import SYMBOL_ZFILL_WIDTH
+from ...constants import SYMBOL_ZFILL_WIDTH
 
 logger = logging.getLogger(__name__)
 

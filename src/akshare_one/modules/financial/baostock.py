@@ -10,7 +10,7 @@ import warnings
 import pandas as pd
 
 from ...logging_config import get_logger, log_api_request
-from ...metrics import get_stats_collector
+from ....metrics.stats import get_stats_collector
 from ..cache import cache
 from .base import FinancialDataFactory, FinancialDataProvider
 

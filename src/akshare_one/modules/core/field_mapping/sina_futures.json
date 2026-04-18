@@ -1,0 +1,42 @@
+{
+  "source": "sina",
+  "module": "futures",
+  "mappings": [
+    {
+      "source_field": "datetime",
+      "standard_field": "timestamp"
+    },
+    {
+      "source_field": "date",
+      "standard_field": "timestamp"
+    },
+    {
+      "source_field": "open",
+      "standard_field": "open"
+    },
+    {
+      "source_field": "high",
+      "standard_field": "high"
+    },
+    {
+      "source_field": "low",
+      "standard_field": "low"
+    },
+    {
+      "source_field": "close",
+      "standard_field": "close"
+    },
+    {
+      "source_field": "volume",
+      "standard_field": "volume"
+    },
+    {
+      "source_field": "hold",
+      "standard_field": "open_interest"
+    },
+    {
+      "source_field": "settle",
+      "standard_field": "settlement"
+    }
+  ]
+}

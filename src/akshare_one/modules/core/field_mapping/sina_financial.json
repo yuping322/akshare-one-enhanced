@@ -1,0 +1,362 @@
+{
+  "source": "sina",
+  "module": "financial",
+  "mappings": [
+    {
+      "source_field": "报告日",
+      "standard_field": "report_date"
+    },
+    {
+      "source_field": "币种",
+      "standard_field": "currency"
+    },
+    {
+      "source_field": "资产总计",
+      "standard_field": "total_assets"
+    },
+    {
+      "source_field": "流动资产合计",
+      "standard_field": "current_assets"
+    },
+    {
+      "source_field": "货币资金",
+      "standard_field": "cash_and_equivalents"
+    },
+    {
+      "source_field": "存货",
+      "standard_field": "inventory"
+    },
+    {
+      "source_field": "交易性金融资产",
+      "standard_field": "current_investments"
+    },
+    {
+      "source_field": "应收票据及应收账款",
+      "standard_field": "trade_and_non_trade_receivables"
+    },
+    {
+      "source_field": "非流动资产合计",
+      "standard_field": "non_current_assets"
+    },
+    {
+      "source_field": "固定资产",
+      "standard_field": "property_plant_and_equipment"
+    },
+    {
+      "source_field": "商誉",
+      "standard_field": "goodwill_and_intangible_assets"
+    },
+    {
+      "source_field": "长期股权投资",
+      "standard_field": "investments"
+    },
+    {
+      "source_field": "其他非流动金融资产",
+      "standard_field": "non_current_investments"
+    },
+    {
+      "source_field": "实收资本(或股本)",
+      "standard_field": "outstanding_shares"
+    },
+    {
+      "source_field": "递延所得税资产",
+      "standard_field": "tax_assets"
+    },
+    {
+      "source_field": "负债合计",
+      "standard_field": "total_liabilities"
+    },
+    {
+      "source_field": "流动负债合计",
+      "standard_field": "current_liabilities"
+    },
+    {
+      "source_field": "短期借款",
+      "standard_field": "current_debt"
+    },
+    {
+      "source_field": "应付票据及应付账款",
+      "standard_field": "trade_and_non_trade_payables"
+    },
+    {
+      "source_field": "合同负债",
+      "standard_field": "deferred_revenue"
+    },
+    {
+      "source_field": "吸收存款及同业存放",
+      "standard_field": "deposit_liabilities"
+    },
+    {
+      "source_field": "非流动负债合计",
+      "standard_field": "non_current_liabilities"
+    },
+    {
+      "source_field": "长期借款",
+      "standard_field": "non_current_debt"
+    },
+    {
+      "source_field": "递延所得税负债",
+      "standard_field": "tax_liabilities"
+    },
+    {
+      "source_field": "所有者权益(或股东权益)合计",
+      "standard_field": "shareholders_equity"
+    },
+    {
+      "source_field": "未分配利润",
+      "standard_field": "retained_earnings"
+    },
+    {
+      "source_field": "其他综合收益",
+      "standard_field": "accumulated_other_comprehensive_income"
+    },
+    {
+      "source_field": "应收账款",
+      "standard_field": "accounts_receivable"
+    },
+    {
+      "source_field": "预付款项",
+      "standard_field": "prepayments"
+    },
+    {
+      "source_field": "其他应收款",
+      "standard_field": "other_receivables"
+    },
+    {
+      "source_field": "固定资产净值",
+      "standard_field": "fixed_assets_net"
+    },
+    {
+      "source_field": "在建工程",
+      "standard_field": "construction_in_progress"
+    },
+    {
+      "source_field": "资本公积",
+      "standard_field": "capital_reserve"
+    },
+    {
+      "source_field": "少数股东权益",
+      "standard_field": "minority_interest"
+    },
+    {
+      "source_field": "经营活动产生的现金流量净额",
+      "standard_field": "net_cash_flow_from_operations"
+    },
+    {
+      "source_field": "购建固定资产、无形资产和其他长期资产支付的现金",
+      "standard_field": "capital_expenditure"
+    },
+    {
+      "source_field": "取得子公司及其他营业单位支付的现金净额",
+      "standard_field": "business_acquisitions_and_disposals"
+    },
+    {
+      "source_field": "投资活动产生的现金流量净额",
+      "standard_field": "net_cash_flow_from_investing"
+    },
+    {
+      "source_field": "取得借款收到的现金",
+      "standard_field": "issuance_or_repayment_of_debt_securities"
+    },
+    {
+      "source_field": "吸收投资收到的现金",
+      "standard_field": "issuance_or_purchase_of_equity_shares"
+    },
+    {
+      "source_field": "筹资活动产生的现金流量净额",
+      "standard_field": "net_cash_flow_from_financing"
+    },
+    {
+      "source_field": "现金及现金等价物净增加额",
+      "standard_field": "change_in_cash_and_equivalents"
+    },
+    {
+      "source_field": "汇率变动对现金及现金等价物的影响",
+      "standard_field": "effect_of_exchange_rate_changes"
+    },
+    {
+      "source_field": "期末现金及现金等价物余额",
+      "standard_field": "ending_cash_balance"
+    },
+    {
+      "source_field": "销售商品、提供劳务收到的现金",
+      "standard_field": "cash_from_sales"
+    },
+    {
+      "source_field": "收到的税费返还",
+      "standard_field": "tax_refunds_received"
+    },
+    {
+      "source_field": "支付给职工以及为职工支付的现金",
+      "standard_field": "cash_paid_to_employees"
+    },
+    {
+      "source_field": "支付的各项税费",
+      "standard_field": "taxes_paid"
+    },
+    {
+      "source_field": "经营活动现金流入小计",
+      "standard_field": "total_cash_inflow_from_operations"
+    },
+    {
+      "source_field": "经营活动现金流出小计",
+      "standard_field": "total_cash_outflow_from_operations"
+    },
+    {
+      "source_field": "收回投资所收到的现金",
+      "standard_field": "cash_from_investment_recovery"
+    },
+    {
+      "source_field": "取得投资收益收到的现金",
+      "standard_field": "cash_from_investment_income"
+    },
+    {
+      "source_field": "处置固定资产、无形资产收回的现金",
+      "standard_field": "cash_from_asset_sales"
+    },
+    {
+      "source_field": "投资活动现金流入小计",
+      "standard_field": "total_cash_inflow_from_investing"
+    },
+    {
+      "source_field": "投资活动现金流出小计",
+      "standard_field": "total_cash_outflow_from_investing"
+    },
+    {
+      "source_field": "分配股利、利润或偿付利息所支付的现金",
+      "standard_field": "cash_paid_for_dividends_and_interest"
+    },
+    {
+      "source_field": "偿还债务支付的现金",
+      "standard_field": "cash_paid_for_debt_repayment"
+    },
+    {
+      "source_field": "筹资活动现金流入小计",
+      "standard_field": "total_cash_inflow_from_financing"
+    },
+    {
+      "source_field": "筹资活动现金流出小计",
+      "standard_field": "total_cash_outflow_from_financing"
+    },
+    {
+      "source_field": "期初现金及现金等价物余额",
+      "standard_field": "beginning_cash_balance"
+    },
+    {
+      "source_field": "现金的期末余额",
+      "standard_field": "ending_cash"
+    },
+    {
+      "source_field": "现金等价物的期末余额",
+      "standard_field": "ending_cash_equivalents"
+    },
+    {
+      "source_field": "营业总收入",
+      "standard_field": "total_operating_revenue"
+    },
+    {
+      "source_field": "营业收入",
+      "standard_field": "operating_revenue"
+    },
+    {
+      "source_field": "营业总成本",
+      "standard_field": "total_operating_cost"
+    },
+    {
+      "source_field": "营业成本",
+      "standard_field": "operating_cost"
+    },
+    {
+      "source_field": "税金及附加",
+      "standard_field": "taxes_and_surcharges"
+    },
+    {
+      "source_field": "销售费用",
+      "standard_field": "selling_expenses"
+    },
+    {
+      "source_field": "管理费用",
+      "standard_field": "administrative_expenses"
+    },
+    {
+      "source_field": "研发费用",
+      "standard_field": "rd_expenses"
+    },
+    {
+      "source_field": "财务费用",
+      "standard_field": "financial_expenses"
+    },
+    {
+      "source_field": "利息费用",
+      "standard_field": "interest_expenses"
+    },
+    {
+      "source_field": "利息收入",
+      "standard_field": "interest_income"
+    },
+    {
+      "source_field": "其他收益",
+      "standard_field": "other_income"
+    },
+    {
+      "source_field": "投资收益",
+      "standard_field": "investment_income"
+    },
+    {
+      "source_field": "公允价值变动收益",
+      "standard_field": "gain_from_fair_value_changes"
+    },
+    {
+      "source_field": "资产减值损失",
+      "standard_field": "asset_impairment_loss"
+    },
+    {
+      "source_field": "信用减值损失",
+      "standard_field": "credit_impairment_loss"
+    },
+    {
+      "source_field": "资产处置收益",
+      "standard_field": "gain_from_asset_disposal"
+    },
+    {
+      "source_field": "营业利润",
+      "standard_field": "operating_profit"
+    },
+    {
+      "source_field": "营业外收入",
+      "standard_field": "non_operating_income"
+    },
+    {
+      "source_field": "营业外支出",
+      "standard_field": "non_operating_expenses"
+    },
+    {
+      "source_field": "利润总额",
+      "standard_field": "total_profit"
+    },
+    {
+      "source_field": "所得税费用",
+      "standard_field": "income_tax_expenses"
+    },
+    {
+      "source_field": "净利润",
+      "standard_field": "net_profit"
+    },
+    {
+      "source_field": "归属于母公司所有者的净利润",
+      "standard_field": "net_profit_attributable_to_owners"
+    },
+    {
+      "source_field": "少数股东损益",
+      "standard_field": "non_controlling_interests"
+    },
+    {
+      "source_field": "基本每股收益",
+      "standard_field": "basic_eps"
+    },
+    {
+      "source_field": "稀释每股收益",
+      "standard_field": "diluted_eps"
+    }
+  ]
+}

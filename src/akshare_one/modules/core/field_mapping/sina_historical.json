@@ -1,0 +1,38 @@
+{
+  "source": "sina",
+  "module": "historical",
+  "mappings": [
+    {
+      "source_field": "day",
+      "standard_field": "date"
+    },
+    {
+      "source_field": "日期",
+      "standard_field": "date"
+    },
+    {
+      "source_field": "开盘",
+      "standard_field": "open"
+    },
+    {
+      "source_field": "最高",
+      "standard_field": "high"
+    },
+    {
+      "source_field": "最低",
+      "standard_field": "low"
+    },
+    {
+      "source_field": "收盘",
+      "standard_field": "close"
+    },
+    {
+      "source_field": "成交量",
+      "standard_field": "volume"
+    },
+    {
+      "source_field": "成交额",
+      "standard_field": "amount"
+    }
+  ]
+}

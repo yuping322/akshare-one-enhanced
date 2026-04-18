@@ -1,29 +1,10 @@
 """
-Financial news and market intelligence module.
+Deprecated: This module has been moved.
 """
-
-import pandas as pd
-
-from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import api_endpoint
-from . import eastmoney, sina
-from .base import NewsDataFactory
-
-
-@api_endpoint(NewsDataFactory)
-def get_news_data(
-    symbol: str | None = None,
-    source: SourceType = None,
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
-) -> pd.DataFrame:
-    """
-    Get financial news for a stock or the market.
-
-    Args:
-        symbol: Stock symbol. If None, returns market news.
-    """
-    pass
-
-
-__all__ = ["get_news_data", "NewsDataFactory"]
+import warnings
+warnings.warn(
+    "Import from 'akshare_one.modules.news' is deprecated. Use 'akshare_one.modules.providers.news' instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
+from akshare_one.modules.providers.news import *

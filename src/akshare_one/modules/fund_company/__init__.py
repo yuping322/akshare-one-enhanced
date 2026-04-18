@@ -1,10 +1,10 @@
 """
-Fund company data module.
-
-This module provides fund company information and related data.
+Deprecated: This module has been moved.
 """
-
-from . import lixinger
-from .base import FundCompanyFactory, FundCompanyProvider
-
-__all__ = ["FundCompanyProvider", "FundCompanyFactory"]
+import warnings
+warnings.warn(
+    "Import from 'akshare_one.modules.fund_company' is deprecated. Use 'akshare_one.modules.providers.funds.entities' instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
+from akshare_one.modules.providers.funds.entities import *

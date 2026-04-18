@@ -8,7 +8,7 @@ import time
 
 import pandas as pd
 
-from ...metrics import get_stats_collector
+from ....metrics.stats import get_stats_collector
 from ...tushare_client import get_tushare_client
 from ...constants import SYMBOL_ZFILL_WIDTH
 from ..cache import cache

@@ -1,0 +1,98 @@
+{
+  "source": "efinance",
+  "module": "shareholder",
+  "version": "1.0",
+  "last_updated": "2026-04-08",
+  "mappings": [
+    {
+      "source_field": "股东名称",
+      "standard_field": "holder_name",
+      "field_type": "name",
+      "description": "股东名称"
+    },
+    {
+      "source_field": "持股数量",
+      "standard_field": "holding_shares",
+      "field_type": "volume",
+      "description": "持股数量（股）"
+    },
+    {
+      "source_field": "持股数",
+      "standard_field": "holding_shares",
+      "field_type": "volume",
+      "description": "持股数量（股）"
+    },
+    {
+      "source_field": "持股比例",
+      "standard_field": "holding_ratio",
+      "field_type": "rate",
+      "description": "持股比例（%）"
+    },
+    {
+      "source_field": "报告期",
+      "standard_field": "report_period",
+      "field_type": "text",
+      "description": "报告期"
+    },
+    {
+      "source_field": "股票代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "更新日期",
+      "standard_field": "update_date",
+      "field_type": "date",
+      "description": "更新日期"
+    },
+    {
+      "source_field": "股东代码",
+      "standard_field": "holder_code",
+      "field_type": "text",
+      "description": "股东代码"
+    },
+    {
+      "source_field": "增减",
+      "standard_field": "change",
+      "field_type": "text",
+      "description": "增减变化"
+    },
+    {
+      "source_field": "变动率",
+      "standard_field": "change_rate",
+      "field_type": "rate",
+      "description": "变动率"
+    },
+    {
+      "source_field": "股票名称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票名称"
+    },
+    {
+      "source_field": "股东人数",
+      "standard_field": "holder_number",
+      "field_type": "value",
+      "description": "股东人数"
+    },
+    {
+      "source_field": "股东户数",
+      "standard_field": "holder_number",
+      "field_type": "value",
+      "description": "股东户数"
+    },
+    {
+      "source_field": "日期",
+      "standard_field": "date",
+      "field_type": "date",
+      "description": "日期"
+    },
+    {
+      "source_field": "股东户数统计截止日",
+      "standard_field": "stat_date",
+      "field_type": "date",
+      "description": "股东户数统计截止日"
+    }
+  ]
+}

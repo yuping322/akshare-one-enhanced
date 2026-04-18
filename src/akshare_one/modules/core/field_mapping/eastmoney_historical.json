@@ -1,0 +1,124 @@
+{
+  "source": "eastmoney",
+  "module": "historical",
+  "version": "1.0",
+  "last_updated": "2024-01-15",
+  "mappings": [
+    {
+      "source_field": "时间",
+      "standard_field": "timestamp",
+      "field_type": "timestamp",
+      "description": "时间戳（日内数据，包含时区信息）"
+    },
+    {
+      "source_field": "日期",
+      "standard_field": "timestamp",
+      "field_type": "date",
+      "description": "日期（日级及以上数据，转换为带时区的timestamp）"
+    },
+    {
+      "source_field": "date",
+      "standard_field": "timestamp",
+      "field_type": "date",
+      "description": "日期（ETF数据，转换为带时区的timestamp）"
+    },
+    {
+      "source_field": "开盘",
+      "standard_field": "open",
+      "field_type": "other",
+      "description": "开盘价"
+    },
+    {
+      "source_field": "open",
+      "standard_field": "open",
+      "field_type": "other",
+      "description": "开盘价（ETF数据）"
+    },
+    {
+      "source_field": "最高",
+      "standard_field": "high",
+      "field_type": "other",
+      "description": "最高价"
+    },
+    {
+      "source_field": "high",
+      "standard_field": "high",
+      "field_type": "other",
+      "description": "最高价（ETF数据）"
+    },
+    {
+      "source_field": "最低",
+      "standard_field": "low",
+      "field_type": "other",
+      "description": "最低价"
+    },
+    {
+      "source_field": "low",
+      "standard_field": "low",
+      "field_type": "other",
+      "description": "最低价（ETF数据）"
+    },
+    {
+      "source_field": "收盘",
+      "standard_field": "close",
+      "field_type": "other",
+      "description": "收盘价"
+    },
+    {
+      "source_field": "close",
+      "standard_field": "close",
+      "field_type": "other",
+      "description": "收盘价（ETF数据）"
+    },
+    {
+      "source_field": "成交量",
+      "standard_field": "volume",
+      "field_type": "volume",
+      "description": "成交量（股）"
+    },
+    {
+      "source_field": "volume",
+      "standard_field": "volume",
+      "field_type": "volume",
+      "description": "成交量（ETF数据，股）"
+    },
+    {
+      "source_field": "成交额",
+      "standard_field": "amount",
+      "field_type": "amount",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "成交额"
+    },
+    {
+      "source_field": "均价",
+      "standard_field": "vwap",
+      "field_type": "other",
+      "description": "成交均价（VWAP）"
+    },
+    {
+      "source_field": "涨跌幅",
+      "standard_field": "pct_change",
+      "field_type": "rate",
+      "description": "涨跌幅"
+    },
+    {
+      "source_field": "涨跌额",
+      "standard_field": "change",
+      "field_type": "other",
+      "description": "涨跌额"
+    },
+    {
+      "source_field": "振幅",
+      "standard_field": "amplitude",
+      "field_type": "rate",
+      "description": "振幅"
+    },
+    {
+      "source_field": "换手率",
+      "standard_field": "turnover_rate",
+      "field_type": "rate",
+      "description": "换手率"
+    }
+  ]
+}

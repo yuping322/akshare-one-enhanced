@@ -1,0 +1,44 @@
+{
+  "source": "eastmoney",
+  "module": "news",
+  "version": "1.0",
+  "last_updated": "2026-04-04",
+  "mappings": [
+    {
+      "source_field": "关键词",
+      "standard_field": "keyword",
+      "field_type": "other",
+      "description": "关键词/股票代码"
+    },
+    {
+      "source_field": "新闻标题",
+      "standard_field": "title",
+      "field_type": "other",
+      "description": "新闻标题"
+    },
+    {
+      "source_field": "新闻内容",
+      "standard_field": "content",
+      "field_type": "other",
+      "description": "新闻内容"
+    },
+    {
+      "source_field": "发布时间",
+      "standard_field": "publish_time",
+      "field_type": "time",
+      "description": "发布时间"
+    },
+    {
+      "source_field": "文章来源",
+      "standard_field": "source",
+      "field_type": "other",
+      "description": "文章来源"
+    },
+    {
+      "source_field": "新闻链接",
+      "standard_field": "url",
+      "field_type": "other",
+      "description": "新闻链接"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "source": "eastmoney",
+  "module": "fundflow",
+  "version": "1.0",
+  "last_updated": "2024-02-15",
+  "mappings": [
+    {
+      "source_field": "日期",
+      "standard_field": "date",
+      "field_type": "date",
+      "description": "交易日期"
+    },
+    {
+      "source_field": "股票代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "股票简称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票简称"
+    },
+    {
+      "source_field": "主力净流入-净额",
+      "standard_field": "fundflow_main_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "主力资金净流入（元）"
+    },
+    {
+      "source_field": "主力净流入-净占比",
+      "standard_field": "fundflow_main_net_inflow_rate",
+      "field_type": "rate",
+      "description": "主力资金净流入占比（%）"
+    },
+    {
+      "source_field": "超大单净流入-净额",
+      "standard_field": "fundflow_super_large_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "超大单净流入（元）"
+    },
+    {
+      "source_field": "大单净流入-净额",
+      "standard_field": "fundflow_large_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "大单净流入（元）"
+    },
+    {
+      "source_field": "中单净流入-净额",
+      "standard_field": "fundflow_medium_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "中单净流入（元）"
+    },
+    {
+      "source_field": "小单净流入-净额",
+      "standard_field": "fundflow_small_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "小单净流入（元）"
+    },
+    {
+      "source_field": "涨跌幅",
+      "standard_field": "pct_change",
+      "field_type": "rate",
+      "description": "涨跌幅（%）"
+    },
+    {
+      "source_field": "收盘价",
+      "standard_field": "close_price",
+      "field_type": "value",
+      "description": "收盘价"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "source": "eastmoney",
+  "module": "limitup",
+  "version": "1.0",
+  "last_updated": "2024-02-23",
+  "mappings": [
+    {
+      "source_field": "日期",
+      "standard_field": "date",
+      "field_type": "date",
+      "description": "交易日期"
+    },
+    {
+      "source_field": "股票代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "股票简称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票简称"
+    },
+    {
+      "source_field": "收盘价",
+      "standard_field": "close_price",
+      "field_type": "value",
+      "description": "收盘价"
+    },
+    {
+      "source_field": "涨跌幅",
+      "standard_field": "pct_change",
+      "field_type": "rate",
+      "description": "涨跌幅（%）"
+    },
+    {
+      "source_field": "成交额",
+      "standard_field": "trade_amount",
+      "field_type": "amount",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "成交额（元）"
+    },
+    {
+      "source_field": "成交量",
+      "standard_field": "trade_volume",
+      "field_type": "volume",
+      "description": "成交量（手）"
+    },
+    {
+      "source_field": "换手率",
+      "standard_field": "turnover_rate",
+      "field_type": "rate",
+      "description": "换手率（%）"
+    },
+    {
+      "source_field": "封单金额",
+      "standard_field": "limit_order_amount",
+      "field_type": "amount",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "涨停/跌停封单金额（元）"
+    },
+    {
+      "source_field": "连板天数",
+      "standard_field": "consecutive_limit_days",
+      "field_type": "count",
+      "description": "连续涨停/跌停天数"
+    },
+    {
+      "source_field": "首次封板时间",
+      "standard_field": "first_limit_time",
+      "field_type": "time",
+      "description": "首次封板时间"
+    },
+    {
+      "source_field": "最后封板时间",
+      "standard_field": "last_limit_time",
+      "field_type": "time",
+      "description": "最后封板时间"
+    },
+    {
+      "source_field": "开板次数",
+      "standard_field": "limit_open_count",
+      "field_type": "count",
+      "description": "开板次数"
+    }
+  ]
+}

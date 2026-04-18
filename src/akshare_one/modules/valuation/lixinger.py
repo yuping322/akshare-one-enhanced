@@ -9,7 +9,7 @@ import time
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
-from ...metrics import get_stats_collector
+from ....metrics.stats import get_stats_collector
 from .base import ValuationFactory, ValuationProvider
 
 

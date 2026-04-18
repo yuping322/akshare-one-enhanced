@@ -1,0 +1,202 @@
+"""
+Financial statements and metrics module.
+"""
+
+import pandas as pd
+
+from .....core.base import ColumnsType, FilterType, SourceType
+from .....core.factory import api_endpoint
+from . import baostock, cninfo, eastmoney_direct, lixinger, sina, tickflow, tushare
+from .base import FinancialDataFactory
+
+
+@api_endpoint(FinancialDataFactory)
+def get_balance_sheet(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get balance sheet data for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_income_statement(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get income statement data for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_cash_flow(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get cash flow statement data for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_financial_metrics(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get financial metrics for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_dividend_history(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get dividend history for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_profit_data(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get profit data (盈利能力) for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_operation_data(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get operation data (营运能力) for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_growth_data(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get growth data (成长能力) for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_balance_data(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get balance data (偿债能力) for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_cash_flow_data(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get cash flow data (现金流量) for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+@api_endpoint(FinancialDataFactory)
+def get_dupont_data(
+    symbol: str,
+    source: SourceType = None,
+    columns: ColumnsType = None,
+    row_filter: FilterType = None,
+) -> pd.DataFrame:
+    """
+    Get dupont data (杜邦指数) for a stock.
+
+    Args:
+        symbol: Stock symbol
+    """
+    pass
+
+
+__all__ = [
+    "get_balance_sheet",
+    "get_income_statement",
+    "get_cash_flow",
+    "get_financial_metrics",
+    "get_dividend_history",
+    "get_profit_data",
+    "get_operation_data",
+    "get_growth_data",
+    "get_balance_data",
+    "get_cash_flow_data",
+    "get_dupont_data",
+    "FinancialDataFactory",
+]

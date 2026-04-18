@@ -1,0 +1,76 @@
+{
+  "source": "eastmoney",
+  "module": "blockdeal",
+  "version": "1.0",
+  "last_updated": "2024-02-15",
+  "mappings": [
+    {
+      "source_field": "交易日期",
+      "standard_field": "trade_date",
+      "field_type": "date",
+      "description": "大宗交易成交日期"
+    },
+    {
+      "source_field": "证券代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "证券简称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票简称"
+    },
+    {
+      "source_field": "成交价",
+      "standard_field": "price",
+      "field_type": "value",
+      "description": "大宗交易成交价格"
+    },
+    {
+      "source_field": "成交量",
+      "standard_field": "volume",
+      "field_type": "volume",
+      "description": "大宗交易成交量（股）"
+    },
+    {
+      "source_field": "成交额",
+      "standard_field": "amount",
+      "field_type": "amount",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "大宗交易成交金额（元）"
+    },
+    {
+      "source_field": "买方营业部",
+      "standard_field": "buyer_broker",
+      "field_type": "name",
+      "description": "买方营业部名称"
+    },
+    {
+      "source_field": "卖方营业部",
+      "standard_field": "seller_broker",
+      "field_type": "name",
+      "description": "卖方营业部名称"
+    },
+    {
+      "source_field": "涨跌幅",
+      "standard_field": "pct_change",
+      "field_type": "rate",
+      "description": "当日涨跌幅（%）"
+    },
+    {
+      "source_field": "收盘价",
+      "standard_field": "close_price",
+      "field_type": "value",
+      "description": "当日收盘价"
+    },
+    {
+      "source_field": "折溢率",
+      "standard_field": "premium_rate",
+      "field_type": "rate",
+      "description": "成交价相对收盘价的折溢价率（%）"
+    }
+  ]
+}

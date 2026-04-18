@@ -1,0 +1,156 @@
+{
+  "module": "northbound",
+  "version": "1.0",
+  "deprecated_version": "0.5.0",
+  "planned_removal_version": "1.0.0",
+  "last_updated": "2024-01-15",
+  "description": "Field name aliases specific to northbound module for backward compatibility. Note: Amount fields were converted from 亿元 to 元.",
+  "aliases": {
+    "日期": {
+      "standard_field": "date",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "交易日期"
+    },
+    "持股日期": {
+      "standard_field": "date",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股日期"
+    },
+    "代码": {
+      "standard_field": "symbol",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "股票代码"
+    },
+    "股票代码": {
+      "standard_field": "symbol",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "股票代码"
+    },
+    "股票简称": {
+      "standard_field": "name",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "股票名称"
+    },
+    "当日成交净买额": {
+      "standard_field": "net_buy",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "当日成交净买额（原单位：亿元，新单位：元）",
+      "unit_change": {
+        "old_unit": "yi_yuan",
+        "new_unit": "yuan",
+        "conversion_factor": 100000000
+      }
+    },
+    "买入成交额": {
+      "standard_field": "buy_amount",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "买入成交额（原单位：亿元，新单位：元）",
+      "unit_change": {
+        "old_unit": "yi_yuan",
+        "new_unit": "yuan",
+        "conversion_factor": 100000000
+      }
+    },
+    "卖出成交额": {
+      "standard_field": "sell_amount",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "卖出成交额（原单位：亿元，新单位：元）",
+      "unit_change": {
+        "old_unit": "yi_yuan",
+        "new_unit": "yuan",
+        "conversion_factor": 100000000
+      }
+    },
+    "当日余额": {
+      "standard_field": "balance",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "当日余额（原单位：亿元，新单位：元）",
+      "unit_change": {
+        "old_unit": "yi_yuan",
+        "new_unit": "yuan",
+        "conversion_factor": 100000000
+      }
+    },
+    "持股数量": {
+      "standard_field": "holdings_shares",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股数量（股）"
+    },
+    "持股数量(股)": {
+      "standard_field": "holdings_shares",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股数量（股）"
+    },
+    "持股市值": {
+      "standard_field": "holdings_value",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股市值（元）"
+    },
+    "持股市值(元)": {
+      "standard_field": "holdings_value",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股市值（元）"
+    },
+    "持股占比": {
+      "standard_field": "holdings_ratio",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股占比"
+    },
+    "持股占比(%)": {
+      "standard_field": "holdings_ratio",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股占比"
+    },
+    "持股数量占发行股百分比": {
+      "standard_field": "holdings_ratio",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股数量占发行股百分比"
+    },
+    "持股变化": {
+      "standard_field": "holdings_change",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股变化（股）"
+    },
+    "持股数量增减": {
+      "standard_field": "holdings_change",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股数量增减（股）"
+    },
+    "持股市值变化-1日": {
+      "standard_field": "holdings_value_change_1d",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股市值变化-1日（元）"
+    },
+    "持股市值变化-5日": {
+      "standard_field": "holdings_value_change_5d",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股市值变化-5日（元）"
+    },
+    "持股市值变化-10日": {
+      "standard_field": "holdings_value_change_10d",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股市值变化-10日（元）"
+    }
+  }
+}

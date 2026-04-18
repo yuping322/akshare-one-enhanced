@@ -1,0 +1,96 @@
+{
+  "source": "eastmoney",
+  "module": "fundflow",
+  "version": "1.0",
+  "last_updated": "2024-02-14",
+  "mappings": [
+    {
+      "source_field": "日期",
+      "standard_field": "date",
+      "field_type": "date",
+      "description": "交易日期"
+    },
+    {
+      "source_field": "股票代码",
+      "standard_field": "symbol",
+      "field_type": "symbol",
+      "description": "股票代码"
+    },
+    {
+      "source_field": "股票名称",
+      "standard_field": "name",
+      "field_type": "name",
+      "description": "股票名称"
+    },
+    {
+      "source_field": "主力净流入-净额",
+      "standard_field": "main_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "主力资金净流入金额（元）"
+    },
+    {
+      "source_field": "主力净流入-净占比",
+      "standard_field": "main_net_inflow_rate",
+      "field_type": "rate",
+      "description": "主力资金净流入占比"
+    },
+    {
+      "source_field": "超大单净流入-净额",
+      "standard_field": "super_large_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "超大单净流入金额（元）"
+    },
+    {
+      "source_field": "超大单净流入-净占比",
+      "standard_field": "super_large_net_inflow_rate",
+      "field_type": "rate",
+      "description": "超大单净流入占比"
+    },
+    {
+      "source_field": "大单净流入-净额",
+      "standard_field": "large_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "大单净流入金额（元）"
+    },
+    {
+      "source_field": "大单净流入-净占比",
+      "standard_field": "large_net_inflow_rate",
+      "field_type": "rate",
+      "description": "大单净流入占比"
+    },
+    {
+      "source_field": "中单净流入-净额",
+      "standard_field": "medium_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "中单净流入金额（元）"
+    },
+    {
+      "source_field": "中单净流入-净占比",
+      "standard_field": "medium_net_inflow_rate",
+      "field_type": "rate",
+      "description": "中单净流入占比"
+    },
+    {
+      "source_field": "小单净流入-净额",
+      "standard_field": "small_net_inflow",
+      "field_type": "net_flow",
+      "source_unit": "yuan",
+      "target_unit": "yuan",
+      "description": "小单净流入金额（元）"
+    },
+    {
+      "source_field": "小单净流入-净占比",
+      "standard_field": "small_net_inflow_rate",
+      "field_type": "rate",
+      "description": "小单净流入占比"
+    }
+  ]
+}

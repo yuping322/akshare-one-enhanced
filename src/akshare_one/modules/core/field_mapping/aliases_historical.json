@@ -1,0 +1,124 @@
+{
+  "module": "historical",
+  "version": "1.0",
+  "deprecated_version": "0.5.0",
+  "planned_removal_version": "1.0.0",
+  "last_updated": "2024-01-15",
+  "description": "Field name aliases specific to historical module for backward compatibility. Note: Date fields are now unified as 'timestamp' with timezone awareness.",
+  "aliases": {
+    "时间": {
+      "standard_field": "timestamp",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "时间戳（日内数据）"
+    },
+    "日期": {
+      "standard_field": "timestamp",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "日期（日级及以上数据，现在统一为timestamp）"
+    },
+    "date": {
+      "standard_field": "timestamp",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "日期（ETF数据，现在统一为timestamp）"
+    },
+    "开盘": {
+      "standard_field": "open",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "开盘价"
+    },
+    "open": {
+      "standard_field": "open",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "开盘价（ETF数据）"
+    },
+    "最高": {
+      "standard_field": "high",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "最高价"
+    },
+    "high": {
+      "standard_field": "high",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "最高价（ETF数据）"
+    },
+    "最低": {
+      "standard_field": "low",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "最低价"
+    },
+    "low": {
+      "standard_field": "low",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "最低价（ETF数据）"
+    },
+    "收盘": {
+      "standard_field": "close",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "收盘价"
+    },
+    "close": {
+      "standard_field": "close",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "收盘价（ETF数据）"
+    },
+    "成交量": {
+      "standard_field": "volume",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "成交量（股）"
+    },
+    "volume": {
+      "standard_field": "volume",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "成交量（ETF数据，股）"
+    },
+    "成交额": {
+      "standard_field": "amount",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "成交额（元）"
+    },
+    "均价": {
+      "standard_field": "vwap",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "成交均价（VWAP）"
+    },
+    "涨跌幅": {
+      "standard_field": "pct_change",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "涨跌幅"
+    },
+    "涨跌额": {
+      "standard_field": "change",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "涨跌额"
+    },
+    "振幅": {
+      "standard_field": "amplitude",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "振幅"
+    },
+    "换手率": {
+      "standard_field": "turnover_rate",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "换手率"
+    }
+  }
+}

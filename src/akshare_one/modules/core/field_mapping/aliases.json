@@ -1,0 +1,273 @@
+{
+  "version": "1.0",
+  "deprecated_version": "0.5.0",
+  "planned_removal_version": "1.0.0",
+  "last_updated": "2024-01-15",
+  "description": "Global field name aliases for backward compatibility. Maps old Chinese field names to new English standard names.",
+  "aliases": {
+    "日期": {
+      "standard_field": "date",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "交易日期"
+    },
+    "时间": {
+      "standard_field": "timestamp",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "时间戳"
+    },
+    "持股日期": {
+      "standard_field": "date",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股日期"
+    },
+    "代码": {
+      "standard_field": "symbol",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "股票代码"
+    },
+    "股票代码": {
+      "standard_field": "symbol",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "股票代码"
+    },
+    "名称": {
+      "standard_field": "name",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "股票名称"
+    },
+    "股票简称": {
+      "standard_field": "name",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "股票名称"
+    },
+    "收盘价": {
+      "standard_field": "close",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "收盘价"
+    },
+    "收盘": {
+      "standard_field": "close",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "收盘价"
+    },
+    "开盘": {
+      "standard_field": "open",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "开盘价"
+    },
+    "最高": {
+      "standard_field": "high",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "最高价"
+    },
+    "最低": {
+      "standard_field": "low",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "最低价"
+    },
+    "成交量": {
+      "standard_field": "volume",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "成交量"
+    },
+    "成交额": {
+      "standard_field": "amount",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "成交额"
+    },
+    "涨跌幅": {
+      "standard_field": "pct_change",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "涨跌幅"
+    },
+    "涨跌额": {
+      "standard_field": "change",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "涨跌额"
+    },
+    "振幅": {
+      "standard_field": "amplitude",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "振幅"
+    },
+    "换手率": {
+      "standard_field": "turnover_rate",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "换手率"
+    },
+    "均价": {
+      "standard_field": "vwap",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "成交均价"
+    },
+    "主力净流入-净额": {
+      "standard_field": "main_net_inflow",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "主力资金净流入金额"
+    },
+    "主力净流入-净占比": {
+      "standard_field": "main_net_inflow_rate",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "主力资金净流入占比"
+    },
+    "超大单净流入-净额": {
+      "standard_field": "super_large_net_inflow",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "超大单净流入金额"
+    },
+    "大单净流入-净额": {
+      "standard_field": "large_net_inflow",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "大单净流入金额"
+    },
+    "中单净流入-净额": {
+      "standard_field": "medium_net_inflow",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "中单净流入金额"
+    },
+    "小单净流入-净额": {
+      "standard_field": "small_net_inflow",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "小单净流入金额"
+    },
+    "板块代码": {
+      "standard_field": "sector_code",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "板块代码"
+    },
+    "板块名称": {
+      "standard_field": "sector_name",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "板块名称"
+    },
+    "领涨股": {
+      "standard_field": "leading_stock",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "领涨股名称"
+    },
+    "领涨股涨跌幅": {
+      "standard_field": "leading_stock_pct",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "领涨股涨跌幅"
+    },
+    "公司数量": {
+      "standard_field": "constituent_count",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "成分股数量"
+    },
+    "当日成交净买额": {
+      "standard_field": "net_buy",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "当日成交净买额"
+    },
+    "买入成交额": {
+      "standard_field": "buy_amount",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "买入成交额"
+    },
+    "卖出成交额": {
+      "standard_field": "sell_amount",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "卖出成交额"
+    },
+    "当日余额": {
+      "standard_field": "balance",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "当日余额"
+    },
+    "持股数量": {
+      "standard_field": "holdings_shares",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股数量"
+    },
+    "持股数量(股)": {
+      "standard_field": "holdings_shares",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股数量"
+    },
+    "持股市值": {
+      "standard_field": "holdings_value",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股市值"
+    },
+    "持股市值(元)": {
+      "standard_field": "holdings_value",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股市值"
+    },
+    "持股占比": {
+      "standard_field": "holdings_ratio",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股占比"
+    },
+    "持股占比(%)": {
+      "standard_field": "holdings_ratio",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股占比"
+    },
+    "持股数量占发行股百分比": {
+      "standard_field": "holdings_ratio",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股数量占发行股百分比"
+    },
+    "持股变化": {
+      "standard_field": "holdings_change",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股变化"
+    },
+    "持股数量增减": {
+      "standard_field": "holdings_change",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股数量增减"
+    },
+    "持股市值变化-1日": {
+      "standard_field": "holdings_value_change_1d",
+      "deprecated_in": "0.5.0",
+      "removal_in": "1.0.0",
+      "description": "持股市值变化-1日"
+    }
+  }
+}

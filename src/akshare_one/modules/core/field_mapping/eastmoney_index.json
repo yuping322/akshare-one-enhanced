@@ -1,0 +1,82 @@
+{
+  "source": "eastmoney",
+  "module": "index",
+  "mappings": [
+    {
+      "source_field": "日期",
+      "standard_field": "date"
+    },
+    {
+      "source_field": "代码",
+      "standard_field": "symbol"
+    },
+    {
+      "source_field": "名称",
+      "standard_field": "name"
+    },
+    {
+      "source_field": "最新价",
+      "standard_field": "value"
+    },
+    {
+      "source_field": "涨跌幅",
+      "standard_field": "pct_change"
+    },
+    {
+      "source_field": "涨跌额",
+      "standard_field": "change"
+    },
+    {
+      "source_field": "开盘",
+      "standard_field": "open"
+    },
+    {
+      "source_field": "收盘",
+      "standard_field": "close"
+    },
+    {
+      "source_field": "最高",
+      "standard_field": "high"
+    },
+    {
+      "source_field": "最低",
+      "standard_field": "low"
+    },
+    {
+      "source_field": "成交量",
+      "standard_field": "volume"
+    },
+    {
+      "source_field": "成交额",
+      "standard_field": "amount"
+    },
+    {
+      "source_field": "index_code",
+      "standard_field": "symbol"
+    },
+    {
+      "source_field": "display_name",
+      "standard_field": "name"
+    },
+    {
+      "source_field": "成分券代码",
+      "standard_field": "symbol"
+    },
+    {
+      "source_field": "成分券名称",
+      "standard_field": "name"
+    },
+    {
+      "source_field": "权重",
+      "standard_field": "weight"
+    },
+    {
+      "source_field": "振幅",
+      "standard_field": "amplitude"
+    },
+    {
+      "source_field": "换手率",
+      "standard_field": "turnover"
+    }
+  ]
+}

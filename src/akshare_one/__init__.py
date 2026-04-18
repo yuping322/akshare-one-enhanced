@@ -163,6 +163,123 @@ from .modules.restricted import (
     get_restricted_release,
     get_restricted_release_calendar,
 )
+from .modules.convertbond import (
+    ConvertBondFactory,
+    get_convert_bond_list,
+    get_convert_bond_info,
+    get_convert_bond_hist,
+    get_convert_bond_spot,
+    get_convert_bond_premium,
+    get_convert_bond_by_stock,
+    get_convert_bond_quote,
+    calculate_conversion_value,
+    calculate_premium_rate,
+    get_convert_bond_daily,
+)
+from .modules.callauction import (
+    CallAuctionFactory,
+    get_call_auction,
+    get_call_auction_batch,
+)
+from .modules.lof import (
+    LOFFactory,
+    get_lof_list,
+    get_lof_hist_data,
+    get_lof_spot,
+    get_lof_nav,
+)
+from .modules.fundof import (
+    FOFFactory,
+    get_fof_list,
+    get_fof_nav,
+    get_fof_info,
+)
+from .modules.optiongreeks import (
+    OptionGreeksFactory,
+    get_option_greeks,
+    calculate_option_implied_vol,
+    calculate_implied_vol,
+    calculate_greeks,
+    black_scholes_price,
+)
+from .modules.indexweights import (
+    IndexWeightsFactory,
+    get_index_weights,
+    get_index_weights_history,
+    get_index_info,
+)
+from .modules.companydepth import (
+    CompanyDepthFactory,
+    get_security_status,
+    get_name_history,
+    get_management_info,
+    get_employee_info,
+    get_listing_info,
+    get_industry_info,
+)
+from .modules.dividendcalc import (
+    DividendCalcFactory,
+    calculate_ex_rights_price,
+    calculate_adjust_price,
+    get_stock_bonus,
+    get_rights_issue,
+    get_dividend_by_date,
+)
+from .modules.sharechangedepth import (
+    ShareChangeDepthFactory,
+    get_freeze_info,
+    get_capital_change,
+    get_topholder_change,
+    get_major_holder_trade,
+)
+from .modules.industryanalytics import (
+    IndustryAnalyticsFactory,
+    get_stock_industry,
+    get_industry_performance,
+    get_concept_performance,
+    search_concept,
+    get_all_concept_stocks as get_all_concept_stocks_module,
+    get_all_industries,
+    filter_stocks_by_industry,
+    query_industry_sw,
+)
+from .modules.northbounddepth import (
+    NorthboundDepthFactory,
+    get_north_stock_detail,
+    get_north_quota_info,
+    get_north_calendar,
+    compute_north_money_signal,
+)
+from .modules.macroakshare import (
+    MacroAkShareFactory,
+    get_macro_gdp,
+    get_macro_cpi,
+    get_macro_ppi,
+    get_macro_pmi,
+    get_macro_interest_rate,
+    get_macro_exchange_rate,
+    get_macro_china_gdp,
+    get_macro_china_cpi,
+    get_macro_china_ppi,
+    get_macro_china_pmi,
+    get_macro_china_interest_rate,
+    get_macro_china_exchange_rate,
+)
+from .modules.futuresmargin import (
+    FuturesMarginFactory,
+    get_contract_multiplier,
+    get_margin_rate_for_contract,
+    calculate_position_value,
+    calculate_required_margin,
+    get_contract_info,
+    get_margin_rate,
+    CONTRACT_MULTIPLIERS,
+)
+from .modules.shareholderdepth import (
+    ShareholderDepthFactory,
+    get_shareholder_structure,
+    get_shareholder_concentration,
+)
 from .modules.goodwill import (
     GoodwillFactory,
     get_goodwill_data,
@@ -394,6 +511,128 @@ __all__ = [
     "get_chip_distribution",
     "get_broker_forecast",
     "get_institutional_research",
+    # 可转债深度
+    "get_convert_bond_list",
+    "get_convert_bond_info",
+    "get_convert_bond_hist",
+    "get_convert_bond_spot",
+    "get_convert_bond_premium",
+    "get_convert_bond_by_stock",
+    "get_convert_bond_quote",
+    "calculate_conversion_value",
+    "calculate_premium_rate",
+    "get_convert_bond_daily",
+    # 集合竞价
+    "get_call_auction",
+    "get_call_auction_batch",
+    # LOF/FOF
+    "get_lof_list",
+    "get_lof_hist_data",
+    "get_lof_spot",
+    "get_lof_nav",
+    "get_fof_list",
+    "get_fof_nav",
+    "get_fof_info",
+    # 期权Greeks
+    "get_option_greeks",
+    "calculate_option_implied_vol",
+    "calculate_implied_vol",
+    "calculate_greeks",
+    "black_scholes_price",
+    # 指数权重
+    "get_index_weights",
+    "get_index_weights_history",
+    "get_index_info",
+    # 公司深度
+    "get_security_status",
+    "get_name_history",
+    "get_management_info",
+    "get_employee_info",
+    "get_listing_info",
+    "get_industry_info",
+    # 分红计算
+    "calculate_ex_rights_price",
+    "calculate_adjust_price",
+    "get_stock_bonus",
+    "get_rights_issue",
+    "get_dividend_by_date",
+    # 股权变动深度
+    "get_freeze_info",
+    "get_capital_change",
+    "get_topholder_change",
+    "get_major_holder_trade",
+    # 行业分析
+    "get_stock_industry",
+    "get_industry_performance",
+    "get_concept_performance",
+    "search_concept",
+    "get_all_concept_stocks",
+    "get_all_industries",
+    "filter_stocks_by_industry",
+    "query_industry_sw",
+    # 北向深度
+    "get_north_stock_detail",
+    "get_north_quota_info",
+    "get_north_calendar",
+    "compute_north_money_signal",
+    # 宏观akshare
+    "get_macro_gdp",
+    "get_macro_cpi",
+    "get_macro_ppi",
+    "get_macro_pmi",
+    "get_macro_interest_rate",
+    "get_macro_exchange_rate",
+    "get_macro_china_gdp",
+    "get_macro_china_cpi",
+    "get_macro_china_ppi",
+    "get_macro_china_pmi",
+    "get_macro_china_interest_rate",
+    "get_macro_china_exchange_rate",
+    # 期货保证金
+    "get_contract_multiplier",
+    "get_margin_rate_for_contract",
+    "calculate_position_value",
+    "calculate_required_margin",
+    "get_contract_info",
+    "get_margin_rate",
+    # 股东深度
+    "get_shareholder_structure",
+    "get_shareholder_concentration",
+    # jk2bt兼容别名
+    "get_stock_daily",
+    "get_stock_price",
+    "get_etf_daily",
+    "get_index_daily",
+    "get_stock_minute",
+    "get_etf_minute",
+    "get_money_flow",
+    "get_north_money_flow",
+    "get_north_money_holdings",
+    "get_north_money_stock_flow",
+    "get_company_info",
+    "get_shareholders",
+    "get_income",
+    "get_cashflow",
+    "get_fund_net_value",
+    "get_margin_data_module",
+    "get_forecast_data",
+    "get_unlock",
+    "get_unlock_calendar",
+    "get_stock_concepts",
+    "get_all_concept_stocks",
+    "get_sw_industry_list",
+    "get_industry_stocks_module",
+    "get_dominant_contract",
+    "get_future_contracts",
+    "get_future_daily",
+    "get_macro_china_gdp",
+    "get_macro_china_cpi",
+    "get_macro_china_ppi",
+    "get_macro_china_pmi",
+    "get_macro_china_interest_rate",
+    "get_macro_china_exchange_rate",
+    "get_adapter",
+    "get_cache_manager",
     # JQ Compatibility (Merge from jk2bt)
     "get_price",
     "get_bars",
@@ -1408,3 +1647,279 @@ def get_block_deal_multi_source(
         symbol=symbol,
         execute_args=(start_date, end_date),
     )
+
+
+# ==================== jk2bt 兼容别名 ====================
+
+
+# 股票日线别名
+def get_stock_daily(symbol: str, start: str, end: str, adjust: str = "qfq", **kwargs) -> pd.DataFrame:
+    """获取股票日线数据(jk2bt兼容)"""
+    return get_hist_data(symbol, interval="day", start_date=start, end_date=end, adjust=adjust, source="sina", **kwargs)
+
+
+def get_stock_price(securities, start_date=None, end_date=None, count=None, fields=None, adjust="qfq", **kwargs):
+    """获取股票价格(jk2bt兼容)"""
+    from .jq_compat import get_price
+
+    return get_price(
+        security=securities,
+        start_date=start_date,
+        end_date=end_date,
+        count=count,
+        fields=fields,
+        fq="pre" if adjust == "qfq" else "post" if adjust == "hfq" else None,
+        **kwargs,
+    )
+
+
+# ETF日线别名
+def get_etf_daily(symbol: str, start: str, end: str, **kwargs) -> pd.DataFrame:
+    """获取ETF日线数据(jk2bt兼容)"""
+    return get_etf_hist_data(symbol, start_date=start, end_date=end, **kwargs)
+
+
+# 指数日线别名
+def get_index_daily(symbol: str, start: str, end: str, **kwargs) -> pd.DataFrame:
+    """获取指数日线数据(jk2bt兼容)"""
+    return get_index_hist_data(symbol, start_date=start, end_date=end, **kwargs)
+
+
+# 分钟线别名
+def get_stock_minute(
+    symbol: str, start: str, end: str, period: str = "1m", adjust: str = "qfq", **kwargs
+) -> pd.DataFrame:
+    """获取股票分钟线数据(jk2bt兼容)"""
+    interval_map = {"1m": "minute", "5m": "minute", "15m": "minute", "30m": "minute", "60m": "hour"}
+    interval = interval_map.get(period, "minute")
+    multiplier = int(period.replace("m", "")) if period.endswith("m") else 1
+    if interval == "hour":
+        return get_hist_data(
+            symbol,
+            interval="hour",
+            interval_multiplier=multiplier,
+            start_date=start,
+            end_date=end,
+            adjust=adjust,
+            source="sina",
+            **kwargs,
+        )
+    return get_hist_data(
+        symbol,
+        interval="minute",
+        interval_multiplier=multiplier,
+        start_date=start,
+        end_date=end,
+        adjust=adjust,
+        source="sina",
+        **kwargs,
+    )
+
+
+def get_etf_minute(symbol: str, start: str, end: str, period: str = "1m", **kwargs) -> pd.DataFrame:
+    """获取ETF分钟线数据(jk2bt兼容)"""
+    interval_map = {"1m": "minute", "5m": "minute", "15m": "minute", "30m": "minute", "60m": "hour"}
+    interval = interval_map.get(period, "minute")
+    multiplier = int(period.replace("m", "")) if period.endswith("m") else 1
+    if interval == "hour":
+        return get_etf_hist_data(
+            symbol, start_date=start, end_date=end, interval="hour", interval_multiplier=multiplier, **kwargs
+        )
+    return get_etf_hist_data(
+        symbol, start_date=start, end_date=end, interval="minute", interval_multiplier=multiplier, **kwargs
+    )
+
+
+# 资金流别名
+def get_money_flow(security_list=None, start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取资金流数据(jk2bt兼容)"""
+    from .jq_compat import get_money_flow as jq_get_money_flow
+
+    return jq_get_money_flow(security=security_list, start_date=start_date, end_date=end_date)
+
+
+# 北向资金别名
+def get_north_money_flow(start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取北向资金流(jk2bt兼容)"""
+    return get_northbound_flow(start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+def get_north_money_holdings(date=None, top_n=50, **kwargs) -> pd.DataFrame:
+    """获取北向持仓(jk2bt兼容)"""
+    return get_northbound_top_stocks(date=date or "", top_n=top_n)
+
+
+def get_north_money_stock_flow(symbol=None, start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取北向个股资金流(jk2bt兼容)"""
+    return get_northbound_holdings(
+        symbol=symbol, start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31"
+    )
+
+
+# 公司信息别名
+def get_company_info(symbol: str, **kwargs) -> pd.DataFrame:
+    """获取公司信息(jk2bt兼容)"""
+    return get_basic_info(symbol, source="sina", **kwargs)
+
+
+# 股东别名
+def get_shareholders(symbol: str, date=None, **kwargs):
+    """获取股东信息(jk2bt兼容)"""
+    return get_top_shareholders(symbol, date=date or "")
+
+
+# 财务别名
+def get_income(symbol: str, **kwargs) -> pd.DataFrame:
+    """获取利润表(jk2bt兼容)"""
+    return get_income_statement(symbol, **kwargs)
+
+
+def get_cashflow(symbol: str, **kwargs) -> pd.DataFrame:
+    """获取现金流量表(jk2bt兼容)"""
+    return get_cash_flow(symbol, **kwargs)
+
+
+def get_fund_net_value(symbol: str, start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取基金净值(jk2bt兼容)"""
+    from .jq_compat import get_fund_nav
+
+    return get_fund_nav(symbol, start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+# 融资融券别名
+def get_margin_data_module(symbol: str, start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取融资融券数据(jk2bt兼容)"""
+    from .modules.margin import MarginFactory
+
+    provider = MarginFactory.get_provider("eastmoney", symbol=symbol)
+    return provider.get_margin_data(start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+# 业绩预测别名
+def get_forecast_data(symbol: str, **kwargs) -> pd.DataFrame:
+    """获取业绩预测(jk2bt兼容)"""
+    from .modules.performance import PerformanceFactory
+
+    provider = PerformanceFactory.get_provider("eastmoney", symbol=symbol)
+    return provider.get_performance_forecast(start_date="1970-01-01", end_date="2030-12-31")
+
+
+# 限售解禁别名
+def get_unlock(symbol: str, **kwargs) -> pd.DataFrame:
+    """获取限售解禁(jk2bt兼容)"""
+    return get_restricted_release(symbol, start_date="1970-01-01", end_date="2030-12-31")
+
+
+def get_unlock_calendar(start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取解禁日历(jk2bt兼容)"""
+    return get_restricted_release_calendar(start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+# 概念别名
+def get_stock_concepts(security, date=None, **kwargs):
+    """获取股票概念(jk2bt兼容)"""
+    from .jq_compat import get_concept
+
+    return get_concept(security, date=date)
+
+
+def get_all_concept_stocks(date=None, **kwargs) -> pd.DataFrame:
+    """获取所有概念股(jk2bt兼容)"""
+    return get_all_concept_stocks_module(**kwargs)
+
+
+# 行业别名
+def get_sw_industry_list(level=1, **kwargs) -> pd.DataFrame:
+    """获取申万行业列表(jk2bt兼容)"""
+    from .modules.industry import IndustryFactory
+
+    provider = IndustryFactory.get_provider("eastmoney", industry_name="")
+    return provider.get_industry_classify(level=f"sw_l{level}")
+
+
+def get_industry_stocks_module(industry_name: str, **kwargs) -> list:
+    """获取行业成分股(jk2bt兼容)"""
+    from .modules.industry import IndustryFactory
+
+    provider = IndustryFactory.get_provider("eastmoney", industry_name=industry_name)
+    return provider.get_industry_stocks(industry_name)
+
+
+# 期货别名
+def get_dominant_contract(product: str, date=None, **kwargs) -> str:
+    """获取主力合约(jk2bt兼容)"""
+    from .jq_compat import get_dominant_future
+
+    return get_dominant_future(product, date=date)
+
+
+def get_future_contracts(product=None, exchange=None, date=None, **kwargs) -> pd.DataFrame:
+    """获取期货合约列表(jk2bt兼容)"""
+    from .jq_compat import get_future_contracts as jq_get_future_contracts
+
+    return jq_get_future_contracts(product or "", exchange=exchange, date=date)
+
+
+def get_future_daily(contract_code: str, start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取期货日线(jk2bt兼容)"""
+    return get_futures_hist_data(
+        contract_code, start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31"
+    )
+
+
+# 宏观别名
+def get_macro_china_gdp(start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取中国GDP(jk2bt兼容)"""
+    from .modules.macroakshare import get_macro_china_gdp as _gdp
+
+    return _gdp(start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+def get_macro_china_cpi(start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取中国CPI(jk2bt兼容)"""
+    from .modules.macroakshare import get_macro_china_cpi as _cpi
+
+    return _cpi(start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+def get_macro_china_ppi(start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取中国PPI(jk2bt兼容)"""
+    from .modules.macroakshare import get_macro_china_ppi as _ppi
+
+    return _ppi(start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+def get_macro_china_pmi(start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取中国PMI(jk2bt兼容)"""
+    from .modules.macroakshare import get_macro_china_pmi as _pmi
+
+    return _pmi(start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+def get_macro_china_interest_rate(start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取中国利率(jk2bt兼容)"""
+    from .modules.macroakshare import get_macro_china_interest_rate as _rate
+
+    return _rate(start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+def get_macro_china_exchange_rate(start_date=None, end_date=None, **kwargs) -> pd.DataFrame:
+    """获取中国汇率(jk2bt兼容)"""
+    from .modules.macroakshare import get_macro_china_exchange_rate as _fx
+
+    return _fx(start_date=start_date or "1970-01-01", end_date=end_date or "2030-12-31")
+
+
+# 缓存/数据源别名
+def get_adapter():
+    """获取数据适配器"""
+    from .akshare_compat import get_adapter as _get_adapter
+
+    return _get_adapter()
+
+
+def get_cache_manager(db_path=None):
+    """获取缓存管理器"""
+    from .cache.manager import get_cache_manager as _get_cache_manager
+
+    return _get_cache_manager()

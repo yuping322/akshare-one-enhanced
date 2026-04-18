@@ -1,25 +1,8 @@
-"""
-ST (Special Treatment) stocks module.
-"""
+import warnings
 
-import pandas as pd
-
-from ..base import ColumnsType, FilterType, SourceType
-from ..factory_base import api_endpoint
-from . import eastmoney
-from .base import STFactory
-
-
-@api_endpoint(STFactory)
-def get_st_stocks(
-    source: SourceType = None,
-    columns: ColumnsType = None,
-    row_filter: FilterType = None,
-) -> pd.DataFrame:
-    """
-    Get ST (Special Treatment) stocks.
-    """
-    pass
-
-
-__all__ = ["get_st_stocks", "STFactory"]
+warnings.warn(
+    "Import from 'modules.st' is deprecated. Use 'modules.providers.equities.corporate_events.status' instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+from ..providers.equities.corporate_events.status import *

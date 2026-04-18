@@ -13,7 +13,7 @@ import time
 import pandas as pd
 
 from ...lixinger_client import get_lixinger_client
-from ...metrics import get_stats_collector
+from ....metrics.stats import get_stats_collector
 from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import IPOFactory, IPOProvider
 
