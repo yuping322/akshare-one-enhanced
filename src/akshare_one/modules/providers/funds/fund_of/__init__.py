@@ -8,13 +8,13 @@ import pandas as pd
 
 from ....core.base import ColumnsType, FilterType, SourceType
 from ....core.factory import api_endpoint
-from . import akshare
+from . import eastmoney
 from .base import FOFFactory
 
 
 @api_endpoint(FOFFactory)
 def get_fof_list(
-    source: SourceType = "akshare",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -29,7 +29,7 @@ def get_fof_nav(
     symbol: str,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    source: SourceType = "akshare",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -42,7 +42,7 @@ def get_fof_nav(
 @api_endpoint(FOFFactory, method_name="get_fof_info")
 def get_fof_info(
     symbol: str,
-    source: SourceType = "akshare",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:

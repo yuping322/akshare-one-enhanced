@@ -33,12 +33,12 @@ class DividendCalcFactory(DividendDataFactory):
     pass
 
 
-@DividendCalcFactory.register("akshare")
-class AkShareDividendCalcProvider(DividendCalcProvider):
-    """Dividend calculation data provider using AkShare."""
+@DividendCalcFactory.register("eastmoney")
+class EastMoneyDividendCalcProvider(DividendCalcProvider):
+    """Dividend calculation data provider using EastMoney."""
 
     def get_source_name(self) -> str:
-        return "akshare"
+        return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
         return pd.DataFrame()

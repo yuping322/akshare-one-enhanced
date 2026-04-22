@@ -7,7 +7,7 @@ from .lixinger import LixingerIndexProvider
 from .sina import SinaIndexProvider
 from .tushare import TushareIndexProvider
 from .weights.base import IndexWeightsFactory, IndexWeightsProvider
-from .weights.akshare import AkShareIndexWeightsProvider
+from .weights.csindex import CSIndexWeightsProvider
 from .weights.tushare import TushareIndexWeightsProvider
 
 __all__ = [
@@ -20,6 +20,6 @@ __all__ = [
     "TushareIndexProvider",
     "IndexWeightsFactory",
     "IndexWeightsProvider",
-    "AkShareIndexWeightsProvider",
+    "CSIndexWeightsProvider",
     "TushareIndexWeightsProvider",
 ]

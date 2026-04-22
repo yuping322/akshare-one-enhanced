@@ -1,25 +1,31 @@
-from ..base import BaseProvider
+"""
+Futures margin data provider using Sina data source.
+"""
+
 import pandas as pd
-from .base import FuturesMarginFactory, FuturesMarginProvider
+
+from .margin import FuturesMarginFactory, FuturesMarginProvider
 
 
-@FuturesMarginFactory.register("akshare")
-class AkShareFuturesMarginProvider(FuturesMarginProvider):
+@FuturesMarginFactory.register("sina")
+class SinaFuturesMarginProvider(FuturesMarginProvider):
+    """Futures margin data provider using Sina."""
+
     def get_source_name(self) -> str:
-        return "akshare"
+        return "sina"
+
+    def get_margin_rate(self, contract_code: str) -> pd.DataFrame:
+        """Get margin rate."""
+        return self.akshare_adapter.call("futures_margin_sina")
 
     def get_contract_info(self, contract_code: str) -> pd.DataFrame:
-        """获取合约信息 - ak.futures_contract_info_shfe/dce/czce/cffex"""
+        """Get contract information."""
         exchange = self._infer_exchange(contract_code)
         func_name = f"futures_contract_info_{exchange}"
         return self.akshare_adapter.call(func_name)
 
-    def get_margin_rate(self, contract_code: str) -> pd.DataFrame:
-        """获取保证金率 - ak.futures_margin_sina"""
-        return self.akshare_adapter.call("futures_margin_sina")
-
     def _infer_exchange(self, contract_code: str) -> str:
-        """根据合约代码推断交易所"""
+        """Infer exchange from contract code."""
         code = contract_code.upper()
         if code.startswith(("IF", "IC", "IH", "IM", "T", "TF", "TS")):
             return "cffex"

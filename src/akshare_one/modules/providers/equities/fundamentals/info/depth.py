@@ -51,18 +51,18 @@ class CompanyDepthFactory(InfoDataFactory):
     pass
 
 
-@CompanyDepthFactory.register("akshare")
-class AkShareCompanyDepthProvider(CompanyDepthProvider):
-    """Company depth data provider using AkShare."""
+@CompanyDepthFactory.register("eastmoney")
+class EastMoneyCompanyDepthProvider(CompanyDepthProvider):
+    """Company depth data provider using EastMoney."""
 
     def get_source_name(self) -> str:
-        return "akshare"
+        return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
         return pd.DataFrame()
 
     def get_security_status(self, symbol: str, date: str = "", **kwargs) -> pd.DataFrame:
-        """Get security status from AkShare."""
+        """Get security status from EastMoney."""
         df = self.akshare_adapter.call("stock_zh_a_spot_em")
         if not df.empty and symbol:
             for col in ["代码", "symbol", "code"]:
@@ -71,19 +71,19 @@ class AkShareCompanyDepthProvider(CompanyDepthProvider):
         return df
 
     def get_name_history(self, symbol: str, **kwargs) -> pd.DataFrame:
-        """Get stock name history from AkShare."""
+        """Get stock name history from EastMoney."""
         return self.akshare_adapter.call("stock_info_change_name_em", symbol=symbol)
 
     def get_management_info(self, symbol: str, **kwargs) -> pd.DataFrame:
-        """Get management information from AkShare."""
+        """Get management information from EastMoney."""
         return self.akshare_adapter.call("stock_management_change_em", symbol=symbol)
 
     def get_employee_info(self, symbol: str, **kwargs) -> pd.DataFrame:
-        """Get employee information from AkShare."""
+        """Get employee information from EastMoney."""
         return self.akshare_adapter.call("stock_ipo_summary", symbol=symbol)
 
     def get_listing_info(self, symbol: str, **kwargs) -> pd.DataFrame:
-        """Get listing information from AkShare."""
+        """Get listing information from EastMoney."""
         df = self.akshare_adapter.call("stock_info_a_code_name")
         if not df.empty and symbol:
             for col in ["code", "代码", "symbol"]:
@@ -92,5 +92,5 @@ class AkShareCompanyDepthProvider(CompanyDepthProvider):
         return df
 
     def get_industry_info(self, symbol: str, **kwargs) -> pd.DataFrame:
-        """Get industry classification information from AkShare."""
+        """Get industry classification information from EastMoney."""
         return self.akshare_adapter.call("stock_individual_info_em", symbol=symbol)

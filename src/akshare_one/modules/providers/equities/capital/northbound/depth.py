@@ -33,12 +33,12 @@ class NorthboundDepthFactory(NorthboundFactory):
     pass
 
 
-@NorthboundDepthFactory.register("akshare")
-class AkShareNorthboundDepthProvider(NorthboundDepthProvider):
-    """Northbound depth data provider using AkShare."""
+@NorthboundDepthFactory.register("eastmoney")
+class EastMoneyNorthboundDepthProvider(NorthboundDepthProvider):
+    """Northbound depth data provider using EastMoney."""
 
     def get_source_name(self) -> str:
-        return "akshare"
+        return "eastmoney"
 
     def get_north_stock_detail(self, symbol: str, date: str = "") -> pd.DataFrame:
         """Get individual stock northbound details."""

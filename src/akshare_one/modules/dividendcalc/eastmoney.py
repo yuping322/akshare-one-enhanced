@@ -1,7 +1,7 @@
 """
-AkShare provider for dividend calculation data.
+EastMoney provider for dividend calculation data.
 
-This module implements dividend calculation data provider using AkShare as the data source.
+This module implements dividend calculation data provider using EastMoney API as the data source.
 """
 
 import pandas as pd
@@ -9,12 +9,12 @@ import pandas as pd
 from .base import DividendCalcFactory, DividendCalcProvider
 
 
-@DividendCalcFactory.register("akshare")
-class AkShareDividendCalcProvider(DividendCalcProvider):
+@DividendCalcFactory.register("eastmoney")
+class EastMoneyDividendCalcProvider(DividendCalcProvider):
     """
-    Dividend calculation data provider using AkShare as the data source.
+    Dividend calculation data provider using EastMoney API as the data source.
 
-    AkShare provides comprehensive dividend data including:
+    EastMoney provides comprehensive dividend data including:
     - Stock bonus and transfer information (stock_fhps_em)
     - Rights issue information (stock_pg_em)
     - Dividend details by date (stock_fhps_detail_em)
@@ -37,11 +37,11 @@ class AkShareDividendCalcProvider(DividendCalcProvider):
 
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return "akshare"
+        return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
         """
-        Fetch raw data from AkShare.
+        Fetch raw data from EastMoney API.
 
         This method is not directly used as each specific method
         fetches its own data. Implemented for BaseProvider compatibility.

@@ -1,20 +1,20 @@
 """
-AkShare call auction (集合竞价) data provider.
+NetEase call auction (集合竞价) data provider.
 
-This module implements the call auction data provider using AkShare as the data source.
+This module implements the call auction data provider using NetEase 163 API as the data source.
 It wraps akshare functions and standardizes the output format.
 """
 
 import pandas as pd
 
-from ......constants import SYMBOL_ZFILL_WIDTH
+from ...constants import SYMBOL_ZFILL_WIDTH
 from .base import CallAuctionFactory, CallAuctionProvider
 
 
-@CallAuctionFactory.register("akshare")
-class AkShareCallAuctionProvider(CallAuctionProvider):
+@CallAuctionFactory.register("netease")
+class NetEaseCallAuctionProvider(CallAuctionProvider):
     """
-    Call auction data provider using AkShare as the data source.
+    Call auction data provider using NetEase 163 API as the data source.
 
     This provider wraps akshare functions to fetch call auction data
     and standardizes the output format for consistency.
@@ -22,11 +22,11 @@ class AkShareCallAuctionProvider(CallAuctionProvider):
 
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return "akshare"
+        return "netease"
 
     def fetch_data(self) -> pd.DataFrame:
         """
-        Fetch raw data from AkShare.
+        Fetch raw data from NetEase API.
 
         This method is not directly used as each specific method
         fetches its own data. Implemented for BaseProvider compatibility.
@@ -56,10 +56,10 @@ class AkShareCallAuctionProvider(CallAuctionProvider):
                 - type: Transaction type
 
         Example:
-            >>> provider = AkShareCallAuctionProvider()
+            >>> provider = NetEaseCallAuctionProvider()
             >>> df = provider.get_call_auction('600000')
         """
-        self.validate.symbol(symbol)
+        self.validate_symbol(symbol)
 
         try:
             import akshare as ak

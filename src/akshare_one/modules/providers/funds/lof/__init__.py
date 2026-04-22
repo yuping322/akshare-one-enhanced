@@ -8,13 +8,13 @@ import pandas as pd
 
 from ....core.base import ColumnsType, FilterType, SourceType
 from ....core.factory import api_endpoint
-from . import akshare
+from . import eastmoney
 from .base import LOFFactory
 
 
 @api_endpoint(LOFFactory)
 def get_lof_list(
-    source: SourceType = "akshare",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -29,7 +29,7 @@ def get_lof_hist_data(
     symbol: str,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    source: SourceType = "akshare",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -41,7 +41,7 @@ def get_lof_hist_data(
 
 @api_endpoint(LOFFactory, method_name="get_lof_spot")
 def get_lof_spot(
-    source: SourceType = "akshare",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -56,7 +56,7 @@ def get_lof_nav(
     symbol: str,
     start_date: str = "1970-01-01",
     end_date: str = "2030-12-31",
-    source: SourceType = "akshare",
+    source: SourceType = "eastmoney",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:

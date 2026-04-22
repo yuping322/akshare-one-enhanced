@@ -1,7 +1,7 @@
 """
-AkShare provider for shareholder depth data.
+EastMoney provider for shareholder depth data.
 
-This module implements shareholder depth data provider using AkShare.
+This module implements shareholder depth data provider using EastMoney API.
 """
 
 import pandas as pd
@@ -9,10 +9,10 @@ import pandas as pd
 from .base import ShareholderDepthFactory, ShareholderDepthProvider
 
 
-@ShareholderDepthFactory.register("akshare")
-class AkShareShareholderDepthProvider(ShareholderDepthProvider):
+@ShareholderDepthFactory.register("eastmoney")
+class EastMoneyShareholderDepthProvider(ShareholderDepthProvider):
     """
-    Shareholder depth data provider using AkShare.
+    Shareholder depth data provider using EastMoney.
 
     Provides shareholder structure, shareholder concentration,
     and top float shareholders.
@@ -20,7 +20,7 @@ class AkShareShareholderDepthProvider(ShareholderDepthProvider):
 
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return "akshare"
+        return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
         """Fetch raw data - not directly used."""
@@ -28,7 +28,7 @@ class AkShareShareholderDepthProvider(ShareholderDepthProvider):
 
     def get_shareholder_structure(self, symbol: str, **kwargs) -> pd.DataFrame:
         """
-        Get shareholder structure from AkShare.
+        Get shareholder structure from EastMoney.
 
         Args:
             symbol: Stock symbol (e.g., '600000')
@@ -40,7 +40,7 @@ class AkShareShareholderDepthProvider(ShareholderDepthProvider):
 
     def get_shareholder_concentration(self, symbol: str, **kwargs) -> pd.DataFrame:
         """
-        Get shareholder concentration from AkShare.
+        Get shareholder concentration from EastMoney.
 
         Args:
             symbol: Stock symbol (e.g., '600000')
@@ -52,7 +52,7 @@ class AkShareShareholderDepthProvider(ShareholderDepthProvider):
 
     def get_top_float_shareholders(self, symbol: str, date: str = None, **kwargs) -> pd.DataFrame:
         """
-        Get top float shareholders from AkShare.
+        Get top float shareholders from EastMoney.
 
         Args:
             symbol: Stock symbol (e.g., '600000')

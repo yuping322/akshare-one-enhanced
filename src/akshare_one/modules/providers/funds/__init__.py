@@ -1,15 +1,15 @@
 """Fund providers package."""
 
 from .fund_of.base import FOFFactory, FOFProvider
-from .fund_of.akshare import AkShareFOFProvider
+from .fund_of.eastmoney import EastMoneyFOFProvider
 from .lof.base import LOFFactory, LOFProvider
-from .lof.akshare import AkShareLOFProvider
+from .lof.eastmoney import EastMoneyLOFProvider
 
 __all__ = [
     "FOFFactory",
     "FOFProvider",
-    "AkShareFOFProvider",
+    "EastMoneyFOFProvider",
     "LOFFactory",
     "LOFProvider",
-    "AkShareLOFProvider",
+    "EastMoneyLOFProvider",
 ]

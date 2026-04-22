@@ -1,20 +1,20 @@
 """Futures providers."""
 
-from .base import FuturesHistoricalFactory, FuturesRealtimeFactory, FuturesDataFactory
+from .base import FuturesDataFactory, FuturesHistoricalFactory, FuturesRealtimeFactory
 from .eastmoney import EastmoneyFuturesHistoricalProvider, EastmoneyFuturesRealtimeProvider
 from .efinance import EfinanceFuturesHistoricalProvider, EfinanceFuturesRealtimeProvider
-from .sina import SinaFuturesHistoricalProvider, SinaFuturesRealtimeProvider
 from .margin import (
-    FuturesMarginFactory,
-    FuturesMarginProvider,
-    AkShareFuturesMarginProvider,
     CONTRACT_MULTIPLIERS,
     DEFAULT_MARGIN_RATE,
-    get_contract_multiplier,
-    get_margin_rate_for_contract,
+    FuturesMarginFactory,
+    FuturesMarginProvider,
     calculate_position_value,
     calculate_required_margin,
+    get_contract_multiplier,
+    get_margin_rate_for_contract,
 )
+from .margin_sina import SinaFuturesMarginProvider
+from .sina import SinaFuturesHistoricalProvider, SinaFuturesRealtimeProvider
 
 __all__ = [
     "FuturesHistoricalFactory",
@@ -22,7 +22,7 @@ __all__ = [
     "FuturesDataFactory",
     "FuturesMarginFactory",
     "FuturesMarginProvider",
-    "AkShareFuturesMarginProvider",
+    "SinaFuturesMarginProvider",
     "CONTRACT_MULTIPLIERS",
     "DEFAULT_MARGIN_RATE",
     "get_contract_multiplier",

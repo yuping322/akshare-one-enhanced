@@ -1,20 +1,20 @@
 """
-AkShare call auction (集合竞价) data provider.
+NetEase call auction (集合竞价) data provider.
 
-This module implements the call auction data provider using AkShare as the data source.
+This module implements the call auction data provider using NetEase 163 API as the data source.
 It wraps akshare functions and standardizes the output format.
 """
 
 import pandas as pd
 
-from ...constants import SYMBOL_ZFILL_WIDTH
+from ......constants import SYMBOL_ZFILL_WIDTH
 from .base import CallAuctionFactory, CallAuctionProvider
 
 
-@CallAuctionFactory.register("akshare")
-class AkShareCallAuctionProvider(CallAuctionProvider):
+@CallAuctionFactory.register("netease")
+class NetEaseCallAuctionProvider(CallAuctionProvider):
     """
-    Call auction data provider using AkShare as the data source.
+    Call auction data provider using NetEase 163 API as the data source.
 
     This provider wraps akshare functions to fetch call auction data
     and standardizes the output format for consistency.
@@ -22,11 +22,11 @@ class AkShareCallAuctionProvider(CallAuctionProvider):
 
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return "akshare"
+        return "netease"
 
     def fetch_data(self) -> pd.DataFrame:
         """
-        Fetch raw data from AkShare.
+        Fetch raw data from NetEase API.
 
         This method is not directly used as each specific method
         fetches its own data. Implemented for BaseProvider compatibility.
@@ -56,24 +56,18 @@ class AkShareCallAuctionProvider(CallAuctionProvider):
                 - type: Transaction type
 
         Example:
-            >>> provider = AkShareCallAuctionProvider()
+            >>> provider = NetEaseCallAuctionProvider()
             >>> df = provider.get_call_auction('600000')
         """
-        # Validate parameters
-        self.validate_symbol(symbol)
+        self.validate.symbol(symbol)
 
         try:
-            import akshare as ak
 
-            # Get tick data for the stock
-            # Note: akshare stock_zh_a_tick_163 requires symbol and trade_date
-            # We use a recent date as default; callers can override via kwargs
             raw_df = self.akshare_adapter.call("stock_zh_a_tick_163", symbol=symbol, trade_date="20231201")
 
             if raw_df.empty:
                 return self.create_empty_dataframe(["time", "price", "volume", "amount", "type"])
 
-            # Filter for call auction period (9:15-9:25)
             if "时间" in raw_df.columns or "time" in raw_df.columns:
                 time_col = "时间" if "时间" in raw_df.columns else "time"
                 mask = raw_df[time_col].astype(str).str.startswith(("09:1", "09:2"))
@@ -82,37 +76,31 @@ class AkShareCallAuctionProvider(CallAuctionProvider):
             if raw_df.empty:
                 return self.create_empty_dataframe(["time", "price", "volume", "amount", "type"])
 
-            # Standardize the data
             standardized = pd.DataFrame()
             time_col = "时间" if "时间" in raw_df.columns else "time"
             standardized["time"] = raw_df[time_col].astype(str)
             standardized["symbol"] = str(symbol).zfill(SYMBOL_ZFILL_WIDTH)
 
-            # Map price column
             if "价格" in raw_df.columns:
                 standardized["price"] = raw_df["价格"].astype(float)
             elif "price" in raw_df.columns:
                 standardized["price"] = raw_df["price"].astype(float)
 
-            # Map volume column
             if "成交量" in raw_df.columns:
                 standardized["volume"] = raw_df["成交量"].astype(float)
             elif "volume" in raw_df.columns:
                 standardized["volume"] = raw_df["volume"].astype(float)
 
-            # Map amount column
             if "成交额" in raw_df.columns:
                 standardized["amount"] = raw_df["成交额"].astype(float)
             elif "amount" in raw_df.columns:
                 standardized["amount"] = raw_df["amount"].astype(float)
 
-            # Map type column
             if "类型" in raw_df.columns:
                 standardized["type"] = raw_df["类型"].astype(str)
             elif "type" in raw_df.columns:
                 standardized["type"] = raw_df["type"].astype(str)
 
-            # Ensure JSON compatibility
             result = self.ensure_json_compatible(standardized)
             return result.reset_index(drop=True)
 

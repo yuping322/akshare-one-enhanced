@@ -10,14 +10,14 @@ import pandas as pd
 
 from .....core.base import ColumnsType, FilterType, SourceType
 from .....core.factory import api_endpoint
-from . import akshare
+from . import netease
 from .base import CallAuctionFactory
 
 
 @api_endpoint(CallAuctionFactory)
 def get_call_auction(
     symbol: str,
-    source: SourceType = "akshare",
+    source: SourceType = "netease",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:
@@ -33,7 +33,7 @@ def get_call_auction(
 @api_endpoint(CallAuctionFactory)
 def get_call_auction_batch(
     symbols: list[str],
-    source: SourceType = "akshare",
+    source: SourceType = "netease",
     columns: ColumnsType = None,
     row_filter: FilterType = None,
 ) -> pd.DataFrame:

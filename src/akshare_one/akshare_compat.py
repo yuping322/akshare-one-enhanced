@@ -592,6 +592,22 @@ def get_adapter() -> AkShareAdapter:
     return _global_adapter
 
 
+def set_adapter(adapter: AkShareAdapter) -> None:
+    """Replace the global AkShareAdapter instance (for testing).
+
+    Args:
+        adapter: New AkShareAdapter instance to use globally
+    """
+    global _global_adapter
+    _global_adapter = adapter
+
+
+def reset_adapter() -> None:
+    """Reset the global adapter to default."""
+    global _global_adapter
+    _global_adapter = None
+
+
 def call_akshare(func_name: str, *args, fallback_func: str | None = None, **kwargs) -> pd.DataFrame:
     """
     Convenience function to call AkShare with automatic compatibility handling.

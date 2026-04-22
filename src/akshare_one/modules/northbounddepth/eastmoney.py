@@ -1,11 +1,12 @@
-from ..base import BaseProvider
 import pandas as pd
+
+from ..base import BaseProvider
 from .base import NorthboundDepthFactory
 
 
-class AkShareNorthboundDepthProvider(BaseProvider):
+class EastMoneyNorthboundDepthProvider(BaseProvider):
     def get_source_name(self) -> str:
-        return "akshare"
+        return "eastmoney"
 
     def get_north_stock_detail(self, symbol: str, date: str = "") -> pd.DataFrame:
         """个股北向详情 - ak.stock_hsgt_individual_em"""
@@ -20,6 +21,6 @@ class AkShareNorthboundDepthProvider(BaseProvider):
         return self.akshare_adapter.call("stock_hsgt_calendar_em")
 
 
-@NorthboundDepthFactory.register("akshare")
-class AkShareProvider(AkShareNorthboundDepthProvider):
+@NorthboundDepthFactory.register("eastmoney")
+class EastMoneyProvider(EastMoneyNorthboundDepthProvider):
     pass

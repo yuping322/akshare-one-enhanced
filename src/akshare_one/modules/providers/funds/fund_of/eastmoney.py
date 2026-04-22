@@ -1,7 +1,7 @@
 """
-AkShare provider for FOF (Fund of Funds) data.
+EastMoney provider for FOF (Fund of Funds) data.
 
-This module implements FOF data provider using AkShare as the data source.
+This module implements FOF data provider using EastMoney as the data source.
 """
 
 import pandas as pd
@@ -9,12 +9,12 @@ import pandas as pd
 from .base import FOFFactory, FOFProvider
 
 
-@FOFFactory.register("akshare")
-class AkShareFOFProvider(FOFProvider):
+@FOFFactory.register("eastmoney")
+class EastMoneyFOFProvider(FOFProvider):
     """
-    FOF data provider using AkShare as the data source.
+    FOF data provider using EastMoney as the data source.
 
-    AkShare provides comprehensive FOF data including:
+    EastMoney provides comprehensive FOF data including:
     - FOF fund list
     - NAV history
     - Fund information
@@ -35,16 +35,16 @@ class AkShareFOFProvider(FOFProvider):
     }
 
     def __init__(self, **kwargs):
-        """Initialize the AkShare FOF provider."""
+        """Initialize the EastMoney FOF provider."""
         super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return "akshare"
+        return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
         """
-        Fetch raw data from AkShare.
+        Fetch raw data from EastMoney.
 
         This method is not directly used as each specific method
         fetches its own data. Implemented for BaseProvider compatibility.
@@ -56,7 +56,7 @@ class AkShareFOFProvider(FOFProvider):
 
     def get_fof_list(self) -> pd.DataFrame:
         """
-        Get FOF list from AkShare.
+        Get FOF list from EastMoney.
 
         Returns:
             pd.DataFrame: FOF fund list

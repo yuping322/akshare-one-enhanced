@@ -2,7 +2,6 @@
 Industry analytics provider - industry performance and concept analysis.
 """
 
-from typing import List
 
 import pandas as pd
 
@@ -47,9 +46,9 @@ class IndustryAnalyticsFactory(IndustryFactory):
     pass
 
 
-@IndustryAnalyticsFactory.register("akshare")
-class AkShareIndustryAnalyticsProvider(IndustryAnalyticsProvider):
-    """Industry analytics data provider using AkShare."""
+@IndustryAnalyticsFactory.register("eastmoney")
+class EastMoneyIndustryAnalyticsProvider(IndustryAnalyticsProvider):
+    """Industry analytics data provider using EastMoney."""
 
     _API_MAP = {
         "get_stock_industry": {
@@ -74,7 +73,7 @@ class AkShareIndustryAnalyticsProvider(IndustryAnalyticsProvider):
     }
 
     def get_source_name(self) -> str:
-        return "akshare"
+        return "eastmoney"
 
     def get_stock_industry(self, symbol: str) -> pd.DataFrame:
         """Get stock industry classification."""

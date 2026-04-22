@@ -39,26 +39,26 @@ class ShareholderDepthFactory(ShareholderFactory):
     pass
 
 
-@ShareholderDepthFactory.register("akshare")
-class AkShareShareholderDepthProvider(ShareholderDepthProvider):
-    """Shareholder depth data provider using AkShare."""
+@ShareholderDepthFactory.register("eastmoney")
+class EastMoneyShareholderDepthProvider(ShareholderDepthProvider):
+    """Shareholder depth data provider using EastMoney."""
 
     def get_source_name(self) -> str:
-        return "akshare"
+        return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
         return pd.DataFrame()
 
     def get_shareholder_structure(self, symbol: str, **kwargs) -> pd.DataFrame:
-        """Get shareholder structure from AkShare."""
+        """Get shareholder structure from EastMoney."""
         return self.akshare_adapter.call("stock_gdfx_free_holding_analyse_em", symbol=symbol)
 
     def get_shareholder_concentration(self, symbol: str, **kwargs) -> pd.DataFrame:
-        """Get shareholder concentration from AkShare."""
+        """Get shareholder concentration from EastMoney."""
         return self.akshare_adapter.call("stock_gdfx_holding_detail_em", symbol=symbol)
 
     def get_top_float_shareholders(self, symbol: str, date: str = None, **kwargs) -> pd.DataFrame:
-        """Get top float shareholders from AkShare."""
+        """Get top float shareholders from EastMoney."""
         if date:
             return self.akshare_adapter.call("stock_gdfx_free_top_10_em", symbol=symbol, date=date)
         return self.akshare_adapter.call("stock_gdfx_free_top_10_em", symbol=symbol)

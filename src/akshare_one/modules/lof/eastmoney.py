@@ -1,7 +1,7 @@
 """
-AkShare provider for LOF (Listed Open-Ended Fund) data.
+EastMoney provider for LOF (Listed Open-Ended Fund) data.
 
-This module implements LOF data provider using AkShare as the data source.
+This module implements LOF data provider using EastMoney API as the data source.
 """
 
 import pandas as pd
@@ -9,12 +9,12 @@ import pandas as pd
 from .base import LOFFactory, LOFProvider
 
 
-@LOFFactory.register("akshare")
-class AkShareLOFProvider(LOFProvider):
+@LOFFactory.register("eastmoney")
+class EastMoneyLOFProvider(LOFProvider):
     """
-    LOF data provider using AkShare as the data source.
+    LOF data provider using EastMoney API as the data source.
 
-    AkShare provides comprehensive LOF data including:
+    EastMoney provides comprehensive LOF data including:
     - LOF fund list
     - Historical data
     - Realtime quotes
@@ -39,16 +39,16 @@ class AkShareLOFProvider(LOFProvider):
     }
 
     def __init__(self, **kwargs):
-        """Initialize the AkShare LOF provider."""
+        """Initialize the EastMoney LOF provider."""
         super().__init__(**kwargs)
 
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return "akshare"
+        return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
         """
-        Fetch raw data from AkShare.
+        Fetch raw data from EastMoney API.
 
         This method is not directly used as each specific method
         fetches its own data. Implemented for BaseProvider compatibility.
@@ -60,7 +60,7 @@ class AkShareLOFProvider(LOFProvider):
 
     def get_lof_list(self) -> pd.DataFrame:
         """
-        Get LOF list from AkShare.
+        Get LOF list from EastMoney API.
 
         Returns:
             pd.DataFrame: LOF fund list
@@ -77,7 +77,7 @@ class AkShareLOFProvider(LOFProvider):
 
     def get_lof_hist(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
         """
-        Get LOF historical data from AkShare.
+        Get LOF historical data from EastMoney API.
 
         Args:
             symbol: LOF symbol (6-digit code)
@@ -102,7 +102,7 @@ class AkShareLOFProvider(LOFProvider):
 
     def get_lof_spot(self) -> pd.DataFrame:
         """
-        Get LOF realtime quotes from AkShare.
+        Get LOF realtime quotes from EastMoney API.
 
         Returns:
             pd.DataFrame: Realtime LOF data

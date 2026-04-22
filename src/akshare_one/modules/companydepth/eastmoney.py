@@ -1,7 +1,7 @@
 """
-AkShare provider for company depth data.
+EastMoney provider for company depth data.
 
-This module implements company depth data provider using AkShare.
+This module implements company depth data provider using EastMoney API.
 """
 
 import pandas as pd
@@ -9,10 +9,10 @@ import pandas as pd
 from .base import CompanyDepthFactory, CompanyDepthProvider
 
 
-@CompanyDepthFactory.register("akshare")
-class AkShareCompanyDepthProvider(CompanyDepthProvider):
+@CompanyDepthFactory.register("eastmoney")
+class EastMoneyCompanyDepthProvider(CompanyDepthProvider):
     """
-    Company depth data provider using AkShare.
+    Company depth data provider using EastMoney.
 
     Provides security status, name history, management info, employee info,
     listing info, and industry info.
@@ -20,7 +20,7 @@ class AkShareCompanyDepthProvider(CompanyDepthProvider):
 
     def get_source_name(self) -> str:
         """Return the data source name."""
-        return "akshare"
+        return "eastmoney"
 
     def fetch_data(self) -> pd.DataFrame:
         """Fetch raw data - not directly used."""
@@ -28,7 +28,7 @@ class AkShareCompanyDepthProvider(CompanyDepthProvider):
 
     def get_security_status(self, symbol: str, date: str = "", **kwargs) -> pd.DataFrame:
         """
-        Get security status (ST, suspended, etc.) from AkShare.
+        Get security status (ST, suspended, etc.) from EastMoney.
 
         Args:
             symbol: Stock symbol (e.g., '600000')
@@ -46,7 +46,7 @@ class AkShareCompanyDepthProvider(CompanyDepthProvider):
 
     def get_name_history(self, symbol: str, **kwargs) -> pd.DataFrame:
         """
-        Get stock name history from AkShare.
+        Get stock name history from EastMoney.
 
         Args:
             symbol: Stock symbol (e.g., '600000')
@@ -58,7 +58,7 @@ class AkShareCompanyDepthProvider(CompanyDepthProvider):
 
     def get_management_info(self, symbol: str, **kwargs) -> pd.DataFrame:
         """
-        Get management information from AkShare.
+        Get management information from EastMoney.
 
         Args:
             symbol: Stock symbol (e.g., '600000')
@@ -70,7 +70,7 @@ class AkShareCompanyDepthProvider(CompanyDepthProvider):
 
     def get_employee_info(self, symbol: str, **kwargs) -> pd.DataFrame:
         """
-        Get employee information from AkShare.
+        Get employee information from EastMoney.
 
         Args:
             symbol: Stock symbol (e.g., '600000')
@@ -82,7 +82,7 @@ class AkShareCompanyDepthProvider(CompanyDepthProvider):
 
     def get_listing_info(self, symbol: str, **kwargs) -> pd.DataFrame:
         """
-        Get listing information from AkShare.
+        Get listing information from EastMoney.
 
         Args:
             symbol: Stock symbol (e.g., '600000')
@@ -99,7 +99,7 @@ class AkShareCompanyDepthProvider(CompanyDepthProvider):
 
     def get_industry_info(self, symbol: str, **kwargs) -> pd.DataFrame:
         """
-        Get industry classification information from AkShare.
+        Get industry classification information from EastMoney.
 
         Args:
             symbol: Stock symbol (e.g., '600000')

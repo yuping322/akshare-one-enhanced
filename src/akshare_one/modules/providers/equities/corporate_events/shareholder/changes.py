@@ -39,12 +39,12 @@ class ShareChangeDepthFactory(ShareholderFactory):
     pass
 
 
-@ShareChangeDepthFactory.register("akshare")
-class AkShareShareChangeDepthProvider(ShareChangeDepthProvider):
-    """Share change depth data provider using AkShare."""
+@ShareChangeDepthFactory.register("eastmoney")
+class EastMoneyShareChangeDepthProvider(ShareChangeDepthProvider):
+    """Share change depth data provider using EastMoney."""
 
     def get_source_name(self) -> str:
-        return "akshare"
+        return "eastmoney"
 
     def get_freeze_info(self, symbol: str) -> pd.DataFrame:
         """Get share freeze information."""
